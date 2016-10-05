@@ -1,0 +1,118 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>gdaws-aq-sync</artifactId>
+	<groupId>gov.usgs.wma</groupId>
+	<version>0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>GDAWS/Aquarius Synchronizer</name>
+	<description>
+	Pulls data from Aquarius and inserts data into the GDAWS database.
+	</description>
+
+	<developers>
+		<developer>
+			<name>Phethala Thongsavanh</name>
+			<email>thongsav@usgs.gov</email>
+			<id>thongsav</id>
+			<organization>Center for Integrated Data Analytics</organization>
+			<organizationUrl>http://cida.usgs.gov</organizationUrl>
+			<timezone>-6</timezone>
+		</developer>
+	</developers>
+
+	<licenses>
+		<license>
+			<name>Public Domain</name>
+			<url>http://en.wikipedia.org/wiki/Public_domain_software</url>
+			<comments>
+				All work of the US Government enter into the Public Domain within
+				the United States.  Whether that work is public domain outside of
+				the United States depends on various factors.
+			</comments>
+		</license>
+	</licenses>
+
+	<scm>
+		<url>https://github.com/USGS-CIDA/AQCU</url>
+		<connection>scm:git:ssh://git@github.com/USGS-CIDA/AQCU.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/USGS-CIDA/AQCU.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>cida-releases</id>
+			<name>CIDA Releases</name>
+			<url>https://internal.cida.usgs.gov/maven/content/repositories/cida-public-releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>cida-snapshots</id>
+			<name>CIDA Snapshots</name>
+			<url>https://internal.cida.usgs.gov/maven/content/repositories/cida-public-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>cida-releases</id>
+			<name>CIDA Releases</name>
+			<url>https://internal.cida.usgs.gov/maven/content/repositories/cida-releases</url>
+		</repository>
+		<repository>
+			<id>cida-snapshots</id>
+			<name>CIDA Snapshots</name>
+			<url>https://internal.cida.usgs.gov/maven/content/repositories/cida-snapshots</url>
+		</repository>
+		<repository>
+			<id>cida-public</id>
+			<name>CIDA Public Nexus</name>
+			<url>http://cida.usgs.gov/maven/cida-public-releases/</url>
+		</repository>
+		<repository>
+			<id>cida-public-snapshots</id>
+			<name>CIDA Public Snapshots</name>
+			<url>http://cida.usgs.gov/maven/cida-public-snapshots/</url>
+		</repository>
+		<repository>
+			<id>cida-thirdparty</id>
+			<name>CIDA Public Nexus</name>
+			<url>http://cida.usgs.gov/maven/cida-public-thirdparty/</url>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>gov.usgs.aqcu</groupId>
+			<artifactId>aqcu-data-core</artifactId>
+			<version>0.13-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.3</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>gov.usgs.wma.gcmrc.GdawsSynchronizer</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
