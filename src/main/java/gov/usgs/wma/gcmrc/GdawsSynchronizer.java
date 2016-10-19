@@ -1,12 +1,15 @@
 package gov.usgs.wma.gcmrc;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.service.AqToGdaws;
 import gov.usgs.wma.gcmrc.service.AutoProc;
 import gov.usgs.wma.gcmrc.service.GdawsConfigLoader;
 
 public class GdawsSynchronizer {
+	private static final Logger LOG = LoggerFactory.getLogger(GdawsSynchronizer.class);
 	
 	private static final String SKIP_OPTION_PREFIX = "--skip";
 	
@@ -31,6 +34,8 @@ public class GdawsSynchronizer {
 	
 	public static void main(String[] args){
 		if(validateArguments(args)) {
+			LOG.debug("Arguments valid, proceeding with processing");
+			
 			if(!isSkip(args, AQUARIUS_SYNC_OPT)) {
 				aqToGdaws.migrateAqData();
 			}

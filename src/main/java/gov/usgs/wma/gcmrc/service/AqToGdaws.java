@@ -2,12 +2,17 @@ package gov.usgs.wma.gcmrc.service;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 import gov.usgs.aqcu.model.TimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 
 public class AqToGdaws {
+	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
+	
 	GdawsConfigLoader gdawsConfigLoader = new GdawsConfigLoader();
 	private List<SiteConfiguration> sitesToLoad;
 	
@@ -18,7 +23,7 @@ public class AqToGdaws {
 		try {
 			dataService = new DataService(); 
 		} catch(Exception e) {
-			//could not create data service, likely due to missing properties
+			LOG.warn("Could not create data service, likely need to set aquarius connection properties", e);
 		}
 		sitesToLoad = gdawsConfigLoader.loadSiteConfiguration();
 	}
