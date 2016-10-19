@@ -2,19 +2,29 @@ package gov.usgs.wma.gcmrc.service;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 import gov.usgs.aqcu.model.TimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 
 public class AqToGdaws {
+	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
+	
 	GdawsConfigLoader gdawsConfigLoader = new GdawsConfigLoader();
 	private List<SiteConfiguration> sitesToLoad;
 	
 	// this requires the follow properties to be defined: aquarius.service.endpoint, aquarius.service.user, aquarius.service.password
-	DataService dataService = new DataService(); 
+	DataService dataService;
 
 	public AqToGdaws() {
+		try {
+			dataService = new DataService(); 
+		} catch(Exception e) {
+			LOG.debug("Could not create data service, likely need to set aquarius connection properties", e);
+		}
 		sitesToLoad = gdawsConfigLoader.loadSiteConfiguration();
 	}
 	
@@ -33,10 +43,10 @@ public class AqToGdaws {
 				
 				//TODO transform and load into GDAWS
 				Integer numOfPoints = retrieved.getPoints().size();
-				System.out.println("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
+				LOG.info("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
 						", which contains " + numOfPoints + " points");
 				if(numOfPoints > 0) {
-					System.out.println("First point: " + 
+					LOG.info("First point: " + 
 							ISO8601TemporalSerializer.print(retrieved.getPoints().get(0).getTime()) + 
 							" " + retrieved.getPoints().get(0).getValue());
 				}

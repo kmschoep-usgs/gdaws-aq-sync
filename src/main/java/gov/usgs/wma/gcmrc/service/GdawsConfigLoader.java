@@ -3,6 +3,9 @@ package gov.usgs.wma.gcmrc.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.naming.NamingException;
+
+import gov.usgs.cida.config.DynamicReadOnlyProperties;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 
 public class GdawsConfigLoader {
@@ -14,5 +17,21 @@ public class GdawsConfigLoader {
 		configs.add(new SiteConfiguration("Discharge", "01010000", "01010000", 99, 99));
 		
 		return configs;
+	}
+	
+	private static DynamicReadOnlyProperties props = null;
+
+	private static DynamicReadOnlyProperties getInstance() {
+		if (null == props) {
+			try {
+				props = new DynamicReadOnlyProperties().addJNDIContexts();
+			} catch (NamingException e) {
+			}
+		}
+		return props;
+	}
+	
+	public static String getProperty(String prop) {
+		return getInstance().getProperty(prop);
 	}
 }
