@@ -2,6 +2,7 @@ package gov.usgs.wma.gcmrc;
 
 import gov.usgs.wma.gcmrc.service.AqToGdaws;
 import gov.usgs.wma.gcmrc.service.AutoProc;
+import gov.usgs.wma.gcmrc.service.DataPullRunState;
 
 public class GdawsSynchronizer {
 	
@@ -11,6 +12,8 @@ public class GdawsSynchronizer {
 	public static void main(String[] args){
 		//TODO parse args to optionally turn these settings off
 		boolean doAqSync = true;
+		
+		DataPullRunState runState = DataPullRunState.instance();
 		
 		//TODO look at error handling and transaction code
 		if(doAqSync) {

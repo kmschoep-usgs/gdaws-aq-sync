@@ -8,14 +8,15 @@ import gov.usgs.aqcu.model.TimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 
 public class AqToGdaws {
-	GdawsConfigLoader gdawsConfigLoader = new GdawsConfigLoader();
 	private List<SiteConfiguration> sitesToLoad;
+	private DataPullRunState runState;
 	
 	// this requires the follow properties to be defined: aquarius.service.endpoint, aquarius.service.user, aquarius.service.password
 	DataService dataService = new DataService(); 
 
-	public AqToGdaws() {
-		sitesToLoad = gdawsConfigLoader.loadSiteConfiguration();
+	public AqToGdaws(DataPullRunState runState, List<SiteConfiguration> sitesToLoad) {
+		this.runState = runState;
+		this.sitesToLoad = sitesToLoad;
 	}
 	
 	public void migrateAqData() {

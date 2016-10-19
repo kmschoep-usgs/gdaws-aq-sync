@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<mapper namespace="gov.usgs.wma.gcmrc.mapper.SiteConfigurationMapper">
+
+	<select id="getAll" resultType="SiteConfiguration">
+		<include refid="getAllSql"/>
+	</select>
+	
+	<select id="getCount" parameterType="map" resultType="int">
+		select count(*)
+		FROM (<include refid="getAllSql"/>)
+	</select>
+
+	<sql id="getAllSql">
+		SELECT
+		  conf.SITE_ID siteId,
+		  site.NWIS_SITE_NO siteNumber,
+		  grp.PARM_AQUARIUS parameter,
+		  grp.GROUP_ID groupId
+		FROM
+		  gdaws_aq_sync_config conf INNER JOIN site_star site ON conf.site_id = site.site_id
+		  INNER JOIN group_name grp ON grp.group_id = conf.group_id
+	</sql>
+	
+</mapper>
