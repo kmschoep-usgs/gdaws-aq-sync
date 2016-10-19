@@ -12,9 +12,14 @@ public class AqToGdaws {
 	private List<SiteConfiguration> sitesToLoad;
 	
 	// this requires the follow properties to be defined: aquarius.service.endpoint, aquarius.service.user, aquarius.service.password
-	DataService dataService = new DataService(); 
+	DataService dataService;
 
 	public AqToGdaws() {
+		try {
+			dataService = new DataService(); 
+		} catch(Exception e) {
+			//could not create data service, likely due to missing properties
+		}
 		sitesToLoad = gdawsConfigLoader.loadSiteConfiguration();
 	}
 	

@@ -9,7 +9,7 @@ public class AutoProc {
 		 */
 	}
 	
-	public void processData() {
+	public void processBedloadCalculations() {
 		//TODO perform all autoproc calculations using loaded configuration
 	}
 
