@@ -50,7 +50,7 @@ public class GdawsSynchronizer {
 		//check to see that any arguments are not valid
 		for(String arg : args) {
 			if(!isSupportedArg(arg)) {
-				System.out.println("Argument \"" + arg + "\" is not supported. See --help for more information.");
+				LOG.info("Argument \"" + arg + "\" is not supported. See --help for more information.");
 				return false;
 			}
 		}
@@ -67,7 +67,7 @@ public class GdawsSynchronizer {
 		for(int i = 0; i < REQUIRED_PROPS.length; i += 2) {
 			String p = REQUIRED_PROPS[i];
 			if(StringUtils.isBlank(GdawsConfigLoader.getProperty(p))) {
-				System.out.println("Property \"" + p + "\" must be defined. See --help for more information.");
+				LOG.info("Property \"" + p + "\" must be defined. See --help for more information.");
 				return false;
 			}
 		}
@@ -95,7 +95,7 @@ public class GdawsSynchronizer {
 		appendSkipOptions(message);
 
 		//print out
-		System.out.println(message.toString());
+		LOG.info(message.toString());
 	}
 	
 	private static void appendRequiredOptions(StringBuilder message) {

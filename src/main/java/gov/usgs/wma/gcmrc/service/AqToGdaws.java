@@ -23,7 +23,7 @@ public class AqToGdaws {
 		try {
 			dataService = new DataService(); 
 		} catch(Exception e) {
-			LOG.warn("Could not create data service, likely need to set aquarius connection properties", e);
+			LOG.debug("Could not create data service, likely need to set aquarius connection properties", e);
 		}
 		sitesToLoad = gdawsConfigLoader.loadSiteConfiguration();
 	}
@@ -43,10 +43,10 @@ public class AqToGdaws {
 				
 				//TODO transform and load into GDAWS
 				Integer numOfPoints = retrieved.getPoints().size();
-				System.out.println("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
+				LOG.info("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
 						", which contains " + numOfPoints + " points");
 				if(numOfPoints > 0) {
-					System.out.println("First point: " + 
+					LOG.info("First point: " + 
 							ISO8601TemporalSerializer.print(retrieved.getPoints().get(0).getTime()) + 
 							" " + retrieved.getPoints().get(0).getValue());
 				}
