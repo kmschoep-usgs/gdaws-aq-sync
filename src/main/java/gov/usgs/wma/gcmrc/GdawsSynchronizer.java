@@ -50,7 +50,7 @@ public class GdawsSynchronizer {
 		//check to see that any arguments are not valid
 		for(String arg : args) {
 			if(!isSupportedArg(arg)) {
-				System.out.println("Argument " + arg + " is not supported. See --help for more information.");
+				System.out.println("Argument \"" + arg + "\" is not supported. See --help for more information.");
 				return false;
 			}
 		}
@@ -64,9 +64,10 @@ public class GdawsSynchronizer {
 		//check for required properties
 		//NOTE: we use DROP to verify the properties are there, but the properties are actually used inside of the
 		//aqcu-data-core library.
-		for(String p : REQUIRED_PROPS) {
+		for(int i = 0; i < REQUIRED_PROPS.length; i += 2) {
+			String p = REQUIRED_PROPS[i];
 			if(StringUtils.isBlank(GdawsConfigLoader.getProperty(p))) {
-				System.out.println("Property " + p + " must be defined. See --help for more information.");
+				System.out.println("Property \"" + p + "\" must be defined. See --help for more information.");
 				return false;
 			}
 		}
