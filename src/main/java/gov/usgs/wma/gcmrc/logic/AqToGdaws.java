@@ -1,4 +1,4 @@
-package gov.usgs.wma.gcmrc.service;
+package gov.usgs.wma.gcmrc.logic;
 
 import java.util.List;
 
@@ -9,37 +9,39 @@ import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 import gov.usgs.aqcu.model.TimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
+import gov.usgs.wma.gcmrc.model.RunConfiguration;
 
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
-	
-	GdawsConfigLoader gdawsConfigLoader = new GdawsConfigLoader();
+		
 	private List<SiteConfiguration> sitesToLoad;
+	private RunConfiguration runState;
 	
 	// this requires the follow properties to be defined: aquarius.service.endpoint, aquarius.service.user, aquarius.service.password
 	DataService dataService;
 
-	public AqToGdaws() {
+	public AqToGdaws(RunConfiguration runState, List<SiteConfiguration> sitesToLoad) {
+		this.runState = runState;
+		this.sitesToLoad = sitesToLoad;
+		
 		try {
-			dataService = new DataService(); 
+			dataService = runState.getAquariusDataService();
 		} catch(Exception e) {
-			LOG.debug("Could not create data service, likely need to set aquarius connection properties", e);
+			LOG.error("Could not create data service, likely need to set aquarius connection properties", e);
 		}
-		sitesToLoad = gdawsConfigLoader.loadSiteConfiguration();
 	}
 	
 	public void migrateAqData() {
 		for(SiteConfiguration c : sitesToLoad) {
-			String siteId = c.getSiteId();
+			//Long siteId = c.getSiteId();
+			String remoteSiteId = c.getRemoteSiteId();
 			
 			//load the data from the source. TODO, determine if we only use primary/published/UV series 
-			List<String> tsUids = dataService.getTimeSeriesUniqueIdsAtSite(
-					siteId, null, null, c.getParameter(), null, null);
+			List<String> tsUids = dataService.getTimeSeriesUniqueIdsAtSite(remoteSiteId, null, null, c.getParameter(), null, null);
 			
 			for(String uid: tsUids) {
 				//TODO build start/end times
-				TimeSeries retrieved = dataService.getTimeSeriesData(
-						siteId, uid, "2015-01-01T00:00:00.000-05:00", "2016-01-01T00:00:00.000-05:00", false, false);
+				TimeSeries retrieved = dataService.getTimeSeriesData(remoteSiteId, uid, "2015-01-01T00:00:00.000-05:00", "2016-01-01T00:00:00.000-05:00", false, false);
 				
 				//TODO transform and load into GDAWS
 				Integer numOfPoints = retrieved.getPoints().size();

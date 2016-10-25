@@ -6,20 +6,21 @@ package gov.usgs.wma.gcmrc.model;
  *
  */
 public class SiteConfiguration {
+	private Long localSiteId;
+	private String remoteSiteId;
 	private String parameter;
-	private String siteNumber;
-	private String siteId;
 	private Integer groupId;
-	private Integer sourceId;
 //	private Temporal highWaterMark; TODO, is this needed? What is it?
 	
-	public SiteConfiguration(String parameter, String siteNumber, String siteId, Integer groupId, Integer sourceId) {
-		super();
+	public SiteConfiguration() {
+		//empty for MyBatis
+	}
+	
+	public SiteConfiguration(Long localSiteId, String remoteSiteId, String parameter, Integer groupId) {
 		this.parameter = parameter;
-		this.siteNumber = siteNumber;
-		this.siteId = siteId;
+		this.remoteSiteId = remoteSiteId;
+		this.localSiteId = localSiteId;
 		this.groupId = groupId;
-		this.sourceId = sourceId;
 	}
 	
 	public String getParameter() {
@@ -28,28 +29,22 @@ public class SiteConfiguration {
 	public void setParameter(String parameter) {
 		this.parameter = parameter;
 	}
-	public String getSiteNumber() {
-		return siteNumber;
+	public String getRemoteSiteId() {
+		return remoteSiteId;
 	}
-	public void setSiteNumber(String siteNumber) {
-		this.siteNumber = siteNumber;
+	public void setRemoteSiteId(String siteNumber) {
+		this.remoteSiteId = siteNumber;
 	}
-	public String getSiteId() {
-		return siteId;
+	public Long getLocalSiteId() {
+		return localSiteId;
 	}
-	public void setSiteId(String siteId) {
-		this.siteId = siteId;
+	public void setLocalSiteId(Long siteId) {
+		this.localSiteId = siteId;
 	}
 	public Integer getGroupId() {
 		return groupId;
 	}
 	public void setGroupId(Integer groupId) {
 		this.groupId = groupId;
-	}
-	public Integer getSourceId() {
-		return sourceId;
-	}
-	public void setSourceId(Integer sourceId) {
-		this.sourceId = sourceId;
 	}
 }

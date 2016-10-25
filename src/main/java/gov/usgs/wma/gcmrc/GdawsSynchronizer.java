@@ -1,12 +1,18 @@
 package gov.usgs.wma.gcmrc;
 
+import gov.usgs.wma.gcmrc.mapper.SiteConfigurationMapper;
+import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.wma.gcmrc.service.AqToGdaws;
-import gov.usgs.wma.gcmrc.service.AutoProc;
-import gov.usgs.wma.gcmrc.service.GdawsConfigLoader;
+import gov.usgs.wma.gcmrc.logic.AqToGdaws;
+import gov.usgs.wma.gcmrc.logic.AutoProc;
+import gov.usgs.wma.gcmrc.model.RunConfiguration;
+import gov.usgs.wma.gcmrc.util.ConfigLoader;
+import java.util.List;
+import java.util.Properties;
+import org.apache.ibatis.session.SqlSession;
 
 public class GdawsSynchronizer {
 	private static final Logger LOG = LoggerFactory.getLogger(GdawsSynchronizer.class);
@@ -27,14 +33,29 @@ public class GdawsSynchronizer {
 			"aquarius.service.password", "Aquarius service password"
 	};
 	
-	private static AqToGdaws aqToGdaws = new AqToGdaws();
-	private static AutoProc autoProc = new AutoProc();
+
 	
 	private static final int HELP_COLUMN_SIZE = 30;
 	
-	public static void main(String[] args){
-		if(validateArguments(args)) {
+	public static void main(String[] args) {
+		
+		RunConfiguration runState = RunConfiguration.instance();
+		
+		if(validateArguments(args, runState.getProperties())) {
 			LOG.debug("Arguments valid, proceeding with processing");
+			
+			
+			List<SiteConfiguration> sitesToLoad = null;
+			
+			try (SqlSession session = runState.getSqlSessionFactory().openSession()) {
+				SiteConfigurationMapper mapper = session.getMapper(SiteConfigurationMapper.class);
+				sitesToLoad = mapper.getAll();
+			}
+			
+			LOG.info("Found {} site/parameter combinations to load", sitesToLoad.size());
+			
+			AqToGdaws aqToGdaws = new AqToGdaws(runState, sitesToLoad);
+			AutoProc autoProc = new AutoProc(runState, sitesToLoad);
 			
 			if(!isSkip(args, AQUARIUS_SYNC_OPT)) {
 				aqToGdaws.migrateAqData();
@@ -46,7 +67,7 @@ public class GdawsSynchronizer {
 		}
 	}
 	
-	private static boolean validateArguments(String[] args) {
+	private static boolean validateArguments(String[] args, Properties props) {
 		//check to see that any arguments are not valid
 		for(String arg : args) {
 			if(!isSupportedArg(arg)) {
@@ -66,7 +87,7 @@ public class GdawsSynchronizer {
 		//aqcu-data-core library.
 		for(int i = 0; i < REQUIRED_PROPS.length; i += 2) {
 			String p = REQUIRED_PROPS[i];
-			if(StringUtils.isBlank(GdawsConfigLoader.getProperty(p))) {
+			if(StringUtils.isBlank(props.getProperty(p))) {
 				LOG.info("Property \"" + p + "\" must be defined. See --help for more information.");
 				return false;
 			}
