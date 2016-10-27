@@ -5,9 +5,11 @@
 
 	<resultMap id="SiteConfigurationMap" type="SiteConfiguration">
 		<result property="localSiteId" column="localSiteId"/>
+		<result property="localParamId" column="localParamId"/>
 		<result property="remoteSiteId" column="remoteSiteId"/>
-		<result property="parameter" column="parameter"/>
-		<result property="groupId" column="groupId"/>
+		<result property="pCode" column="pCode"/>
+		<result property="lastNewPullStart" column="lastNewPullStart"/>
+		<result property="lastNewPullEnd" column="lastNewPullEnd"/>
 	</resultMap>
 
 	<select id="getAll" resultMap="SiteConfigurationMap">
@@ -18,13 +20,22 @@
 		select count(*)
 		FROM (<include refid="getAllSql"/>)
 	</select>
+	
+	<update id="updateNewPullTimes">
+	  update gdaws_aq_sync_config set
+		LAST_NEW_DATA_PULL_START = #{lastNewPullStart},
+		LAST_NEW_DATA_PULL_END = #{lastNewPullEnd},
+	  where SITE_ID = localSiteId and GROUP_ID localParamId
+	</update>
 
 	<sql id="getAllSql">
 		SELECT
 		conf.SITE_ID localSiteId,
 		site.NWIS_SITE_NO remoteSiteId,
-		grp.PARM_AQUARIUS parameter,
-		grp.GROUP_ID groupId
+		grp.PARM_CD pCode,
+		grp.GROUP_ID localParamId,
+		conf.LAST_NEW_DATA_PULL_START lastNewPullStart,
+		conf.LAST_NEW_DATA_PULL_END lastNewPullEnd
 		FROM
 		gdaws_aq_sync_config conf INNER JOIN site_star site ON conf.site_id = site.site_id
 		INNER JOIN group_name grp ON grp.group_id = conf.group_id

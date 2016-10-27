@@ -85,12 +85,35 @@ public class RunConfiguration {
 	}
 	
 	/**
-	 * Shortcut method for less typing when you just want a property by name.
-	 * @param prop
+	 * Fetches a property or the defaultValue if the property is null.
+	 * @param prop The property name
+	 * @param defaultValue
 	 * @return 
 	 */
-	public String getProperty(String prop) {
-		return getProperties().getProperty(prop);
+	public String getProperty(String prop, String defaultValue) {
+		return getProperties().getProperty(prop, defaultValue);
+	}
+	
+	/**
+	 * Returns the integer value of a property if it is non-null and can be parsed as int.
+	 * 
+	 * Otherwise it returns the defaultValue.
+	 * @param prop The property name
+	 * @param defaultValue
+	 * @return 
+	 */
+	public Integer getIntProperty(String prop, Integer defaultValue) {
+		String s = getProperties().getProperty(prop);
+		
+		if (s != null) {
+			try {
+				return Integer.parseInt(s);
+			} catch (Exception e) {
+				return defaultValue;
+			}
+		} else {
+			return defaultValue;
+		}
 	}
 	
 	/**
