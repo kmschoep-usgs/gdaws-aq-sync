@@ -1,9 +1,12 @@
 package gov.usgs.wma.gcmrc.model;
 
 import gov.usgs.aqcu.data.service.DataService;
+import gov.usgs.cida.config.DynamicReadOnlyProperties;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
 import gov.usgs.wma.gcmrc.util.UnmodifiableProperties;
 import java.util.Properties;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
@@ -120,10 +123,10 @@ public class RunConfiguration {
 	private Properties buildProperties() {
 		synchronized (syncLock) {
 			if (null == props) {
-				Properties systemProps = System.getProperties();
+				String propFileLocation = new DynamicReadOnlyProperties().get(ConfigLoader.CONFIG_FILE_PROP_NAME);
 				
-				if(systemProps.contains(ConfigLoader.PROP_FILE_NAME)) {
-					loadFilePropsIntoSystemProps(systemProps.getProperty(ConfigLoader.PROP_FILE_NAME));
+				if(!StringUtils.isBlank(propFileLocation)) {
+					loadFilePropsIntoSystemProps(propFileLocation);
 				}
 				
 				props = new UnmodifiableProperties(System.getProperties());

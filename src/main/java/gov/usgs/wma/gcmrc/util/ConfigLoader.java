@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class ConfigLoader {
 	private static final Logger LOG = LoggerFactory.getLogger(ConfigLoader.class);
 	
-	public static final String PROP_FILE_NAME = "gcmrc.config.file";
+	public static final String CONFIG_FILE_PROP_NAME = "gcmrc.config.file";
 	
 	public static SqlSessionFactory buildSqlSessionFactory(Properties properties) throws RuntimeException {
 		
@@ -29,22 +29,22 @@ public class ConfigLoader {
 		}
 	}
 	
-	public static Properties getConfigFromPropertiesFile(String path) {
+	public static Properties getConfigFromPropertiesFile(String fileName) {
 		
 		File propFile = null;
 			
-		String actualPath = path;
+		String actualPathFileName = fileName;
 		
-		if (path.startsWith("~")) {
-			actualPath = path.replaceFirst("~", System.getProperty("user.home"));
-		} else if (path.equals("")) {
-			actualPath = findExecutableDirectory();
+		if (fileName.startsWith("~")) {
+			actualPathFileName = fileName.replaceFirst("~", System.getProperty("user.home"));
+		} else if (!fileName.contains(File.separator)) { //if no path in filename, use executable
+			actualPathFileName = findExecutableDirectory() + File.separator + fileName;
 		}
 		
-		propFile = findConfigFromPath(actualPath, PROP_FILE_NAME);
+		propFile = loadFile(actualPathFileName);
 		
 		if (propFile != null) {
-			LOG.info("Found config file {} at logical path '{}' (expands to '{}')", PROP_FILE_NAME, path, actualPath);
+			LOG.info("Found config file {} at logical path '{}' (expands to '{}')", CONFIG_FILE_PROP_NAME, fileName, actualPathFileName);
 		}
 		
 		if (propFile != null) {
@@ -60,22 +60,13 @@ public class ConfigLoader {
 			return props;
 			
 		} else {
-			LOG.warn("Unable to find a path containing the {} conig file.)", PROP_FILE_NAME);
-			throw new RuntimeException("Unable to find config file");
+			throw new RuntimeException("Unable to find config file " + fileName);
 		}
 		
 	}
 	
-	private static File findConfigFromPath(String path, String fileName) {
-		
-		if (path == null) return null;
-		
-		if (path.startsWith("~")) {
-			path = path.replaceFirst("~", System.getProperty("user.home"));
-		}
-		
-		File dir = new File(path);
-		File file = new File(dir, fileName);
+	private static File loadFile(String fileName) {
+		File file = new File(fileName);
 		
 		if (file.exists()) {
 			return file;

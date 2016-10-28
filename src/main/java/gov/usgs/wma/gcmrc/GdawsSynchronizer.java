@@ -24,28 +24,39 @@ public class GdawsSynchronizer {
 			AQUARIUS_SYNC_OPT,
 			BEDLOAD_OPT
 	};
-	
+
+	private static final String AQ_URL_PROP_NAME = "aquarius.service.endpoint";
+	private static final String AQ_USER_PROP_NAME = "aquarius.service.user";
+	private static final String AQ_PASS_PROP_NAME = "aquarius.service.password";
+	private static final String NWIS_URL_PROP_NAME = "nwis-ra.service.url";
+	private static final String NWIS_USER_PROP_NAME = "nwis-ra.service.user";
+	private static final String NWIS_PASS_PROP_NAME = "nwis-ra.service.pass";
+	private static final String GDAWS_HOST_PROP_NAME = "gdaws.dbHost";
+	private static final String GDAWS_PORT_PROP_NAME = "gdaws.dbPort";
+	private static final String GDAWS_NAME_PROP_NAME = "gdaws.dbName";
+	private static final String GDAWS_USER_PROP_NAME = "gdaws.dbUser";
+	private static final String GDAWS_PASS_PROP_NAME = "gdaws.dbPwd";
 	private static final String DEFAULT_DAYS_TO_PULL_PROP_NAME = "default.days.to.fetch";
 	
 	
 	//prop names and descriptions
 	private static final String[] REQUIRED_PROPS = new String[] {
-			"aquarius.service.endpoint", "URL to Aquarius Service",
-			"aquarius.service.user", "Aquarius service username",
-			"aquarius.service.password", "Aquarius service password",
-			"nwis-ra.service.url", "URL to NWIS-RA webservices",
-			"nwis-ra.service.user", "NWIS-RA  service username",
-			"nwis-ra.service.pass", "NWIS-RA  service password",
-			"gdaws.dbHost", "GDAWS Database hostname",
-			"gdaws.dbPort", "GDAWS Database port",
-			"gdaws.dbName", "GDAWS Database name",
-			"gdaws.dbUser", "GDAWS Database user",
-			"gdaws.dbPwd", "GDAWS Database password"
+			AQ_URL_PROP_NAME, "URL to Aquarius Service",
+			AQ_USER_PROP_NAME, "Aquarius service username",
+			AQ_PASS_PROP_NAME, "Aquarius service password",
+			NWIS_URL_PROP_NAME, "URL to NWIS-RA webservices",
+			NWIS_USER_PROP_NAME, "NWIS-RA  service username",
+			NWIS_PASS_PROP_NAME, "NWIS-RA  service password",
+			GDAWS_HOST_PROP_NAME, "GDAWS Database hostname",
+			GDAWS_PORT_PROP_NAME, "GDAWS Database port",
+			GDAWS_NAME_PROP_NAME, "GDAWS Database name",
+			GDAWS_USER_PROP_NAME, "GDAWS Database user",
+			GDAWS_PASS_PROP_NAME, "GDAWS Database password"
 	};
 	
 	//prop names and descriptions
 	private static final String[] OPTIONAL_PROPS = new String[] {
-			ConfigLoader.PROP_FILE_NAME, "File used to set all required props",
+			ConfigLoader.CONFIG_FILE_PROP_NAME, "File used to set all required props",
 			DEFAULT_DAYS_TO_PULL_PROP_NAME, "If a site has not been fetched before, this is the number of days to fetch."
 	};
 	
