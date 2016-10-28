@@ -33,7 +33,7 @@ public class GdawsSynchronizer {
 			"aquarius.service.password", "Aquarius service password"
 	};
 	
-
+	
 	
 	private static final int HELP_COLUMN_SIZE = 30;
 	
