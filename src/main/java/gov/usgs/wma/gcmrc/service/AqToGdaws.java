@@ -1,4 +1,4 @@
-package gov.usgs.wma.gcmrc.logic;
+package gov.usgs.wma.gcmrc.service;
 
 import java.util.List;
 
@@ -9,45 +9,33 @@ import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 import gov.usgs.aqcu.model.TimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
-import gov.usgs.wma.gcmrc.model.RunConfiguration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
 	
 	private static final Integer DEFAULT_DAYS_TO_FETCH = 30;
-	
-	public static enum OPTIONAL_PARAM {
-		FETCH_NEW_DATA_GOING_BACK_X_DAYS;
-	}
-	
-	
 		
 	private List<SiteConfiguration> sitesToLoad;
-	private RunConfiguration runState;
+	private Integer daysToFetch;
 	
-	// this requires the follow properties to be defined: aquarius.service.endpoint, aquarius.service.user, aquarius.service.password
 	DataService dataService;
 
-	public AqToGdaws(RunConfiguration runState, List<SiteConfiguration> sitesToLoad) {
-		this.runState = runState;
-		this.sitesToLoad = sitesToLoad;
+	public AqToGdaws(DataService dataService, SqlSessionFactory sqlSesionFactory, Integer defaultDaysToFetch) {
+		SiteConfigurationLoader siteConfiguationLoader = new SiteConfigurationLoader(sqlSesionFactory);
+		this.sitesToLoad = siteConfiguationLoader.loadSiteConfiguration();
+		this.dataService = dataService;
 		
-		try {
-			dataService = runState.getAquariusDataService();
-		} catch(Exception e) {
-			LOG.error("Could not create data service, likely need to set aquarius connection properties", e);
-		}
+		defaultDaysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
 	}
 	
 	public void migrateAqData() {
-		
 		fillInAquariusParamNames(sitesToLoad);
-		
 		
 		for(SiteConfiguration site : sitesToLoad) {
 			
@@ -59,8 +47,7 @@ public class AqToGdaws {
 				//Move the start time back a second, since we round to the nearest second.
 				startTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
 			} else {
-				int days = runState.getIntProperty(OPTIONAL_PARAM.FETCH_NEW_DATA_GOING_BACK_X_DAYS.toString(), DEFAULT_DAYS_TO_FETCH);
-				startTime = endTime.minusDays(days);
+				startTime = endTime.minusDays(daysToFetch);
 			}
 			
 			LOG.debug("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
@@ -76,7 +63,6 @@ public class AqToGdaws {
 			List<String> tsUids = dataService.getTimeSeriesUniqueIdsAtSite(remoteSiteId, null, null, site.getAqParam(), null, null);
 			
 			for(String uid: tsUids) {
-				//TODO build start/end times
 				TimeSeries retrieved = dataService.getTimeSeriesData(
 						remoteSiteId, uid, DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime),
 						DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime), false, false);
@@ -92,7 +78,7 @@ public class AqToGdaws {
 				}
 			}
 			
-			//TODO:  Repopulate the Ste w/ the updated start and end dates
+			//TODO: Update last pulled information
 		}
 	}
 	

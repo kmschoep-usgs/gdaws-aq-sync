@@ -135,7 +135,6 @@ public class RunConfiguration {
 	
 	private void loadFilePropsIntoSystemProps(String file) {
 		Properties fromPropsFile = ConfigLoader.getConfigFromPropertiesFile(file);
-
 		
 		for (String key : fromPropsFile.stringPropertyNames()) {
 			System.setProperty(key, fromPropsFile.getProperty(key));

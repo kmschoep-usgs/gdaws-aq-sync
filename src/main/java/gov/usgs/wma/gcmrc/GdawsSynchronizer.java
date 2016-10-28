@@ -1,18 +1,16 @@
 package gov.usgs.wma.gcmrc;
 
-import gov.usgs.wma.gcmrc.mapper.SiteConfigurationMapper;
-import gov.usgs.wma.gcmrc.model.SiteConfiguration;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import gov.usgs.wma.gcmrc.logic.AqToGdaws;
-import gov.usgs.wma.gcmrc.logic.AutoProc;
 import gov.usgs.wma.gcmrc.model.RunConfiguration;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
-import java.util.List;
 import java.util.Properties;
-import org.apache.ibatis.session.SqlSession;
+
+import gov.usgs.wma.gcmrc.service.AqToGdaws;
+import gov.usgs.wma.gcmrc.service.AutoProc;
+
+import org.apache.commons.lang3.StringUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GdawsSynchronizer {
 	private static final Logger LOG = LoggerFactory.getLogger(GdawsSynchronizer.class);
@@ -21,19 +19,35 @@ public class GdawsSynchronizer {
 	
 	private static final String  AQUARIUS_SYNC_OPT = "AquariusSync";
 	private static final String  BEDLOAD_OPT = "BedloadCalculations";
+	
 	private static final String[] PROCESS_OPTIONS = new String[] {
 			AQUARIUS_SYNC_OPT,
 			BEDLOAD_OPT
 	};
 	
+	private static final String DEFAULT_DAYS_TO_PULL_PROP_NAME = "default.days.to.fetch";
+	
+	
 	//prop names and descriptions
 	private static final String[] REQUIRED_PROPS = new String[] {
 			"aquarius.service.endpoint", "URL to Aquarius Service",
 			"aquarius.service.user", "Aquarius service username",
-			"aquarius.service.password", "Aquarius service password"
+			"aquarius.service.password", "Aquarius service password",
+			"nwis-ra.service.url", "URL to NWIS-RA webservices",
+			"nwis-ra.service.user", "NWIS-RA  service username",
+			"nwis-ra.service.pass", "NWIS-RA  service password",
+			"gdaws.dbHost", "GDAWS Database hostname",
+			"gdaws.dbPort", "GDAWS Database port",
+			"gdaws.dbName", "GDAWS Database name",
+			"gdaws.dbUser", "GDAWS Database user",
+			"gdaws.dbPwd", "GDAWS Database password"
 	};
 	
-	
+	//prop names and descriptions
+	private static final String[] OPTIONAL_PROPS = new String[] {
+			ConfigLoader.PROP_FILE_NAME, "File used to set all required props",
+			DEFAULT_DAYS_TO_PULL_PROP_NAME, "If a site has not been fetched before, this is the number of days to fetch."
+	};
 	
 	private static final int HELP_COLUMN_SIZE = 30;
 	
@@ -44,18 +58,12 @@ public class GdawsSynchronizer {
 		if(validateArguments(args, runState.getProperties())) {
 			LOG.debug("Arguments valid, proceeding with processing");
 			
+			AqToGdaws aqToGdaws = new AqToGdaws(
+					runState.getAquariusDataService(), 
+					runState.getSqlSessionFactory(), 
+					runState.getIntProperty(DEFAULT_DAYS_TO_PULL_PROP_NAME, null));
 			
-			List<SiteConfiguration> sitesToLoad = null;
-			
-			try (SqlSession session = runState.getSqlSessionFactory().openSession()) {
-				SiteConfigurationMapper mapper = session.getMapper(SiteConfigurationMapper.class);
-				sitesToLoad = mapper.getAll();
-			}
-			
-			LOG.info("Found {} site/parameter combinations to load", sitesToLoad.size());
-			
-			AqToGdaws aqToGdaws = new AqToGdaws(runState, sitesToLoad);
-			AutoProc autoProc = new AutoProc(runState, sitesToLoad);
+			AutoProc autoProc = new AutoProc();
 			
 			if(!isSkip(args, AQUARIUS_SYNC_OPT)) {
 				aqToGdaws.migrateAqData();
@@ -110,6 +118,11 @@ public class GdawsSynchronizer {
 		appendRequiredOptions(message);
 		message.append(System.lineSeparator());
 		message.append(System.lineSeparator());
+		
+		message.append("Optional properties. Can be set as environment variables and/or JVM -D arguments.");
+		appendOptionalOptions(message);
+		message.append(System.lineSeparator());
+		message.append(System.lineSeparator());
 
 		message.append("OPTIONS:");
 		appendOption(message, "--help,-h", "This help menu");
@@ -122,6 +135,12 @@ public class GdawsSynchronizer {
 	private static void appendRequiredOptions(StringBuilder message) {
 		for(int i = 0; i < REQUIRED_PROPS.length; i += 2) {
 			appendOption(message, REQUIRED_PROPS[i], REQUIRED_PROPS[i+1]);
+		}
+	}
+	
+	private static void appendOptionalOptions(StringBuilder message) {
+		for(int i = 0; i < OPTIONAL_PROPS.length; i += 2) {
+			appendOption(message, OPTIONAL_PROPS[i], OPTIONAL_PROPS[i+1]);
 		}
 	}
 	

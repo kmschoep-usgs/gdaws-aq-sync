@@ -13,16 +13,7 @@ import org.slf4j.LoggerFactory;
 public class ConfigLoader {
 	private static final Logger LOG = LoggerFactory.getLogger(ConfigLoader.class);
 	
-	public static final String PROP_FILE_NAME = "gcmrc-sync-config.properties.file";
-	
-//	public static List<SiteConfiguration> loadSiteConfiguration() {
-//		List<SiteConfiguration> configs = new ArrayList<>();
-//		
-//		//TODO load site config from file or database
-//		configs.add(new SiteConfiguration(1234321L, "01010000", "Discharge", 99));
-//		
-//		return configs;
-//	}
+	public static final String PROP_FILE_NAME = "gcmrc.config.file";
 	
 	public static SqlSessionFactory buildSqlSessionFactory(Properties properties) throws RuntimeException {
 		
