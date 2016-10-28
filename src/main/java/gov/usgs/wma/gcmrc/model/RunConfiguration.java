@@ -1,12 +1,9 @@
 package gov.usgs.wma.gcmrc.model;
 
 import gov.usgs.aqcu.data.service.DataService;
-import gov.usgs.cida.config.DynamicReadOnlyProperties;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
 import gov.usgs.wma.gcmrc.util.UnmodifiableProperties;
 import java.util.Properties;
-import javax.naming.NamingException;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
@@ -123,27 +120,25 @@ public class RunConfiguration {
 	private Properties buildProperties() {
 		synchronized (syncLock) {
 			if (null == props) {
+				Properties systemProps = System.getProperties();
 				
-				Properties fromPropsFile = ConfigLoader.getConfigFromPropertiesFile();
-
-				//TODO Hack.  There are DROP property loader inside the AQCU stuff, so push the prop file props into system props
-				for (String key : fromPropsFile.stringPropertyNames()) {
-					System.setProperty(key, fromPropsFile.getProperty(key));
+				if(systemProps.contains(ConfigLoader.PROP_FILE_NAME)) {
+					loadFilePropsIntoSystemProps(systemProps.getProperty(ConfigLoader.PROP_FILE_NAME));
 				}
-
-				//Passing in a prop file should override properties found via sys props and jndi
-				DynamicReadOnlyProperties dynProps = new DynamicReadOnlyProperties(fromPropsFile);
-
-				try {
-					dynProps.addJNDIContexts();
-				} catch (NamingException e) {
-					//ignore naming errors, which happen if we are outside a J2EE container
-				}
-
-				props = new UnmodifiableProperties(dynProps);
+				
+				props = new UnmodifiableProperties(System.getProperties());
 
 			}
 			return props;
+		}
+	}
+	
+	private void loadFilePropsIntoSystemProps(String file) {
+		Properties fromPropsFile = ConfigLoader.getConfigFromPropertiesFile(file);
+
+		
+		for (String key : fromPropsFile.stringPropertyNames()) {
+			System.setProperty(key, fromPropsFile.getProperty(key));
 		}
 	}
 	

@@ -1,15 +1,7 @@
 package gov.usgs.wma.gcmrc.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.naming.NamingException;
-
-import gov.usgs.cida.config.DynamicReadOnlyProperties;
-import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import org.apache.ibatis.io.Resources;
@@ -21,10 +13,7 @@ import org.slf4j.LoggerFactory;
 public class ConfigLoader {
 	private static final Logger LOG = LoggerFactory.getLogger(ConfigLoader.class);
 	
-	private static final String PROP_FILE_NAME = "gcmrc-sync-config.properties";
-	private static final String DEV_CONF_DIR = "/datausgs/projects/gdaws-aq-sync/config";
-	private static final String EXECUTABLE_CONF_DIR = "";
-	private static final String USER_CONF_DIR = "~/gdaws-aq-sync/config";
+	public static final String PROP_FILE_NAME = "gcmrc-sync-config.properties.file";
 	
 //	public static List<SiteConfiguration> loadSiteConfiguration() {
 //		List<SiteConfiguration> configs = new ArrayList<>();
@@ -49,34 +38,22 @@ public class ConfigLoader {
 		}
 	}
 	
-	public static Properties getConfigFromPropertiesFile() {
-		
-		ArrayList<String> dirs = new ArrayList(3);
-		dirs.add(DEV_CONF_DIR);
-		dirs.add(EXECUTABLE_CONF_DIR);
-		dirs.add(USER_CONF_DIR);
-		
+	public static Properties getConfigFromPropertiesFile(String path) {
 		
 		File propFile = null;
+			
+		String actualPath = path;
 		
+		if (path.startsWith("~")) {
+			actualPath = path.replaceFirst("~", System.getProperty("user.home"));
+		} else if (path.equals("")) {
+			actualPath = findExecutableDirectory();
+		}
 		
-		for (String path : dirs) {
-			
-			String actualPath = path;
-			
-			if (path.startsWith("~")) {
-				actualPath = path.replaceFirst("~", System.getProperty("user.home"));
-			} else if (path.equals("")) {
-				actualPath = findExecutableDirectory();
-			}
-			
-			propFile = findConfigFromPath(actualPath, PROP_FILE_NAME);
-			
-			if (propFile != null) {
-				LOG.info("Found config file {} at logical path '{}' (expands to '{}')", PROP_FILE_NAME, path, actualPath);
-				break;
-			}
-			
+		propFile = findConfigFromPath(actualPath, PROP_FILE_NAME);
+		
+		if (propFile != null) {
+			LOG.info("Found config file {} at logical path '{}' (expands to '{}')", PROP_FILE_NAME, path, actualPath);
 		}
 		
 		if (propFile != null) {
@@ -92,7 +69,7 @@ public class ConfigLoader {
 			return props;
 			
 		} else {
-			LOG.error("Unable to find a path containing the {} conig file.)", PROP_FILE_NAME);
+			LOG.warn("Unable to find a path containing the {} conig file.)", PROP_FILE_NAME);
 			throw new RuntimeException("Unable to find config file");
 		}
 		
