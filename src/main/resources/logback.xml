@@ -6,9 +6,9 @@
 		</encoder>
 	</appender>
 	
-	<root level="ERROR">
+	<root level="INFO">
 		<appender-ref ref="stdout" />
 	</root>
 	
-	<logger name="gov.usgs.wma.gcmrc" level="TRACE" />
+	<logger name="gov.usgs.wma.gcmrc" level="INFO" />
 </configuration>

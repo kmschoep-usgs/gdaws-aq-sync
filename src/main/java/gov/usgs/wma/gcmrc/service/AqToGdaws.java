@@ -31,7 +31,7 @@ public class AqToGdaws {
 		this.sitesToLoad = siteConfiguationLoader.loadSiteConfiguration();
 		this.dataService = dataService;
 		
-		defaultDaysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
+		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
 	}
 	
 	public void migrateAqData() {
