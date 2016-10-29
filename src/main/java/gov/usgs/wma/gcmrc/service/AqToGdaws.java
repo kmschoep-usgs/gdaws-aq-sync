@@ -1,20 +1,21 @@
 package gov.usgs.wma.gcmrc.service;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 import gov.usgs.aqcu.model.TimeSeries;
+import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
+import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
@@ -26,8 +27,8 @@ public class AqToGdaws {
 	
 	DataService dataService;
 
-	public AqToGdaws(DataService dataService, SqlSessionFactory sqlSesionFactory, Integer defaultDaysToFetch) {
-		SiteConfigurationLoader siteConfiguationLoader = new SiteConfigurationLoader(sqlSesionFactory);
+	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch) {
+		SiteConfigurationLoader siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.loadSiteConfiguration();
 		this.dataService = dataService;
 		

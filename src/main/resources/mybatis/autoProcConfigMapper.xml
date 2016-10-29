@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<mapper namespace="gov.usgs.wma.gcmrc.mapper.AutoProcConfigurationMapper">
+
+	<resultMap id="AutoProcConfigurationMap" type="AutoProcConfiguration">
+		<result property="siteId" column="SITE_ID"/>
+		<result property="loadCalculationName" column="LOAD_CALCULATION_NAME"/>
+		<result property="configParamaterName" column="CONFIG_PARAMETER_NAME"/>
+		<result property="configParamaterValue" column="CONFIG_PARAMETER_VALUE"/>
+	</resultMap>
+
+	<select id="getByLoadCalculationName" resultMap="AutoProcConfigurationMap">
+		<include refid="getAllSql"/>
+		WHERE LOAD_CALCULATION_NAME = '${loadCalculationName}'
+		ORDER BY SITE_ID, LOAD_CALCULATION_NAME, CONFIG_PARAMETER_NAME
+	</select>
+	
+	<select id="getCount" parameterType="map" resultType="int">
+		select count(*)
+		FROM (<include refid="getAllSql"/>)
+	</select>
+
+	<sql id="getAllSql">
+		SELECT
+			SITE_ID,
+			LOAD_CALCULATION_NAME,
+			CONFIG_PARAMETER_NAME,
+			CONFIG_PARAMETER_VALUE 
+		FROM AUTOPROC_CONFIG
+	</sql>
+	
+</mapper>
