@@ -2,11 +2,8 @@ package gov.usgs.wma.gcmrc.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.Properties;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,20 +11,6 @@ public class ConfigLoader {
 	private static final Logger LOG = LoggerFactory.getLogger(ConfigLoader.class);
 	
 	public static final String CONFIG_FILE_PROP_NAME = "gcmrc.config.file";
-	
-	public static SqlSessionFactory buildSqlSessionFactory(Properties properties) throws RuntimeException {
-		
-		try {
-			String resource = "mybatis/mybatis.conf.xml";
-			InputStream inputStream = Resources.getResourceAsStream(resource);
-
-			SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream, properties);
-			return sqlSessionFactory;
-			
-		} catch (Exception e) {
-			throw new RuntimeException (e);
-		}
-	}
 	
 	public static Properties getConfigFromPropertiesFile(String fileName) {
 		

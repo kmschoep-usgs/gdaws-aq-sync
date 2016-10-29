@@ -1,8 +1,11 @@
 package gov.usgs.wma.gcmrc.dao;
 
+import java.io.InputStream;
 import java.util.Properties;
+
+import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSessionFactory;
-import gov.usgs.wma.gcmrc.util.ConfigLoader;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 public class GdawsDaoFactory {
 	private static final Object syncLock = new Object();
@@ -25,9 +28,24 @@ public class GdawsDaoFactory {
 	private SqlSessionFactory buildSqlSessionFactory() {
 		synchronized (syncLock) {
 			if (sqlSessionFactory == null) {
-				sqlSessionFactory = ConfigLoader.buildSqlSessionFactory(properties);
+				sqlSessionFactory = buildSqlSessionFactory(properties);
 			}
 			return sqlSessionFactory;
 		}
 	}
+	
+	public static SqlSessionFactory buildSqlSessionFactory(Properties properties) throws RuntimeException {
+		
+		try {
+			String resource = "mybatis/mybatis.conf.xml";
+			InputStream inputStream = Resources.getResourceAsStream(resource);
+
+			SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream, properties);
+			return sqlSessionFactory;
+			
+		} catch (Exception e) {
+			throw new RuntimeException (e);
+		}
+	}
+	
 }
