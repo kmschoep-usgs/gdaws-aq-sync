@@ -1,13 +1,13 @@
-package gov.usgs.wma.gcmrc.model;
+package gov.usgs.wma.gcmrc;
+
+import java.util.Properties;
+
+import org.apache.commons.lang3.StringUtils;
 
 import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.cida.config.DynamicReadOnlyProperties;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
 import gov.usgs.wma.gcmrc.util.UnmodifiableProperties;
-import java.util.Properties;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  *
@@ -20,7 +20,6 @@ public class RunConfiguration {
 	
 	private Properties props = null;
 	private DataService aquariusDataService;
-	private SqlSessionFactory sqlSessionFactory;
 	
 	
 	
@@ -38,24 +37,6 @@ public class RunConfiguration {
 				}
 				return singleton;
 			}
-		}
-	}
-	
-	
-	public SqlSessionFactory getSqlSessionFactory() {
-		if (sqlSessionFactory != null) {
-			return sqlSessionFactory;
-		} else {
-			return buildSqlSessionFactory();
-		}
-	}
-	
-	private SqlSessionFactory buildSqlSessionFactory() {
-		synchronized (syncLock) {
-			if (sqlSessionFactory == null) {
-				sqlSessionFactory = ConfigLoader.buildSqlSessionFactory(getProperties());
-			}
-			return sqlSessionFactory;
 		}
 	}
 	

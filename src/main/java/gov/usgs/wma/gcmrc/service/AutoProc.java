@@ -2,19 +2,21 @@ package gov.usgs.wma.gcmrc.service;
 
 import java.util.Map;
 
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import gov.usgs.wma.gcmrc.dao.AutoProcConfigurationLoader;
+import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 
 public class AutoProc {
 	private static final Logger LOG = LoggerFactory.getLogger(AutoProcConfigurationLoader.class);
 	
-	private SqlSessionFactory sessionFactory;
+	private GdawsDaoFactory gdawsDaoFactory;
 	private AutoProcConfigurationLoader autoProcConfLoader;
 	
-	public AutoProc(SqlSessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
-		this.autoProcConfLoader = new AutoProcConfigurationLoader(sessionFactory);
+	public AutoProc(GdawsDaoFactory gdawsDaoFactory) {
+		this.gdawsDaoFactory = gdawsDaoFactory;
+		this.autoProcConfLoader = new AutoProcConfigurationLoader(gdawsDaoFactory);
 	}
 	
 	public void processBedloadCalculations() {

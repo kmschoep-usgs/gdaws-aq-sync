@@ -1,4 +1,4 @@
-package gov.usgs.wma.gcmrc.service;
+package gov.usgs.wma.gcmrc.dao;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,8 +19,8 @@ public class AutoProcConfigurationLoader {
 
 	private static final String BEDLOAD_CALC_NAME = "bedLoadCalc";
 	
-	public AutoProcConfigurationLoader(SqlSessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
+	public AutoProcConfigurationLoader(GdawsDaoFactory gdawsDaoFactory) {
+		this.sessionFactory = gdawsDaoFactory.getSqlSessionFactory();
 	}
 	
 	public List<AutoProcConfiguration> loadBedLoadCalculationConfiguration() {

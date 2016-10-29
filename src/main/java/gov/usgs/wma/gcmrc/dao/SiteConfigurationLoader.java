@@ -1,4 +1,4 @@
-package gov.usgs.wma.gcmrc.service;
+package gov.usgs.wma.gcmrc.dao;
 
 import java.util.List;
 
@@ -15,8 +15,8 @@ public class SiteConfigurationLoader {
 			
 	private SqlSessionFactory sessionFactory;
 
-	public SiteConfigurationLoader(SqlSessionFactory sessionFactory) {
-		this.sessionFactory = sessionFactory;
+	public SiteConfigurationLoader(GdawsDaoFactory gdawsDaoFactory) {
+		this.sessionFactory = gdawsDaoFactory.getSqlSessionFactory();
 	}
 	
 	public List<SiteConfiguration> loadSiteConfiguration() {

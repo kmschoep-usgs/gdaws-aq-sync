@@ -1,16 +1,15 @@
 package gov.usgs.wma.gcmrc;
 
-import gov.usgs.wma.gcmrc.model.RunConfiguration;
-import gov.usgs.wma.gcmrc.util.ConfigLoader;
 import java.util.Properties;
 
-import gov.usgs.wma.gcmrc.service.AqToGdaws;
-import gov.usgs.wma.gcmrc.service.AutoProc;
-
 import org.apache.commons.lang3.StringUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
+import gov.usgs.wma.gcmrc.service.AqToGdaws;
+import gov.usgs.wma.gcmrc.service.AutoProc;
+import gov.usgs.wma.gcmrc.util.ConfigLoader;
 
 public class GdawsSynchronizer {
 	private static final Logger LOG = LoggerFactory.getLogger(GdawsSynchronizer.class);
@@ -69,11 +68,13 @@ public class GdawsSynchronizer {
 		if(validateArguments(args, runState.getProperties())) {
 			LOG.info("Arguments valid, proceeding with processing");
 			
+			GdawsDaoFactory gdawsDaoFactory = new GdawsDaoFactory(runState.getProperties());
+			
 			if(!isSkip(args, AQUARIUS_SYNC_OPT)) {
 				LOG.info("Starting AQ to GDAWS Sync");
 				AqToGdaws aqToGdaws = new AqToGdaws(
 						runState.getAquariusDataService(), 
-						runState.getSqlSessionFactory(), 
+						gdawsDaoFactory, 
 						runState.getIntProperty(DEFAULT_DAYS_TO_PULL_PROP_NAME, null));
 				aqToGdaws.migrateAqData();
 				LOG.info("Finished AQ to GDAWS Sync");
@@ -81,7 +82,7 @@ public class GdawsSynchronizer {
 				LOG.info("Skipped AQ to GDAWS Sync");
 			}
 			
-			AutoProc autoProc = new AutoProc(runState.getSqlSessionFactory());
+			AutoProc autoProc = new AutoProc(gdawsDaoFactory);
 
 			if(!isSkip(args, BEDLOAD_OPT)) {
 				LOG.info("Starting Bedload Calculations");
