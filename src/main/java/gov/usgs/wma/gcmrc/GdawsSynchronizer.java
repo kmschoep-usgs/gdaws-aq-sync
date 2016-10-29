@@ -67,21 +67,28 @@ public class GdawsSynchronizer {
 		RunConfiguration runState = RunConfiguration.instance();
 		
 		if(validateArguments(args, runState.getProperties())) {
-			LOG.debug("Arguments valid, proceeding with processing");
-			
-			AqToGdaws aqToGdaws = new AqToGdaws(
-					runState.getAquariusDataService(), 
-					runState.getSqlSessionFactory(), 
-					runState.getIntProperty(DEFAULT_DAYS_TO_PULL_PROP_NAME, null));
-			
-			AutoProc autoProc = new AutoProc();
+			LOG.info("Arguments valid, proceeding with processing");
 			
 			if(!isSkip(args, AQUARIUS_SYNC_OPT)) {
+				LOG.info("Starting AQ to GDAWS Sync");
+				AqToGdaws aqToGdaws = new AqToGdaws(
+						runState.getAquariusDataService(), 
+						runState.getSqlSessionFactory(), 
+						runState.getIntProperty(DEFAULT_DAYS_TO_PULL_PROP_NAME, null));
 				aqToGdaws.migrateAqData();
+				LOG.info("Finished AQ to GDAWS Sync");
+			} else {
+				LOG.info("Skipped AQ to GDAWS Sync");
 			}
+			
+			AutoProc autoProc = new AutoProc(runState.getSqlSessionFactory());
 
 			if(!isSkip(args, BEDLOAD_OPT)) {
+				LOG.info("Starting Bedload Calculations");
 				autoProc.processBedloadCalculations();
+				LOG.info("Finished Bedload Calculations");
+			} else {
+				LOG.info("Skipping Bedload Calculations");
 			}
 		}
 	}
