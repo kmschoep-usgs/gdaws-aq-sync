@@ -139,7 +139,7 @@ public class AqToGdaws {
 		newPoint.setGroupId(site.getLocalParamId());
 		//TODO: SourceId?
 		newPoint.setSourceId(67);
-		newPoint.setMeasurementDate((Instant)source.getTime());
+		newPoint.setMeasurementDate(Instant.from(source.getTime()));
 		newPoint.setFinalValue(source.getValue());
 		
 		//TODO: Apply Qualifiers?

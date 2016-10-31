@@ -2,13 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
 
 <mapper namespace="gov.usgs.wma.gcmrc.mapper.AqToGdawsMapper">
-
-	<resultMap id="AutoProcConfigurationMap" type="AutoProcConfiguration">
-		<result property="siteId" column="SITE_ID"/>
-		<result property="loadCalculationName" column="LOAD_CALCULATION_NAME"/>
-		<result property="configParamaterName" column="CONFIG_PARAMETER_NAME"/>
-		<result property="configParamaterValue" column="CONFIG_PARAMETER_VALUE"/>
-	</resultMap>
 	
 	<!-- Note: SQL primarily taken from AutoProc I
 		From AutoProc I 
@@ -19,15 +12,19 @@
 		 *   - Delete staging table records-->
 	
 	<!-- Wrapper Qquery to launch all sub-queries -->
-	<sql id="insertAqTimeseries" parameterType="GdawsTimeSeries">
-		
+	<sql id="insertAqTimeseries">
+		<include refid="insertToStage"><property name="list" value="${series.getPoints()}"/></include>
+		<include refid="deleteOverlapping"><property name="series" value="${series}"/></include>
+		<include refid="copyStageToMain"><property name="sourceId" value="${series.getSourceId()}"/></include>
+		<include refid="emptyStage"></include>
 	</sql>
 	
 	<!-- Insert data into Staging Table -->
 	<insert id="insertToStage" parameterType="java.util.List">
 		INSERT ALL
 		<foreach collection="list" item="element" index="index" >
-		   INTO TIME_SERIES_STAR (SITE_ID,GROUP_ID) values (#{element.id},#{element.name})
+			INTO TIME_SERIES_STAR (SITE_ID, GROUP_ID, MEASUREMENT_DATE, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID, SOURCE_ID) 
+			values (${element.getSiteId()},${element.getGroupId()},${element.getMeasurementDate()}, ${element.getFinalValue()}, ${element.getMainQualifierId()}, ${element.getDataApprovalId()}, ${element.getSourceId()})
 		</foreach>
 		SELECT * FROM dual
 	</insert>
@@ -35,7 +32,7 @@
 	<!-- Delete data from Main Table already existing within the DateTime range of the input time series -->
 	<delete id="deleteOverlapping" parameterType="GdawsTimeSeries">
 		DELETE From TIME_SERIES_STAR
-			Where SITE_ID=#{element.siteId} And GROUP_ID=#{series.groupId} And SOURCE_ID=#{series.sourceId} And MEASUREMENT_DATE >= #{series.startDate} And MEASUREMENT_DATE <= #{series.endDate}
+			Where SITE_ID=${series.getSiteId()} And GROUP_ID=${series.getGroupId()} And SOURCE_ID=${series.getSourceId()} And MEASUREMENT_DATE >= ${series.getStartDate()} And MEASUREMENT_DATE <= ${series.getEndDate()}
 	</delete>
 	
 	<!-- Insert Staging Table into Main Table -->
@@ -43,12 +40,12 @@
 		Insert Into TIME_SERIES_STAR(SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID)
 			Select SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID
 			From TIME_SERIES_AP_STAGE
-			Where SOURCE_ID=:1
+			Where SOURCE_ID=#{sourceId}
 			log errors into time_series_star_errlog('GdawsAutoProc') reject limit unlimited
 	</insert>
 	
 	<!-- Delete Staging Table records -->
-	<sql>
+	<sql id="emptyStage">
 		truncate table TIME_SERIES_AP_STAGE
 	</sql>
 </mapper>
