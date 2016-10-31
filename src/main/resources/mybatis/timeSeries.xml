@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<mapper namespace="gov.usgs.wma.gcmrc.mapper.TimeSeriesMapper">
+
+	<resultMap id="TimeSeriesRecordMap" type="TimeSeriesRecord">
+		<result property="siteId" column="SITE_ID"/>
+		<result property="subsiteId" column="SUBSITE_ID"/>             
+		<result property="groupId" column="GROUP_ID"/>             
+		<result property="measurementDate" column="MEASUREMENT_DATE"/>       
+		<result property="finalValue" column="FINAL_VALUE"/>             
+		<result property="rawValue" column="RAW_VALUE"/>             
+		<result property="mainQualifierId" column="MAIN_QUALIFIER_ID"/>             
+		<result property="dataApprovalId" column="DATA_APPROVAL_ID"/>             
+		<result property="measurementGradeId" column="MEASUREMENT_GRADE_ID"/>             
+		<result property="deploymentId" column="DEPLOYMENT_ID"/>             
+		<result property="iceAffectedId" column="ICE_AFFECTED_ID"/>             
+		<result property="turbidityPegged" column="TURBIDITY_PEGGED"/>             
+		<result property="probeTypeId" column="PROBE_TYPE_ID"/>             
+		<result property="instrumentId" column="INSTRUMENT_ID"/>             
+		<result property="dataLeadId" column="DATA_LEAD_ID"/>             
+		<result property="rawFlagId" column="RAW_FLAG_ID"/>             
+		<result property="dataQualificationId" column="DATA_QUALIFICATION_ID"/>             
+		<result property="AccuracyRatingId" column="ACCURACY_RATING_ID"/>             
+		<result property="sourceId" column="SOURCE_ID"/>    
+		<result property="notes" column="NOTES"/>    
+		<result property="erValue" column="ER_VALUE"/> 
+	</resultMap>
+	
+	<select id="getCount" parameterType="map" resultType="int">
+		SELECT
+			count(*)
+		FROM TIME_SERIES_STAR
+			<include refid="whereAndOrder"/>
+	</select>
+	
+	<select id="getTimeSeries" resultMap="TimeSeriesRecordMap">
+		SELECT
+			<include refid="timeSeriesColumns"/>
+		FROM TIME_SERIES_STAR
+			<include refid="whereAndOrder"/>
+	</select>
+	
+	<sql id="whereAndOrder">
+		<where>
+			<if test="siteId != null">AND SITE_ID = '${siteId}'</if> 
+			<if test="groupName != null">AND GROUP_ID = (SELECT DISTINCT(GROUP_ID) FROM GROUP_NAME WHERE NAME = '${groupName}')</if> 
+		</where>
+		ORDER BY SITE_ID, MEASUREMENT_DATE
+	</sql>
+	
+	<sql id="timeSeriesColumns">
+		SITE_ID,             
+		SUBSITE_ID,             
+		GROUP_ID,             
+		MEASUREMENT_DATE,       
+		FINAL_VALUE,             
+		RAW_VALUE,             
+		MAIN_QUALIFIER_ID,             
+		DATA_APPROVAL_ID,             
+		MEASUREMENT_GRADE_ID,             
+		DEPLOYMENT_ID,             
+		ICE_AFFECTED_ID,             
+		TURBIDITY_PEGGED,             
+		PROBE_TYPE_ID,             
+		INSTRUMENT_ID,             
+		DATA_LEAD_ID,             
+		RAW_FLAG_ID,             
+		DATA_QUALIFICATION_ID,             
+		ACCURACY_RATING_ID,             
+		SOURCE_ID,    
+		NOTES, 
+		ER_VALUE 
+	</sql>
+</mapper>

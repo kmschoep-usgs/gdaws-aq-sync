@@ -6,7 +6,7 @@ package gov.usgs.wma.gcmrc.model;
  * @author thongsav
  */
 public class AutoProcConfiguration {
-	private Long siteId;
+	private Integer siteId;
 	private String loadCalculationName;
 	private String configParamaterName;
 	private Double configParamaterValue;
@@ -15,11 +15,11 @@ public class AutoProcConfiguration {
 		//empty for MyBatis
 	}
 
-	public Long getSiteId() {
+	public Integer getSiteId() {
 		return siteId;
 	}
 
-	public void setSiteId(Long siteId) {
+	public void setSiteId(Integer siteId) {
 		this.siteId = siteId;
 	}
 
