@@ -79,8 +79,7 @@ public class AqToGdaws {
 				//1. Transform
 				GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site);
 				//2. Run insert query from MyBatis
-				
-				
+								
 				Integer numOfPoints = retrieved.getPoints().size();
 				LOG.trace("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
 						", which contains " + numOfPoints + " points");

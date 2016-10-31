@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<mapper namespace="gov.usgs.wma.gcmrc.mapper.AqToGdawsMapper">
+
+	<resultMap id="AutoProcConfigurationMap" type="AutoProcConfiguration">
+		<result property="siteId" column="SITE_ID"/>
+		<result property="loadCalculationName" column="LOAD_CALCULATION_NAME"/>
+		<result property="configParamaterName" column="CONFIG_PARAMETER_NAME"/>
+		<result property="configParamaterValue" column="CONFIG_PARAMETER_VALUE"/>
+	</resultMap>
+	
+	<!-- Note: SQL primarily taken from AutoProc I
+		From AutoProc I 
+		Strategy:
+		 *   - INSERT time series into staging table
+		 *   - DELETE data from main table already existing within the DateTime range of the input time seies
+		 *   - INSERT staging table into main table
+		 *   - Delete staging table records-->
+	
+	<!-- Wrapper Qquery to launch all sub-queries -->
+	<sql id="insertAqTimeseries" parameterType="GdawsTimeSeries">
+		
+	</sql>
+	
+	<!-- Insert data into Staging Table -->
+	<insert id="insertToStage" parameterType="java.util.List">
+		INSERT ALL
+		<foreach collection="list" item="element" index="index" >
+		   INTO TIME_SERIES_STAR (SITE_ID,GROUP_ID) values (#{element.id},#{element.name})
+		</foreach>
+		SELECT * FROM dual
+	</insert>
+	
+	<!-- Delete data from Main Table already existing within the DateTime range of the input time series -->
+	<delete id="deleteOverlapping" parameterType="GdawsTimeSeries">
+		DELETE From TIME_SERIES_STAR
+			Where SITE_ID=#{element.siteId} And GROUP_ID=#{series.groupId} And SOURCE_ID=#{series.sourceId} And MEASUREMENT_DATE >= #{series.startDate} And MEASUREMENT_DATE <= #{series.endDate}
+	</delete>
+	
+	<!-- Insert Staging Table into Main Table -->
+	<insert id="copyStageToMain">
+		Insert Into TIME_SERIES_STAR(SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID)
+			Select SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID
+			From TIME_SERIES_AP_STAGE
+			Where SOURCE_ID=:1
+			log errors into time_series_star_errlog('GdawsAutoProc') reject limit unlimited
+	</insert>
+	
+	<!-- Delete Staging Table records -->
+	<sql>
+		truncate table TIME_SERIES_AP_STAGE
+	</sql>
+</mapper>
