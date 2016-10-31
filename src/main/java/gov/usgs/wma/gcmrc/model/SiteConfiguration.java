@@ -11,7 +11,7 @@ import java.time.ZonedDateTime;
  * @author thongsav
  */
 public class SiteConfiguration {
-	private Long localSiteId;		//One part (of 2) of the db identifier
+	private Integer localSiteId;		//One part (of 2) of the db identifier
 	private Integer localParamId;	//One part (of 2) of the db identifier
 	private String remoteSiteId;
 	private String pCode;
@@ -33,7 +33,7 @@ public class SiteConfiguration {
 	 * @param lastNewPullEnd
 	 * @param aqParam 
 	 */
-	public SiteConfiguration(Long localSiteId, Integer localParamId, String remoteSiteId, String pCode, ZonedDateTime lastNewPullStart, ZonedDateTime lastNewPullEnd, String aqParam) {
+	public SiteConfiguration(Integer localSiteId, Integer localParamId, String remoteSiteId, String pCode, ZonedDateTime lastNewPullStart, ZonedDateTime lastNewPullEnd, String aqParam) {
 		this.pCode = pCode;
 		this.remoteSiteId = remoteSiteId;
 		this.localSiteId = localSiteId;
@@ -43,10 +43,10 @@ public class SiteConfiguration {
 		this.lastNewPullEnd = lastNewPullEnd;
 	}
 	
-	public Long getLocalSiteId() {
+	public Integer getLocalSiteId() {
 		return localSiteId;
 	}
-	public void setLocalSiteId(Long siteId) {
+	public void setLocalSiteId(Integer siteId) {
 		this.localSiteId = siteId;
 	}
 	

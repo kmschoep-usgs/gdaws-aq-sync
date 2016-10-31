@@ -38,11 +38,11 @@ public class AutoProcConfigurationLoader {
 		return sitesToLoad;
 	}
 	
-	public Map<Long, Map<String, Double>> asParamMap(List<AutoProcConfiguration> list) {
-		Map<Long, Map<String, Double>> paramMap = new HashMap<>();
+	public Map<Integer, Map<String, Double>> asParamMap(List<AutoProcConfiguration> list) {
+		Map<Integer, Map<String, Double>> paramMap = new HashMap<>();
 		
 		for(AutoProcConfiguration c : list) {
-			Long siteId = c.getSiteId();
+			Integer siteId = c.getSiteId();
 			Map<String, Double> mapForSite = paramMap.get(siteId);
 			if(mapForSite == null) {
 				mapForSite = new HashMap<>();

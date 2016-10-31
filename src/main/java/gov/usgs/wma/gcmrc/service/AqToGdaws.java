@@ -39,7 +39,9 @@ public class AqToGdaws {
 		fillInAquariusParamNames(sitesToLoad);
 		
 		for(SiteConfiguration site : sitesToLoad) {
-			
+			if(site.getLocalSiteId() != 9402000) {
+				continue;
+			}
 			ZonedDateTime startTime = null;
 			ZonedDateTime endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 							
@@ -59,9 +61,9 @@ public class AqToGdaws {
 			
 			//Long siteId = c.getSiteId();
 			String remoteSiteId = site.getRemoteSiteId();
-					
-			//load the data from the source. TODO, determine if we only use primary/published/UV series 
-			List<String> tsUids = dataService.getTimeSeriesUniqueIdsAtSite(remoteSiteId, null, null, site.getAqParam(), null, null);
+
+			//Only pull published timeseries
+			List<String> tsUids = dataService.getTimeSeriesUniqueIdsAtSite(remoteSiteId, true, null, site.getAqParam(), null, null);
 			
 			for(String uid: tsUids) {
 				TimeSeries retrieved = dataService.getTimeSeriesData(

@@ -21,8 +21,6 @@ public class RunConfiguration {
 	private Properties props = null;
 	private DataService aquariusDataService;
 	
-	
-	
 	private RunConfiguration() {
 		//Singleton pattern
 	}
