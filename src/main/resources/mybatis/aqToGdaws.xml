@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<mapper namespace="gov.usgs.wma.gcmrc.mapper.AqToGdawsMapper">
+
+	<resultMap id="AutoProcConfigurationMap" type="AutoProcConfiguration">
+		<result property="siteId" column="SITE_ID"/>
+		<result property="loadCalculationName" column="LOAD_CALCULATION_NAME"/>
+		<result property="configParamaterName" column="CONFIG_PARAMETER_NAME"/>
+		<result property="configParamaterValue" column="CONFIG_PARAMETER_VALUE"/>
+	</resultMap>
+	
+	<!-- Not Finished Yet -->
+	<insert id="insertAqData" parameterType="java.util.List">
+		INSERT ALL
+		<foreach collection="list" item="element" index="index" >
+			INTO TIME_SERIES_STAR (SITE_ID,GROUP_ID) values (#{element.id},#{element.name})
+		</foreach>
+		SELECT * FROM dual
+	</insert>
+</mapper>

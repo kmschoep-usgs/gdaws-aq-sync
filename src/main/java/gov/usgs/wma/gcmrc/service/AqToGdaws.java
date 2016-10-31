@@ -13,9 +13,15 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 import gov.usgs.aqcu.model.TimeSeries;
+import gov.usgs.aqcu.model.TimeSeriesPoint;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
+import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
+import gov.usgs.wma.gcmrc.model.GdawsTimeSeriesPoint;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
@@ -68,7 +74,13 @@ public class AqToGdaws {
 						remoteSiteId, uid, DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime),
 						DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime), false, false);
 				
+				
 				//TODO transform and load into GDAWS
+				//1. Transform
+				GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site);
+				//2. Run insert query from MyBatis
+				
+				
 				Integer numOfPoints = retrieved.getPoints().size();
 				LOG.trace("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
 						", which contains " + numOfPoints + " points");
@@ -98,5 +110,42 @@ public class AqToGdaws {
 		//Second line finds ones where the AqCode is still null and logs them as errors
 		sitesToLoad.stream().peek(s -> s.setAqParam(pCodeMap.get(StringUtils.trimToEmpty(s.getPCode())))).
 				filter(s -> s.getAqParam() == null).forEach(s -> LOG.error("Unable to map the pCode '{}' to an Aquarius Param Name (PCode not found)", s.getPCode()));
+	}
+	
+	public GdawsTimeSeries aqToGdawsTimeSeries(TimeSeries source, SiteConfiguration site){
+		GdawsTimeSeries newSeries = new GdawsTimeSeries();
+		
+		newSeries.setSiteId(site.getLocalSiteId());
+		newSeries.setGroupId(site.getLocalParamId());
+		//TODO: SourceId?
+		newSeries.setSourceId(67);
+		
+		//Build Points
+		List<GdawsTimeSeriesPoint> newPoints = new ArrayList<>();
+		for(TimeSeriesPoint point : source.getPoints()){
+			newPoints.add(aqToGdawsTimeSeriesPoint(point, site));
+		}
+		newSeries.setPoints(newPoints);
+		
+		return newSeries;
+	}
+	
+	public GdawsTimeSeriesPoint aqToGdawsTimeSeriesPoint(TimeSeriesPoint source, SiteConfiguration site){
+		GdawsTimeSeriesPoint newPoint = new GdawsTimeSeriesPoint();
+		
+		newPoint.setSiteId(site.getLocalSiteId());
+		newPoint.setGroupId(site.getLocalParamId());
+		//TODO: SourceId?
+		newPoint.setSourceId(67);
+		newPoint.setMeasurementDate(source.getTime());
+		newPoint.setFinalValue(source.getValue());
+		
+		//TODO: Apply Qualifiers?
+		
+		//TODO: Apply Approvals?
+		
+		//TODO: Other info needed?
+		
+		return newPoint;
 	}
 }
