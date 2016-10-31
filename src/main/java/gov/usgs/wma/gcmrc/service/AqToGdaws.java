@@ -17,8 +17,9 @@ import gov.usgs.aqcu.model.TimeSeriesPoint;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
-import gov.usgs.wma.gcmrc.model.GdawsTimeSeriesPoint;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
+import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,7 +46,9 @@ public class AqToGdaws {
 		fillInAquariusParamNames(sitesToLoad);
 		
 		for(SiteConfiguration site : sitesToLoad) {
-			
+			if(site.getLocalSiteId() != 9402000) {
+				continue;
+			}
 			ZonedDateTime startTime = null;
 			ZonedDateTime endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 							
@@ -65,9 +68,9 @@ public class AqToGdaws {
 			
 			//Long siteId = c.getSiteId();
 			String remoteSiteId = site.getRemoteSiteId();
-					
-			//load the data from the source. TODO, determine if we only use primary/published/UV series 
-			List<String> tsUids = dataService.getTimeSeriesUniqueIdsAtSite(remoteSiteId, null, null, site.getAqParam(), null, null);
+
+			//Only pull published timeseries
+			List<String> tsUids = dataService.getTimeSeriesUniqueIdsAtSite(remoteSiteId, true, null, site.getAqParam(), null, null);
 			
 			for(String uid: tsUids) {
 				TimeSeries retrieved = dataService.getTimeSeriesData(
@@ -120,7 +123,7 @@ public class AqToGdaws {
 		newSeries.setSourceId(67);
 		
 		//Build Points
-		List<GdawsTimeSeriesPoint> newPoints = new ArrayList<>();
+		List<TimeSeriesRecord> newPoints = new ArrayList<>();
 		for(TimeSeriesPoint point : source.getPoints()){
 			newPoints.add(aqToGdawsTimeSeriesPoint(point, site));
 		}
@@ -129,14 +132,14 @@ public class AqToGdaws {
 		return newSeries;
 	}
 	
-	public GdawsTimeSeriesPoint aqToGdawsTimeSeriesPoint(TimeSeriesPoint source, SiteConfiguration site){
-		GdawsTimeSeriesPoint newPoint = new GdawsTimeSeriesPoint();
+	public TimeSeriesRecord aqToGdawsTimeSeriesPoint(TimeSeriesPoint source, SiteConfiguration site){
+		TimeSeriesRecord newPoint = new TimeSeriesRecord();
 		
 		newPoint.setSiteId(site.getLocalSiteId());
 		newPoint.setGroupId(site.getLocalParamId());
 		//TODO: SourceId?
 		newPoint.setSourceId(67);
-		newPoint.setMeasurementDate(source.getTime());
+		newPoint.setMeasurementDate((Instant)source.getTime());
 		newPoint.setFinalValue(source.getValue());
 		
 		//TODO: Apply Qualifiers?
