@@ -5,6 +5,8 @@
  */
 package gov.usgs.wma.gcmrc.model;
 
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
@@ -17,6 +19,8 @@ public class GdawsTimeSeries {
 	private Number siteId;	
 	private Number groupId;
 	private Number sourceId;
+	private Instant startTime;
+	private Instant endTime;
 	
 	private List<TimeSeriesRecord> records;
 
@@ -74,5 +78,47 @@ public class GdawsTimeSeries {
 	 */
 	public void setRecords(List<TimeSeriesRecord> records) {
 		this.records = records;
+	}
+
+	/**
+	 * @return the startTime
+	 */
+	public Instant getStartTime() {
+		return startTime;
+	}
+	
+	/**
+	 * @return the formatted startTime string
+	 */
+	public String getStartTimeString() {
+		return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime);
+	}
+
+	/**
+	 * @param startTime the startTime to set
+	 */
+	public void setStartTime(Instant startTime) {
+		this.startTime = startTime;
+	}
+
+	/**
+	 * @return the endTime
+	 */
+	public Instant getEndTime() {
+		return endTime;
+	}
+	
+	/**
+	 * @return the formatted endTime string
+	 */
+	public String getEndTimeString() {
+		return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime);
+	}
+
+	/**
+	 * @param endTime the endTime to set
+	 */
+	public void setEndTime(Instant endTime) {
+		this.endTime = endTime;
 	}
 }

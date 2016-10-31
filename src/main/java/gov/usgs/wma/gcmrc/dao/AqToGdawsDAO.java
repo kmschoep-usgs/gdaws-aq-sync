@@ -31,6 +31,8 @@ public class AqToGdawsDAO {
 			parms.put("sourceId", series.getSourceId());
 			parms.put("groupId", series.getGroupId());
 			parms.put("siteId", series.getSiteId());
+			parms.put("startTime", series.getStartTimeString());
+			parms.put("endTime", series.getEndTimeString());
 			
 		try (SqlSession session = sessionFactory.openSession()) {
 			AqToGdawsMapper mapper = session.getMapper(AqToGdawsMapper.class);			

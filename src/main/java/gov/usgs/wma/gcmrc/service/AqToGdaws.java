@@ -79,7 +79,7 @@ public class AqToGdaws {
 						DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime), false, false);
 				
 				//1. Transform data from AQCU format to GDAWS format
-				GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site);
+				GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site, startTime, endTime);
 				//2. Insert formatted data into GDAWS
 				aqToGdawsDao.insertTimeseriesData(toInsert);
 								
@@ -114,11 +114,14 @@ public class AqToGdaws {
 				filter(s -> s.getAqParam() == null).forEach(s -> LOG.error("Unable to map the pCode '{}' to an Aquarius Param Name (PCode not found)", s.getPCode()));
 	}
 	
-	public GdawsTimeSeries aqToGdawsTimeSeries(TimeSeries source, SiteConfiguration site){
+	public GdawsTimeSeries aqToGdawsTimeSeries(TimeSeries source, SiteConfiguration site, ZonedDateTime startTime, ZonedDateTime endTime){
 		GdawsTimeSeries newSeries = new GdawsTimeSeries();
 		
 		newSeries.setSiteId(site.getLocalSiteId());
 		newSeries.setGroupId(site.getLocalParamId());
+		newSeries.setStartTime(Instant.from(startTime));
+		newSeries.setEndTime(Instant.from(endTime));
+		
 		//TODO: SourceId?
 		newSeries.setSourceId(67);
 		
@@ -137,10 +140,11 @@ public class AqToGdaws {
 		
 		newPoint.setSiteId(site.getLocalSiteId());
 		newPoint.setGroupId(site.getLocalParamId());
-		//TODO: SourceId?
-		newPoint.setSourceId(67);
 		newPoint.setMeasurementDate(Instant.from(source.getTime()));
 		newPoint.setFinalValue(source.getValue());
+		
+		//TODO: SourceId?
+		newPoint.setSourceId(67);
 		
 		//TODO: Apply Qualifiers?
 		
