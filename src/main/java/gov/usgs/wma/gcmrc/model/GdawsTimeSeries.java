@@ -18,7 +18,7 @@ public class GdawsTimeSeries {
 	private Number groupId;
 	private Number sourceId;
 	
-	private List<TimeSeriesRecord> points;
+	private List<TimeSeriesRecord> records;
 
 	/**
 	 * @return the siteId
@@ -63,16 +63,16 @@ public class GdawsTimeSeries {
 	}
 
 	/**
-	 * @return the points
+	 * @return the records
 	 */
-	public List<TimeSeriesRecord> getPoints() {
-		return points;
+	public List<TimeSeriesRecord> getRecords() {
+		return records;
 	}
 
 	/**
-	 * @param points the points to set
+	 * @param records the records to set
 	 */
-	public void setPoints(List<TimeSeriesRecord> points) {
-		this.points = points;
+	public void setRecords(List<TimeSeriesRecord> records) {
+		this.records = records;
 	}
 }

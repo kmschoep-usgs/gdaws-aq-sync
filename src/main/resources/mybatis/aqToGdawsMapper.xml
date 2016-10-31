@@ -12,10 +12,14 @@
 		 *   - Delete staging table records-->
 	
 	<!-- Wrapper Qquery to launch all sub-queries -->
-	<sql id="insertAqTimeseries">
+	<sql id="insertTimeseriesData">
+		<!-- Insert into Staging -->
 		<include refid="insertToStage"><property name="list" value="${series.getPoints()}"/></include>
+		<!-- Delete Overlapping -->
 		<include refid="deleteOverlapping"><property name="series" value="${series}"/></include>
+		<!-- Copy Staging to Main -->
 		<include refid="copyStageToMain"><property name="sourceId" value="${series.getSourceId()}"/></include>
+		<!-- Empty Staging -->
 		<include refid="emptyStage"></include>
 	</sql>
 	

@@ -16,18 +16,18 @@ import gov.usgs.aqcu.model.TimeSeries;
 import gov.usgs.aqcu.model.TimeSeriesPoint;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
+import gov.usgs.wma.gcmrc.dao.AqToGdawsDAO;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
 	
 	private static final Integer DEFAULT_DAYS_TO_FETCH = 30;
+	private final AqToGdawsDAO aqToGdawsDao;
 		
 	private List<SiteConfiguration> sitesToLoad;
 	private Integer daysToFetch;
@@ -36,6 +36,7 @@ public class AqToGdaws {
 
 	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch) {
 		SiteConfigurationLoader siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
+		this.aqToGdawsDao = new AqToGdawsDAO(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.loadSiteConfiguration();
 		this.dataService = dataService;
 		
@@ -77,11 +78,10 @@ public class AqToGdaws {
 						remoteSiteId, uid, DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime),
 						DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime), false, false);
 				
-				
-				//TODO transform and load into GDAWS
-				//1. Transform
+				//1. Transform data from AQCU format to GDAWS format
 				GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site);
-				//2. Run insert query from MyBatis
+				//2. Insert formatted data into GDAWS
+				aqToGdawsDao.insertTimeseriesData(toInsert);
 								
 				Integer numOfPoints = retrieved.getPoints().size();
 				LOG.trace("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
@@ -123,11 +123,11 @@ public class AqToGdaws {
 		newSeries.setSourceId(67);
 		
 		//Build Points
-		List<TimeSeriesRecord> newPoints = new ArrayList<>();
+		List<TimeSeriesRecord> newRecords = new ArrayList<>();
 		for(TimeSeriesPoint point : source.getPoints()){
-			newPoints.add(aqToGdawsTimeSeriesPoint(point, site));
+			newRecords.add(aqToGdawsTimeSeriesPoint(point, site));
 		}
-		newSeries.setPoints(newPoints);
+		newSeries.setRecords(newRecords);
 		
 		return newSeries;
 	}
