@@ -17,9 +17,6 @@
 		<typeAlias alias="AutoProcConfiguration" type="gov.usgs.wma.gcmrc.model.AutoProcConfiguration"/>
 		<typeAlias alias="TimeSeriesRecord" type="gov.usgs.wma.gcmrc.model.TimeSeriesRecord"/>
 	</typeAliases>
- 	
-	<typeHandlers>
-	</typeHandlers>
 	
 	<environments default="development">
 		<environment id="development">

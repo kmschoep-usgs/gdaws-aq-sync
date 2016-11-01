@@ -12,7 +12,7 @@
 		<result property="lastNewPullEnd" column="lastNewPullEnd"/>
 	</resultMap>
 
-	<select id="getAll" resultMap="SiteConfigurationMap">
+	<select id="getAllSites" resultMap="SiteConfigurationMap">
 		<include refid="getAllSql"/>
 	</select>
 	
@@ -21,11 +21,11 @@
 		FROM (<include refid="getAllSql"/>)
 	</select>
 	
-	<update id="updateNewPullTimes">
+	<update id="updateNewDataPullTimestamps" parameterType="SiteConfiguration">
 	  update gdaws_aq_sync_config set
 		LAST_NEW_DATA_PULL_START = #{lastNewPullStart},
-		LAST_NEW_DATA_PULL_END = #{lastNewPullEnd},
-	  where SITE_ID = localSiteId and GROUP_ID localParamId
+		LAST_NEW_DATA_PULL_END = #{lastNewPullEnd}
+	  where SITE_ID = #{localSiteId} and GROUP_ID = #{localParamId}
 	</update>
 
 	<sql id="getAllSql">
