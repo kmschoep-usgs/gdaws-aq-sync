@@ -15,6 +15,7 @@
 	<typeAliases>
 		<typeAlias alias="SiteConfiguration" type="gov.usgs.wma.gcmrc.model.SiteConfiguration"/>
 		<typeAlias alias="AutoProcConfiguration" type="gov.usgs.wma.gcmrc.model.AutoProcConfiguration"/>
+		<typeAlias alias="GdawsTimeSeries" type="gov.usgs.wma.gcmrc.model.GdawsTimeSeries"/>
 		<typeAlias alias="TimeSeriesRecord" type="gov.usgs.wma.gcmrc.model.TimeSeriesRecord"/>
 	</typeAliases>
  	
@@ -36,6 +37,7 @@
 	<mappers>
 		<mapper resource="mybatis/siteConfigMapper.xml"/>
 		<mapper resource="mybatis/autoProcConfigMapper.xml"/>
+		<mapper resource="mybatis/aqToGdawsMapper.xml"/>
 		<mapper resource="mybatis/timeSeries.xml"/>
 	</mappers>
     

@@ -1,6 +1,7 @@
 package gov.usgs.wma.gcmrc.model;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 
 public class TimeSeriesRecord {
@@ -151,5 +152,9 @@ public class TimeSeriesRecord {
 	}
 	public void setErValue(BigDecimal erValue) {
 		this.erValue = erValue;
+	}
+	
+	public Timestamp getMeasurementDateTimestamp() {
+		return Timestamp.from(this.measurementDate);
 	}
 }

@@ -3,8 +3,7 @@
 
 <mapper namespace="gov.usgs.wma.gcmrc.mapper.AqToGdawsMapper">
 	
-	<!-- Note: SQL primarily taken from AutoProc I
-		From AutoProc I 
+	<!-- Note: SQL and Strategy primarily taken from AutoProc I
 		Strategy:
 		 *   - INSERT time series into staging table
 		 *   - DELETE data from main table already existing within the DateTime range of the input time seies
@@ -12,32 +11,29 @@
 		 *   - Delete staging table records-->
 	
 	<!-- Wrapper Qquery to launch all sub-queries -->
-	<sql id="insertTimeseriesData">
-		<!-- Insert into Staging -->
-		<include refid="insertToStage"></include>
-		<!-- Delete Overlapping -->
-		<include refid="deleteOverlapping"></include>
-		<!-- Copy Staging to Main -->
-		<include refid="copyStageToMain"></include>
-		<!-- Empty Staging -->
-		<include refid="emptyStage"></include>
-	</sql>
 	
 	<!-- Insert data into Staging Table -->
-	<insert id="insertToStage" parameterType="java.util.List">
+	<insert id="insertTimeseriesDataToStage">
 		INSERT ALL
-		<foreach collection="list" item="element" index="index" >
-			INTO TIME_SERIES_STAR (SITE_ID, GROUP_ID, MEASUREMENT_DATE, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID, SOURCE_ID) 
-			values (${element.getSiteId()},${element.getGroupId()},${element.getMeasurementDate()}, ${element.getFinalValue()}, ${element.getMainQualifierId()}, ${element.getDataApprovalId()}, ${element.getSourceId()})
+		<foreach collection="records" item="element" index="index" >
+		INTO TIME_SERIES_AP_STAGE (SITE_ID, GROUP_ID, MEASUREMENT_DATE, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID, SOURCE_ID) 
+			values (#{element.siteId,jdbcType=NUMERIC},#{element.groupId,jdbcType=NUMERIC},#{element.measurementDate,jdbcType=TIMESTAMP},#{element.finalValue,jdbcType=NUMERIC}, 1, 1,#{element.sourceId,jdbcType=NUMERIC})
 		</foreach>
 		SELECT * FROM dual
 	</insert>
-	
+		
 	<!-- Delete data from Main Table already existing within the DateTime range of the input time series -->
-	<delete id="deleteOverlapping" parameterType="GdawsTimeSeries">
+	<delete id="deleteOverlappingData">
 		DELETE From TIME_SERIES_STAR
-			Where SITE_ID=#{siteId} And GROUP_ID=#{groupId} And SOURCE_ID=#{sourceId} And MEASUREMENT_DATE >= #{startTime} And MEASUREMENT_DATE <= #{endTime}
+			Where SITE_ID=#{siteId} And GROUP_ID=#{groupId} And SOURCE_ID=#{sourceId} And MEASUREMENT_DATE &gt;=#{startTime} And MEASUREMENT_DATE &lt;=#{endTime}
 	</delete>
+	
+	<!-- From AutoProc I: 
+		Hack alert: It is necessary to force Oracle to analyze the staging table bfore merging.  This seems to be a design issue of these star tables. 
+		Note: This binds this class to the schema name (GDAWS_PROD) of the database. -->
+	<sql id="analyzeTable">
+		begin dbms_stats.gather_table_stats('GCMRC_LOCAL', 'TIME_SERIES_AP_STAGE' , null, 100, false, 'FOR ALL COLUMNS SIZE AUTO', 1, 'ALL', true); end;
+	</sql>
 	
 	<!-- Insert Staging Table into Main Table -->
 	<insert id="copyStageToMain">
@@ -49,7 +45,7 @@
 	</insert>
 	
 	<!-- Delete Staging Table records -->
-	<sql id="emptyStage">
+	<delete id="emptyStage">
 		truncate table TIME_SERIES_AP_STAGE
-	</sql>
+	</delete>
 </mapper>

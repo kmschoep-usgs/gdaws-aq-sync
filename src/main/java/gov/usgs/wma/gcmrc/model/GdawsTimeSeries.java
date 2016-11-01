@@ -86,13 +86,6 @@ public class GdawsTimeSeries {
 	public Instant getStartTime() {
 		return startTime;
 	}
-	
-	/**
-	 * @return the formatted startTime string
-	 */
-	public String getStartTimeString() {
-		return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime);
-	}
 
 	/**
 	 * @param startTime the startTime to set
@@ -106,13 +99,6 @@ public class GdawsTimeSeries {
 	 */
 	public Instant getEndTime() {
 		return endTime;
-	}
-	
-	/**
-	 * @return the formatted endTime string
-	 */
-	public String getEndTimeString() {
-		return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime);
 	}
 
 	/**

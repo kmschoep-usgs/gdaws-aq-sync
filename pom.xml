@@ -66,6 +66,11 @@
 			<url>https://internal.cida.usgs.gov/maven/content/repositories/cida-snapshots</url>
 		</repository>
 		<repository>
+			<id>cida-thirdparty</id>
+			<name>CIDA Thirdpart</name>
+			<url>https://internal.cida.usgs.gov/maven/content/repositories/cida-thirdparty/</url>
+		</repository>
+		<repository>
 			<id>cida-public</id>
 			<name>CIDA Public Nexus</name>
 			<url>http://cida.usgs.gov/maven/cida-public-releases/</url>
@@ -76,7 +81,7 @@
 			<url>http://cida.usgs.gov/maven/cida-public-snapshots/</url>
 		</repository>
 		<repository>
-			<id>cida-thirdparty</id>
+			<id>cida-public-thirdparty</id>
 			<name>CIDA Public Nexus</name>
 			<url>http://cida.usgs.gov/maven/cida-public-thirdparty/</url>
 		</repository>

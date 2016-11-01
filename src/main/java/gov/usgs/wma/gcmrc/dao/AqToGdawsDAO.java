@@ -2,6 +2,7 @@ package gov.usgs.wma.gcmrc.dao;
 
 import gov.usgs.wma.gcmrc.mapper.AqToGdawsMapper;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,12 +32,18 @@ public class AqToGdawsDAO {
 			parms.put("sourceId", series.getSourceId());
 			parms.put("groupId", series.getGroupId());
 			parms.put("siteId", series.getSiteId());
-			parms.put("startTime", series.getStartTimeString());
-			parms.put("endTime", series.getEndTimeString());
+			parms.put("startTime", series.getStartTime());
+			parms.put("endTime", series.getEndTime());
 			
 		try (SqlSession session = sessionFactory.openSession()) {
 			AqToGdawsMapper mapper = session.getMapper(AqToGdawsMapper.class);			
-			mapper.insertTimeseriesData(parms);
+			mapper.insertTimeseriesDataToStage(parms);
+			session.commit();
+			mapper.deleteOverlappingData(parms);
+			mapper.copyStageToMain(parms);
+			session.commit();
+			mapper.emptyStage();
+			session.commit();
 		}
 	}
 }

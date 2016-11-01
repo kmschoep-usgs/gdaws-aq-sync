@@ -21,6 +21,8 @@ import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 public class AqToGdaws {
@@ -46,6 +48,8 @@ public class AqToGdaws {
 	public void migrateAqData() {
 		fillInAquariusParamNames(sitesToLoad);
 		
+		LOG.info("" + sitesToLoad.toArray().length);
+		
 		for(SiteConfiguration site : sitesToLoad) {
 			if(site.getLocalSiteId() != 9402000) {
 				continue;
@@ -61,7 +65,7 @@ public class AqToGdaws {
 				startTime = endTime.minusDays(daysToFetch);
 			}
 			
-			LOG.debug("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
+			LOG.info("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
 					site.getLocalSiteId(), site.getPCode(), 
 					DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime), 
 					DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime));
@@ -84,7 +88,7 @@ public class AqToGdaws {
 				aqToGdawsDao.insertTimeseriesData(toInsert);
 								
 				Integer numOfPoints = retrieved.getPoints().size();
-				LOG.trace("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
+				LOG.info("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
 						", which contains " + numOfPoints + " points");
 				if(numOfPoints > 0) {
 					LOG.trace("First point: " + 
@@ -140,7 +144,12 @@ public class AqToGdaws {
 		
 		newPoint.setSiteId(site.getLocalSiteId());
 		newPoint.setGroupId(site.getLocalParamId());
-		newPoint.setMeasurementDate(Instant.from(source.getTime()));
+		//Fix for points at midnight
+		if(source.getTime() instanceof LocalDate){
+			newPoint.setMeasurementDate(((LocalDate)source.getTime()).now().atStartOfDay().toInstant(ZoneOffset.UTC));
+		} else {
+			newPoint.setMeasurementDate(Instant.from(source.getTime()));
+		}
 		newPoint.setFinalValue(source.getValue());
 		
 		//TODO: SourceId?

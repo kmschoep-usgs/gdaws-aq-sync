@@ -11,4 +11,5 @@
 	</root>
 	
 	<logger name="gov.usgs.wma.gcmrc" level="INFO" />
+	<logger name="gov.usgs.wma.gcmrc.mapper" level="DEBUG"/>
 </configuration>
