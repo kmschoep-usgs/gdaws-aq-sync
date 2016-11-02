@@ -47,9 +47,7 @@ public class AqToGdaws {
 	
 	public void migrateAqData() {
 		fillInAquariusParamNames(sitesToLoad);
-		
-		LOG.info("" + sitesToLoad.toArray().length);
-		
+				
 		for(SiteConfiguration site : sitesToLoad) {
 			if(site.getLocalSiteId() != 9402000) {
 				continue;
