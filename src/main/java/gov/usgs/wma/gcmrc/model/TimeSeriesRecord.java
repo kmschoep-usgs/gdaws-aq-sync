@@ -6,7 +6,8 @@ public class TimeSeriesRecord {
 	private Integer siteId;
 	private Integer subsiteId;             
 	private Integer groupId;             
-	private LocalDateTime measurementDate;       
+	private LocalDateTime measurementDate;   
+	private String measurementDateIso;    
 	private Double finalValue;             
 	private Double rawValue;             
 	private Integer mainQualifierId;             
@@ -58,6 +59,14 @@ public class TimeSeriesRecord {
 	}
 	public void setMeasurementDate(LocalDateTime measurementDate) {
 		this.measurementDate = measurementDate;
+	}      
+	public String getMeasurementDateIso() {
+		return measurementDateIso;
+	}
+
+	public void setMeasurementDateIso(String measurementDateIso) {
+		this.measurementDateIso = measurementDateIso;
+		this.measurementDate = LocalDateTime.parse(measurementDateIso);
 	}
 	public Double getFinalValue() {
 		return finalValue;
