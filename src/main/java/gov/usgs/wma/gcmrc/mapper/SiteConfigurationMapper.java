@@ -8,5 +8,6 @@ import java.util.List;
  * @author eeverman
  */
 public interface SiteConfigurationMapper {
-	List<SiteConfiguration> getAll();
+	List<SiteConfiguration> getAllSites();
+	void updateNewDataPullTimestamps(SiteConfiguration site);
 }

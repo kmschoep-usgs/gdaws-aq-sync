@@ -8,6 +8,7 @@ import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.cida.config.DynamicReadOnlyProperties;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
 import gov.usgs.wma.gcmrc.util.UnmodifiableProperties;
+import javax.naming.NamingException;
 
 /**
  *

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.mapper.SiteConfigurationMapper;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
+import org.apache.ibatis.session.ExecutorType;
 
 public class SiteConfigurationLoader {
 	private static final Logger LOG = LoggerFactory.getLogger(SiteConfigurationLoader.class);
@@ -19,15 +20,28 @@ public class SiteConfigurationLoader {
 		this.sessionFactory = gdawsDaoFactory.getSqlSessionFactory();
 	}
 	
-	public List<SiteConfiguration> loadSiteConfiguration() {
+	public List<SiteConfiguration> getAllSites() {
 		LOG.debug("Loading site configuration");
 		List<SiteConfiguration> sitesToLoad = null;
 		
 		try (SqlSession session = sessionFactory.openSession()) {
 			SiteConfigurationMapper mapper = session.getMapper(SiteConfigurationMapper.class);
-			sitesToLoad = mapper.getAll();
+			sitesToLoad = mapper.getAllSites();
 		}
 		
 		return sitesToLoad;
+	}
+	
+	public void updateNewDataPullTimestamps(SiteConfiguration site) {
+		LOG.debug("Updating new data pull timestamps for site GCMRC Site Id {} for GCMRC Param {} (PCode: {}) to start: {}  end: {}", site.getLocalSiteId(), site.getLocalParamId(), site.getPCode(), site.getLastNewPullStart(), site.getLastNewPullEnd());
+		
+		try (SqlSession session = sessionFactory.openSession(ExecutorType.SIMPLE, true)) {
+			SiteConfigurationMapper mapper = session.getMapper(SiteConfigurationMapper.class);
+			mapper.updateNewDataPullTimestamps(site);
+			//session.commit();
+		}
+		
+		LOG.debug("Completed updating new data pull timestamps for site GCMRC Site Id {} for GCMRC Param {} (PCode: {}) to start: {}  end: {}", site.getLocalSiteId(), site.getLocalParamId(), site.getPCode(), site.getLastNewPullStart(), site.getLastNewPullEnd());
+
 	}
 }
