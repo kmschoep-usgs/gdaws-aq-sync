@@ -58,6 +58,11 @@ public class AqToGdaws {
 		fillInAquariusParamNames(sitesToLoad);
 		
 		for(SiteConfiguration site : sitesToLoad) {
+			
+			//
+			if(site.getLocalSiteId() != 9402000){
+				continue;
+			}
 
 			if (site.getAqParam() != null) {
 				ZonedDateTime startTime = null;
@@ -130,18 +135,19 @@ public class AqToGdaws {
 	 */
 	public void fillInAquariusParamNames(List<SiteConfiguration> sitesToLoad) {
 		
-//		long time = System.currentTimeMillis();
-//		LOG.trace("Starting request for PCode to AqParam mappings. . . .");
-//		Map<String, String> pCodeMap = dataService.getPcodeToAquariusMap();
-//		LOG.trace("And the PCode-AqCode request is done.  That was {} minutes", ((System.currentTimeMillis() - time) / 60000));
-//		
-//		LOG.debug("Found {}  PCode to Aquarius Name mappings", pCodeMap.size());
-//		
-//		pCodeMap.entrySet().stream().filter(p -> p.getKey().equals("00060")).forEach(m -> System.out.println("Found PCode '00060' mapped to AQ '" + m.getValue() + "'"));
-//		
-
-		Map<String, String> pCodeMap = new HashMap();
-		pCodeMap.put("00060", "Discharge");
+		long time = System.currentTimeMillis();
+		LOG.trace("Starting request for PCode to AqParam mappings. . . .");
+		Map<String, String> pCodeMap = dataService.getPcodeToAquariusMap();
+		LOG.trace("And the PCode-AqCode request is done.  That was {} minutes", ((System.currentTimeMillis() - time) / 60000));
+		
+		LOG.debug("Found {}  PCode to Aquarius Name mappings", pCodeMap.size());
+		
+		pCodeMap.entrySet().stream().filter(p -> p.getKey().equals("00060")).forEach(m -> System.out.println("Found PCode '00060' mapped to AQ '" + m.getValue() + "'"));
+		
+		
+		//Temporary hack to disable loading of pcodes from the service
+		//Map<String, String> pCodeMap = new HashMap();
+		//pCodeMap.put("00060", "Discharge");
 		
 		//Fist line does the mapping
 		//Second line finds ones where the AqCode is still null and logs them as errors
@@ -189,7 +195,7 @@ public class AqToGdaws {
 		newPoint.setGroupId(site.getLocalParamId());
 		//Fix for points with no time
 		if(source.getTime().isSupported(ChronoUnit.HOURS)){
-			newPoint.setMeasurementDate((LocalDateTime)source.getTime());
+			newPoint.setMeasurementDate(LocalDateTime.from(source.getTime()));
 		} else {
 			LOG.debug("Found point without associated time: " + source.getTime());
 			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay());
