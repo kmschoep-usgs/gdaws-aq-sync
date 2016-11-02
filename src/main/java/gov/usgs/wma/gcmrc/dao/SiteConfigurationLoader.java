@@ -26,7 +26,6 @@ public class SiteConfigurationLoader {
 		try (SqlSession session = sessionFactory.openSession()) {
 			SiteConfigurationMapper mapper = session.getMapper(SiteConfigurationMapper.class);
 			sitesToLoad = mapper.getAll();
-			LOG.info(sitesToLoad.size() + "");
 		}
 		
 		return sitesToLoad;
