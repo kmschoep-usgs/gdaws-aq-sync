@@ -5,7 +5,7 @@
  */
 package gov.usgs.wma.gcmrc.model;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -18,8 +18,8 @@ public class GdawsTimeSeries {
 	private Number siteId;	
 	private Number groupId;
 	private Number sourceId;
-	private Instant startTime;
-	private Instant endTime;
+	private LocalDateTime startTime;
+	private LocalDateTime endTime;
 	
 	private List<TimeSeriesRecord> records;
 
@@ -82,28 +82,28 @@ public class GdawsTimeSeries {
 	/**
 	 * @return the startTime
 	 */
-	public Instant getStartTime() {
+	public LocalDateTime getStartTime() {
 		return startTime;
 	}
 
 	/**
 	 * @param startTime the startTime to set
 	 */
-	public void setStartTime(Instant startTime) {
+	public void setStartTime(LocalDateTime startTime) {
 		this.startTime = startTime;
 	}
 
 	/**
 	 * @return the endTime
 	 */
-	public Instant getEndTime() {
+	public LocalDateTime getEndTime() {
 		return endTime;
 	}
 
 	/**
 	 * @param endTime the endTime to set
 	 */
-	public void setEndTime(Instant endTime) {
+	public void setEndTime(LocalDateTime endTime) {
 		this.endTime = endTime;
 	}
 }

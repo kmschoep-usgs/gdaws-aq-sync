@@ -13,15 +13,23 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 import gov.usgs.aqcu.model.TimeSeries;
+import gov.usgs.aqcu.model.TimeSeriesPoint;
+import gov.usgs.wma.gcmrc.dao.AqToGdawsDAO;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
+import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
+import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
 	
 	private static final Integer DEFAULT_DAYS_TO_FETCH = 30;
+	private final AqToGdawsDAO aqToGdawsDao;
 		
 	private List<SiteConfiguration> sitesToLoad;
 	private Integer daysToFetch;
@@ -41,7 +49,7 @@ public class AqToGdaws {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.dataService = dataService;
-		
+		this.aqToGdawsDao = new AqToGdawsDAO(gdawsDaoFactory);
 		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
 		this.sourceId = sourceId;
 	}
@@ -97,6 +105,13 @@ public class AqToGdaws {
 						LOG.trace("First point: " + 
 								ISO8601TemporalSerializer.print(retrieved.getPoints().get(0).getTime()) + 
 								" " + retrieved.getPoints().get(0).getValue());
+						
+						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site);
+
+						LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
+
+						//NOTE: Temporarily disabled until site configuration loading is completed
+						aqToGdawsDao.insertTimeseriesData(toInsert);
 					}
 				}
 
@@ -132,5 +147,66 @@ public class AqToGdaws {
 		//Second line finds ones where the AqCode is still null and logs them as errors
 		sitesToLoad.stream().peek(s -> s.setAqParam(pCodeMap.get(StringUtils.trimToEmpty(s.getPCode())))).
 				filter(s -> s.getAqParam() == null).forEach(s -> LOG.error("Unable to map the pCode '{}' to an Aquarius Param Name (PCode not found)", s.getPCode()));
+	}
+	
+	public GdawsTimeSeries aqToGdawsTimeSeries(TimeSeries source, SiteConfiguration site){
+		GdawsTimeSeries newSeries = new GdawsTimeSeries();
+		
+		newSeries.setSiteId(site.getLocalSiteId());
+		newSeries.setGroupId(site.getLocalParamId());
+				
+		//TODO: SourceId?
+		newSeries.setSourceId(67);
+		
+		//Build Points
+		List<TimeSeriesRecord> newRecords = new ArrayList<>();
+		
+		LocalDateTime startTime = null, endTime = null;
+		
+		for(TimeSeriesPoint point : source.getPoints()){
+			newRecords.add(aqToGdawsTimeSeriesPoint(point, site));
+			
+			if(startTime == null || newRecords.get(newRecords.size()-1).getMeasurementDate().isBefore(startTime)){
+				startTime = newRecords.get(newRecords.size()-1).getMeasurementDate();
+			}
+			
+			if(endTime == null || newRecords.get(newRecords.size()-1).getMeasurementDate().isAfter(endTime)){
+				endTime = newRecords.get(newRecords.size()-1).getMeasurementDate();
+			}
+		}
+		newSeries.setRecords(newRecords);
+		
+		newSeries.setStartTime(startTime);
+		newSeries.setEndTime(endTime);
+		
+		return newSeries;
+	}
+	
+	public TimeSeriesRecord aqToGdawsTimeSeriesPoint(TimeSeriesPoint source, SiteConfiguration site){
+		TimeSeriesRecord newPoint = new TimeSeriesRecord();
+		
+		newPoint.setSiteId(site.getLocalSiteId());
+		newPoint.setGroupId(site.getLocalParamId());
+		//Fix for points with no time
+		if(source.getTime().isSupported(ChronoUnit.HOURS)){
+			newPoint.setMeasurementDate((LocalDateTime)source.getTime());
+		} else {
+			LOG.debug("Found point without associated time: " + source.getTime());
+			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay());
+		}
+		newPoint.setFinalValue(source.getValue().doubleValue());
+		
+		//TODO: SourceId?
+		newPoint.setSourceId(67);
+		
+		//TODO: Apply Qualifiers?
+		newPoint.setDataApprovalId(1);
+		
+		//TODO: Apply Approvals?
+		newPoint.setMainQualifierId(1);
+		
+		//TODO: Other info needed?
+		
+		return newPoint;
 	}
 }
