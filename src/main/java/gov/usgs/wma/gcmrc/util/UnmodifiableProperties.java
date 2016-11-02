@@ -12,6 +12,11 @@ import java.util.Properties;
  */
 public class UnmodifiableProperties extends Properties {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public UnmodifiableProperties() {
 	}
 

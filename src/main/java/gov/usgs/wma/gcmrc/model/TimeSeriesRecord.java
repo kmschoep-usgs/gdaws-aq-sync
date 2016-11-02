@@ -1,21 +1,20 @@
 package gov.usgs.wma.gcmrc.model;
 
-import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 public class TimeSeriesRecord {
 	private Integer siteId;
 	private Integer subsiteId;             
 	private Integer groupId;             
-	private Instant measurementDate;       
-	private BigDecimal finalValue;             
-	private BigDecimal rawValue;             
+	private LocalDateTime measurementDate;       
+	private Double finalValue;             
+	private Double rawValue;             
 	private Integer mainQualifierId;             
 	private Integer dataApprovalId;             
 	private Integer measurementGradeId;             
 	private Integer deploymentId;             
 	private Integer iceAffectedId;             
-	private BigDecimal turbidityPegged;             
+	private Double turbidityPegged;             
 	private Integer probeTypeId;             
 	private Integer instrumentId;             
 	private Integer dataLeadId;             
@@ -24,7 +23,17 @@ public class TimeSeriesRecord {
 	private Integer AccuracyRatingId;             
 	private Integer sourceId;    
 	private String notes;    
-	private BigDecimal erValue;
+	private Double erValue;
+	
+	public TimeSeriesRecord() {
+		//default
+	}
+	
+	public TimeSeriesRecord(LocalDateTime time, Double finalValue, Integer sourceId) {
+		this.measurementDate = time;
+		this.finalValue = finalValue;
+		this.sourceId = sourceId;
+	}
 	
 	public Integer getSiteId() {
 		return siteId;
@@ -44,22 +53,22 @@ public class TimeSeriesRecord {
 	public void setGroupId(Integer groupId) {
 		this.groupId = groupId;
 	}
-	public Instant getMeasurementDate() {
+	public LocalDateTime getMeasurementDate() {
 		return measurementDate;
 	}
-	public void setMeasurementDate(Instant measurementDate) {
+	public void setMeasurementDate(LocalDateTime measurementDate) {
 		this.measurementDate = measurementDate;
 	}
-	public BigDecimal getFinalValue() {
+	public Double getFinalValue() {
 		return finalValue;
 	}
-	public void setFinalValue(BigDecimal finalValue) {
+	public void setFinalValue(Double finalValue) {
 		this.finalValue = finalValue;
 	}
-	public BigDecimal getRawValue() {
+	public Double getRawValue() {
 		return rawValue;
 	}
-	public void setRawValue(BigDecimal rawValue) {
+	public void setRawValue(Double rawValue) {
 		this.rawValue = rawValue;
 	}
 	public Integer getMainQualifierId() {
@@ -92,10 +101,10 @@ public class TimeSeriesRecord {
 	public void setIceAffectedId(Integer iceAffectedId) {
 		this.iceAffectedId = iceAffectedId;
 	}
-	public BigDecimal getTurbidityPegged() {
+	public Double getTurbidityPegged() {
 		return turbidityPegged;
 	}
-	public void setTurbidityPegged(BigDecimal turbidityPegged) {
+	public void setTurbidityPegged(Double turbidityPegged) {
 		this.turbidityPegged = turbidityPegged;
 	}
 	public Integer getProbeTypeId() {
@@ -146,10 +155,10 @@ public class TimeSeriesRecord {
 	public void setNotes(String notes) {
 		this.notes = notes;
 	}
-	public BigDecimal getErValue() {
+	public Double getErValue() {
 		return erValue;
 	}
-	public void setErValue(BigDecimal erValue) {
+	public void setErValue(Double erValue) {
 		this.erValue = erValue;
 	}
 }

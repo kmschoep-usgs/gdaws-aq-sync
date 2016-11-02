@@ -35,6 +35,8 @@ public class GdawsSynchronizer {
 	private static final String GDAWS_NAME_PROP_NAME = "gdaws.dbName";
 	private static final String GDAWS_USER_PROP_NAME = "gdaws.dbUser";
 	private static final String GDAWS_PASS_PROP_NAME = "gdaws.dbPwd";
+	private static final String AQ_SOURCE_PROP_NAME = "aquarius.source.id";
+	private static final String AUTO_PROC_SOURCE_PROP_NAME = "autoproc.source.id";
 	private static final String DEFAULT_DAYS_TO_PULL_PROP_NAME = "default.days.to.fetch";
 	
 	
@@ -50,7 +52,9 @@ public class GdawsSynchronizer {
 			GDAWS_PORT_PROP_NAME, "GDAWS Database port",
 			GDAWS_NAME_PROP_NAME, "GDAWS Database name",
 			GDAWS_USER_PROP_NAME, "GDAWS Database user",
-			GDAWS_PASS_PROP_NAME, "GDAWS Database password"
+			GDAWS_PASS_PROP_NAME, "GDAWS Database password",
+			AQ_SOURCE_PROP_NAME, "The source id to mark incoming records from aquarius with",
+			AUTO_PROC_SOURCE_PROP_NAME, "The source id to mark calculated values with"
 	};
 	
 	//prop names and descriptions
@@ -75,14 +79,15 @@ public class GdawsSynchronizer {
 				AqToGdaws aqToGdaws = new AqToGdaws(
 						runState.getAquariusDataService(), 
 						gdawsDaoFactory, 
-						runState.getIntProperty(DEFAULT_DAYS_TO_PULL_PROP_NAME, null));
+						runState.getIntProperty(DEFAULT_DAYS_TO_PULL_PROP_NAME, null),
+						runState.getIntProperty(AQ_SOURCE_PROP_NAME, null));
 				aqToGdaws.migrateAqData();
 				LOG.info("Finished AQ to GDAWS Sync");
 			} else {
 				LOG.info("Skipped AQ to GDAWS Sync");
 			}
 			
-			AutoProc autoProc = new AutoProc(gdawsDaoFactory);
+			AutoProc autoProc = new AutoProc(gdawsDaoFactory, runState.getIntProperty(AUTO_PROC_SOURCE_PROP_NAME, null));
 
 			if(!isSkip(args, BEDLOAD_OPT)) {
 				LOG.info("Starting Bedload Calculations");

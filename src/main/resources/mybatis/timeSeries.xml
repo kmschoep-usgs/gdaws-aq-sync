@@ -34,7 +34,7 @@
 			<include refid="whereAndOrder"/>
 	</select>
 	
-	<select id="getTimeSeries" resultMap="TimeSeriesRecordMap">
+	<select id="getTimeSeries" resultMap="TimeSeriesRecordMap" fetchSize="250000" >
 		SELECT
 			<include refid="timeSeriesColumns"/>
 		FROM TIME_SERIES_STAR

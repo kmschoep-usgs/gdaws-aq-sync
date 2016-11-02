@@ -13,32 +13,23 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 import gov.usgs.aqcu.model.TimeSeries;
-import gov.usgs.aqcu.model.TimeSeriesPoint;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
-import gov.usgs.wma.gcmrc.dao.AqToGdawsDAO;
-import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
-import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
 	
 	private static final Integer DEFAULT_DAYS_TO_FETCH = 30;
-	private final AqToGdawsDAO aqToGdawsDao;
 		
 	private List<SiteConfiguration> sitesToLoad;
 	private Integer daysToFetch;
+	private Integer sourceId;
 	
 	private DataService dataService;
 	private SiteConfigurationLoader siteConfiguationLoader;
 
-	
 	/**
 	 * Constructor that loads its own site configuration and automatically loads data since
 	 * the last timestamp.
@@ -46,19 +37,20 @@ public class AqToGdaws {
 	 * @param gdawsDaoFactory
 	 * @param defaultDaysToFetch 
 	 */
-	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch) {
-		this.aqToGdawsDao = new AqToGdawsDAO(gdawsDaoFactory);
+	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch, Integer sourceId) {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.dataService = dataService;
 		
 		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
+		this.sourceId = sourceId;
 	}
 	
 	public void migrateAqData() {
 		fillInAquariusParamNames(sitesToLoad);
-				
+		
 		for(SiteConfiguration site : sitesToLoad) {
+
 			if (site.getAqParam() != null) {
 				ZonedDateTime startTime = null;
 				ZonedDateTime endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
@@ -105,13 +97,6 @@ public class AqToGdaws {
 						LOG.trace("First point: " + 
 								ISO8601TemporalSerializer.print(retrieved.getPoints().get(0).getTime()) + 
 								" " + retrieved.getPoints().get(0).getValue());
-						
-						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site, startTime, endTime);
-
-						LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
-
-						//NOTE: Temporarily disabled until site configuration loading is completed
-						//aqToGdawsDao.insertTimeseriesData(toInsert);
 					}
 				}
 
@@ -147,54 +132,5 @@ public class AqToGdaws {
 		//Second line finds ones where the AqCode is still null and logs them as errors
 		sitesToLoad.stream().peek(s -> s.setAqParam(pCodeMap.get(StringUtils.trimToEmpty(s.getPCode())))).
 				filter(s -> s.getAqParam() == null).forEach(s -> LOG.error("Unable to map the pCode '{}' to an Aquarius Param Name (PCode not found)", s.getPCode()));
-	}
-	
-	public GdawsTimeSeries aqToGdawsTimeSeries(TimeSeries source, SiteConfiguration site, ZonedDateTime startTime, ZonedDateTime endTime){
-		GdawsTimeSeries newSeries = new GdawsTimeSeries();
-		
-		newSeries.setSiteId(site.getLocalSiteId());
-		newSeries.setGroupId(site.getLocalParamId());
-		newSeries.setStartTime(Instant.from(startTime));
-		newSeries.setEndTime(Instant.from(endTime));
-		
-		//TODO: SourceId?
-		newSeries.setSourceId(67);
-		
-		//Build Points
-		List<TimeSeriesRecord> newRecords = new ArrayList<>();
-		for(TimeSeriesPoint point : source.getPoints()){
-			newRecords.add(aqToGdawsTimeSeriesPoint(point, site));
-		}
-		newSeries.setRecords(newRecords);
-		
-		return newSeries;
-	}
-	
-	public TimeSeriesRecord aqToGdawsTimeSeriesPoint(TimeSeriesPoint source, SiteConfiguration site){
-		TimeSeriesRecord newPoint = new TimeSeriesRecord();
-		
-		newPoint.setSiteId(site.getLocalSiteId());
-		newPoint.setGroupId(site.getLocalParamId());
-		//Fix for points with no time
-		if(source.getTime().isSupported(ChronoUnit.HOURS)){
-			newPoint.setMeasurementDate(Instant.from(source.getTime()));
-		} else {
-			LOG.debug("Found point without associated time: " + source.getTime());
-			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay().toInstant(ZoneOffset.UTC));
-		}
-		newPoint.setFinalValue(source.getValue());
-		
-		//TODO: SourceId?
-		newPoint.setSourceId(67);
-		
-		//TODO: Apply Qualifiers?
-		newPoint.setDataApprovalId(1);
-		
-		//TODO: Apply Approvals?
-		newPoint.setMainQualifierId(1);
-		
-		//TODO: Other info needed?
-		
-		return newPoint;
 	}
 }
