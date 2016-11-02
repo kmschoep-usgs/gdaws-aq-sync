@@ -80,6 +80,8 @@ public class AutoProc {
 		for(int i = 0; i < list.size(); i++) {
 			TimeSeriesRecord r = list.get(i);
 			if(newMap.putIfAbsent(r.getMeasurementDate(), i) != null) {
+				LOG.error("DUPE {} {} versus {} {}", r.getMeasurementDate(), r.getFinalValue(), 
+						list.get(newMap.get(r.getMeasurementDate())).getMeasurementDate(), list.get(newMap.get(r.getMeasurementDate())).getFinalValue());
 				throw new RuntimeException("Multiple points found at the same time in time series");
 			}
 		}

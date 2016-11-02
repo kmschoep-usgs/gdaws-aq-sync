@@ -7,7 +7,7 @@
 		<result property="siteId" column="SITE_ID"/>
 		<result property="subsiteId" column="SUBSITE_ID"/>             
 		<result property="groupId" column="GROUP_ID"/>             
-		<result property="measurementDate" column="MEASUREMENT_DATE"/>       
+		<result property="measurementDateIso" column="MEASUREMENT_DATE"/>       
 		<result property="finalValue" column="FINAL_VALUE"/>             
 		<result property="rawValue" column="RAW_VALUE"/>             
 		<result property="mainQualifierId" column="MAIN_QUALIFIER_ID"/>             
@@ -53,7 +53,7 @@
 		SITE_ID,             
 		SUBSITE_ID,             
 		GROUP_ID,             
-		MEASUREMENT_DATE,       
+		TO_CHAR(MEASUREMENT_DATE, 'YYYY-MM-DD') || 'T' || TO_CHAR(MEASUREMENT_DATE,'HH24:MI:SS') MEASUREMENT_DATE,       
 		FINAL_VALUE,             
 		RAW_VALUE,             
 		MAIN_QUALIFIER_ID,             
