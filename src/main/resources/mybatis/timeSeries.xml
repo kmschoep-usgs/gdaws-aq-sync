@@ -79,9 +79,7 @@
 		 *   - DELETE data from main table already existing within the DateTime range of the input time seies
 		 *   - INSERT staging table into main table
 		 *   - Delete staging table records-->
-	
-	<!-- Wrapper Qquery to launch all sub-queries -->
-	
+		
 	<!-- Insert data into Staging Table -->
 	<insert id="insertTimeseriesDataToStageTable">
 		INSERT ALL
