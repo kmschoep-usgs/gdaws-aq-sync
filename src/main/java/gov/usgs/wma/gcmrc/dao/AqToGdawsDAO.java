@@ -34,16 +34,20 @@ public class AqToGdawsDAO {
 			parms.put("siteId", series.getSiteId());
 			parms.put("startTime", series.getStartTime());
 			parms.put("endTime", series.getEndTime());
-			
-		try (SqlSession session = sessionFactory.openSession()) {
-			AqToGdawsMapper mapper = session.getMapper(AqToGdawsMapper.class);			
-			mapper.insertTimeseriesDataToStage(parms);
-			session.commit();
-			mapper.deleteOverlappingData(parms);
-			mapper.copyStageToMain(parms);
-			session.commit();
-			mapper.emptyStage();
-			session.commit();
+		
+		if(series.getRecords().size() > 0){
+			try (SqlSession session = sessionFactory.openSession()) {
+				AqToGdawsMapper mapper = session.getMapper(AqToGdawsMapper.class);	
+				mapper.emptyStage(parms);	
+				mapper.insertTimeseriesDataToStage(parms);
+				session.commit();
+				mapper.deleteOverlappingData(parms);
+				//Is this still necessary?
+				//mapper.analyzeTable(parms);
+				mapper.copyStageToMain(parms);
+				mapper.emptyStage(parms);
+				session.commit();
+			}
 		}
 	}
 }

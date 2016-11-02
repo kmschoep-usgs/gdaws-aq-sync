@@ -11,4 +11,5 @@ public interface AqToGdawsMapper {
 	void deleteOverlappingData(Map<String, Object> parms);
 	void copyStageToMain(Map<String, Object> parms);
 	void emptyStage(Map<String, Object> parms);	
+	void analyzeTable(Map<String, Object> parms);
 }

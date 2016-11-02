@@ -65,7 +65,7 @@ public class AqToGdaws {
 				startTime = endTime.minusDays(daysToFetch);
 			}
 			
-			LOG.info("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
+			LOG.debug("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
 					site.getLocalSiteId(), site.getPCode(), 
 					DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime), 
 					DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime));
@@ -81,19 +81,21 @@ public class AqToGdaws {
 				TimeSeries retrieved = dataService.getTimeSeriesData(
 						remoteSiteId, uid, DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime),
 						DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime), false, false);
-				
-				//1. Transform data from AQCU format to GDAWS format
-				GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site, startTime, endTime);
-				//2. Insert formatted data into GDAWS
-				aqToGdawsDao.insertTimeseriesData(toInsert);
 								
 				Integer numOfPoints = retrieved.getPoints().size();
-				LOG.info("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
+				LOG.debug("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
 						", which contains " + numOfPoints + " points");
 				if(numOfPoints > 0) {
 					LOG.trace("First point: " + 
 							ISO8601TemporalSerializer.print(retrieved.getPoints().get(0).getTime()) + 
 							" " + retrieved.getPoints().get(0).getValue());
+					
+					GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site, startTime, endTime);
+
+					LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
+
+					//NOTE: Temporarily disabled until site configuration loading is completed
+					//aqToGdawsDao.insertTimeseriesData(toInsert);
 				}
 			}
 			
@@ -144,11 +146,12 @@ public class AqToGdaws {
 		
 		newPoint.setSiteId(site.getLocalSiteId());
 		newPoint.setGroupId(site.getLocalParamId());
-		//Fix for points at midnight
-		if(source.getTime() instanceof LocalDate){
-			newPoint.setMeasurementDate(((LocalDate)source.getTime()).now().atStartOfDay().toInstant(ZoneOffset.UTC));
-		} else {
+		//Fix for points with no time
+		if(source.getTime().isSupported(ChronoUnit.HOURS)){
 			newPoint.setMeasurementDate(Instant.from(source.getTime()));
+		} else {
+			LOG.debug("Found point without associated time: " + source.getTime());
+			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay().toInstant(ZoneOffset.UTC));
 		}
 		newPoint.setFinalValue(source.getValue());
 		
