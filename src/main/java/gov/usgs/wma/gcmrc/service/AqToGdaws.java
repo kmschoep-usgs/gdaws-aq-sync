@@ -159,8 +159,10 @@ public class AqToGdaws {
 		newPoint.setSourceId(67);
 		
 		//TODO: Apply Qualifiers?
+		newPoint.setDataApprovalId(1);
 		
 		//TODO: Apply Approvals?
+		newPoint.setMainQualifierId(1);
 		
 		//TODO: Other info needed?
 		

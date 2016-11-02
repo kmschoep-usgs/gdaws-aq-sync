@@ -17,7 +17,7 @@
 		INSERT ALL
 		<foreach collection="records" item="element" index="index" >
 		INTO TIME_SERIES_AP_STAGE (SITE_ID, GROUP_ID, MEASUREMENT_DATE, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID, SOURCE_ID) 
-			values (#{element.siteId,jdbcType=NUMERIC},#{element.groupId,jdbcType=NUMERIC},#{element.measurementDate,jdbcType=TIMESTAMP},#{element.finalValue,jdbcType=NUMERIC}, 1, 1,#{element.sourceId,jdbcType=NUMERIC})
+			values (#{element.siteId,jdbcType=NUMERIC},#{element.groupId,jdbcType=NUMERIC},#{element.measurementDate,jdbcType=TIMESTAMP},#{element.finalValue,jdbcType=NUMERIC}, #{element.mainQualifierId,jdbcType=NUMERIC}, #{element.dataApprovalId,jdbcType=NUMERIC},#{element.sourceId,jdbcType=NUMERIC})
 		</foreach>
 		SELECT * FROM dual
 	</insert>
