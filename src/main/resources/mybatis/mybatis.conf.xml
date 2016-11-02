@@ -8,6 +8,7 @@
 		<setting name="lazyLoadingEnabled" value="false"/>
 		<setting name="aggressiveLazyLoading" value="false"/>
 		<setting name="defaultExecutorType" value="BATCH"/>
+		<setting name="defaultStatementTimeout" value="30"/>
 		<setting name="logImpl" value="SLF4J"/>
 		<setting name="autoMappingBehavior" value="PARTIAL"/>
 	</settings>
@@ -18,9 +19,6 @@
 		<typeAlias alias="GdawsTimeSeries" type="gov.usgs.wma.gcmrc.model.GdawsTimeSeries"/>
 		<typeAlias alias="TimeSeriesRecord" type="gov.usgs.wma.gcmrc.model.TimeSeriesRecord"/>
 	</typeAliases>
- 	
-	<typeHandlers>
-	</typeHandlers>
 	
 	<environments default="development">
 		<environment id="development">

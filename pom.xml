@@ -66,9 +66,9 @@
 			<url>https://internal.cida.usgs.gov/maven/content/repositories/cida-snapshots</url>
 		</repository>
 		<repository>
-			<id>cida-thirdparty</id>
-			<name>CIDA Thirdpart</name>
-			<url>https://internal.cida.usgs.gov/maven/content/repositories/cida-thirdparty/</url>
+			<id>cida-thirdparty-internal</id>
+			<name>CIDA 3rd party Nexus</name>
+			<url>http://internal.cida.usgs.gov/maven/content/repositories/cida-thirdparty/</url>
 		</repository>
 		<repository>
 			<id>cida-public</id>
@@ -81,7 +81,7 @@
 			<url>http://cida.usgs.gov/maven/cida-public-snapshots/</url>
 		</repository>
 		<repository>
-			<id>cida-public-thirdparty</id>
+			<id>cida-thirdparty</id>
 			<name>CIDA Public Nexus</name>
 			<url>http://cida.usgs.gov/maven/cida-public-thirdparty/</url>
 		</repository>
@@ -105,8 +105,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>11.2.0.3-1</version>
+			<artifactId>ojdbc6_g</artifactId>
+			<version>11.2.0.4-1</version>
 		</dependency>
 	</dependencies>
 
