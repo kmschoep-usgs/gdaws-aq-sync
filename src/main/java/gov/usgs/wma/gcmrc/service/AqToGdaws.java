@@ -162,9 +162,7 @@ public class AqToGdaws {
 		
 		newSeries.setSiteId(site.getLocalSiteId());
 		newSeries.setGroupId(site.getLocalParamId());
-				
-		//TODO: SourceId?
-		newSeries.setSourceId(67);
+		newSeries.setSourceId(this.sourceId);
 		
 		//Build Points
 		List<TimeSeriesRecord> newRecords = new ArrayList<>();
@@ -203,8 +201,6 @@ public class AqToGdaws {
 			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay());
 		}
 		newPoint.setFinalValue(source.getValue().doubleValue());
-		
-		//TODO: SourceId?
 		newPoint.setSourceId(this.sourceId);
 		
 		//TODO: Apply Qualifiers?
