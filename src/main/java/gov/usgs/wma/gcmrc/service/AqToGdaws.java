@@ -24,15 +24,17 @@ public class AqToGdaws {
 		
 	private List<SiteConfiguration> sitesToLoad;
 	private Integer daysToFetch;
+	private Integer sourceId;
 	
 	DataService dataService;
 
-	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch) {
+	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch, Integer sourceId) {
 		SiteConfigurationLoader siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.loadSiteConfiguration();
 		this.dataService = dataService;
 		
 		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
+		this.sourceId = sourceId;
 	}
 	
 	public void migrateAqData() {
