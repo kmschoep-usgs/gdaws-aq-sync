@@ -47,14 +47,9 @@ public class AqToGdaws {
 	 * @param defaultDaysToFetch 
 	 */
 	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch) {
-<<<<<<< HEAD
-		SiteConfigurationLoader siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.aqToGdawsDao = new AqToGdawsDAO(gdawsDaoFactory);
-		this.sitesToLoad = siteConfiguationLoader.loadSiteConfiguration();
-=======
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
->>>>>>> e37ab49ceef5620d2b9b5a96ab3397bc6394826a
 		this.dataService = dataService;
 		
 		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
@@ -64,54 +59,6 @@ public class AqToGdaws {
 		fillInAquariusParamNames(sitesToLoad);
 				
 		for(SiteConfiguration site : sitesToLoad) {
-<<<<<<< HEAD
-			if(site.getLocalSiteId() != 9402000) {
-				continue;
-			}
-			ZonedDateTime startTime = null;
-			ZonedDateTime endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-							
-			if (site.getLastNewPullStart() != null && site.getLastNewPullEnd() != null) {
-				//Pull data from since the last pull until now.
-				//Move the start time back a second, since we round to the nearest second.
-				startTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
-			} else {
-				startTime = endTime.minusDays(daysToFetch);
-			}
-			
-			LOG.debug("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
-					site.getLocalSiteId(), site.getPCode(), 
-					DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime), 
-					DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime));
-			
-			
-			//Long siteId = c.getSiteId();
-			String remoteSiteId = site.getRemoteSiteId();
-
-			//Only pull published timeseries
-			List<String> tsUids = dataService.getTimeSeriesUniqueIdsAtSite(remoteSiteId, true, null, site.getAqParam(), null, null);
-			
-			for(String uid: tsUids) {
-				TimeSeries retrieved = dataService.getTimeSeriesData(
-						remoteSiteId, uid, DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime),
-						DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime), false, false);
-								
-				Integer numOfPoints = retrieved.getPoints().size();
-				LOG.debug("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
-						", which contains " + numOfPoints + " points");
-				if(numOfPoints > 0) {
-					LOG.trace("First point: " + 
-							ISO8601TemporalSerializer.print(retrieved.getPoints().get(0).getTime()) + 
-							" " + retrieved.getPoints().get(0).getValue());
-					
-					GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site, startTime, endTime);
-
-					LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
-
-					//NOTE: Temporarily disabled until site configuration loading is completed
-					//aqToGdawsDao.insertTimeseriesData(toInsert);
-=======
-
 			if (site.getAqParam() != null) {
 				ZonedDateTime startTime = null;
 				ZonedDateTime endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
@@ -122,7 +69,6 @@ public class AqToGdaws {
 					startTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
 				} else {
 					startTime = endTime.minusDays(daysToFetch);
->>>>>>> e37ab49ceef5620d2b9b5a96ab3397bc6394826a
 				}
 
 				LOG.debug("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
@@ -159,6 +105,13 @@ public class AqToGdaws {
 						LOG.trace("First point: " + 
 								ISO8601TemporalSerializer.print(retrieved.getPoints().get(0).getTime()) + 
 								" " + retrieved.getPoints().get(0).getValue());
+						
+						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site, startTime, endTime);
+
+						LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
+
+						//NOTE: Temporarily disabled until site configuration loading is completed
+						//aqToGdawsDao.insertTimeseriesData(toInsert);
 					}
 				}
 
