@@ -6,7 +6,6 @@
 package gov.usgs.wma.gcmrc.model;
 
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
