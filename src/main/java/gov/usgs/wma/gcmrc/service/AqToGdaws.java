@@ -205,7 +205,7 @@ public class AqToGdaws {
 		newPoint.setFinalValue(source.getValue().doubleValue());
 		
 		//TODO: SourceId?
-		newPoint.setSourceId(67);
+		newPoint.setSourceId(this.sourceId);
 		
 		//TODO: Apply Qualifiers?
 		newPoint.setDataApprovalId(1);
