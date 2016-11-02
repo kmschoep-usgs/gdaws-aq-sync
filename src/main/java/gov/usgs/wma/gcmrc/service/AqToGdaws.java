@@ -25,11 +25,11 @@ public class AqToGdaws {
 		
 	private List<SiteConfiguration> sitesToLoad;
 	private Integer daysToFetch;
+	private Integer sourceId;
 	
 	private DataService dataService;
 	private SiteConfigurationLoader siteConfiguationLoader;
 
-	
 	/**
 	 * Constructor that loads its own site configuration and automatically loads data since
 	 * the last timestamp.
@@ -37,12 +37,13 @@ public class AqToGdaws {
 	 * @param gdawsDaoFactory
 	 * @param defaultDaysToFetch 
 	 */
-	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch) {
+	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch, Integer sourceId) {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.dataService = dataService;
 		
 		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
+		this.sourceId = sourceId;
 	}
 	
 	public void migrateAqData() {

@@ -21,6 +21,7 @@ public class TimeSeriesDAO {
 		this.sessionFactory = gdawsDaoFactory.getSqlSessionFactory();
 	}
 	
+	//TODO Mybatis is mishandling the timestamps (which have no timezone) and shifting all datetimes to local timezone (EG: by -5 if running code in central timezone)
 	public List<TimeSeriesRecord> getTimeSeries(Integer siteId, String groupName) {
 		List<TimeSeriesRecord> timeSeries = null;
 
