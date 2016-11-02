@@ -59,10 +59,12 @@ public class AqToGdaws {
 		
 		for(SiteConfiguration site : sitesToLoad) {
 			
-			//
+			//Temporary hack to only test on one specific site
+			/*
 			if(site.getLocalSiteId() != 9402000){
 				continue;
 			}
+			*/
 
 			if (site.getAqParam() != null) {
 				ZonedDateTime startTime = null;
@@ -116,7 +118,7 @@ public class AqToGdaws {
 						LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
 
 						//NOTE: Temporarily disabled until site configuration loading is completed
-						aqToGdawsDao.insertTimeseriesData(toInsert);
+						//aqToGdawsDao.insertTimeseriesData(toInsert);
 					}
 				}
 
