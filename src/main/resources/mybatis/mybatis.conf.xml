@@ -35,7 +35,6 @@
 	<mappers>
 		<mapper resource="mybatis/siteConfigMapper.xml"/>
 		<mapper resource="mybatis/autoProcConfigMapper.xml"/>
-		<mapper resource="mybatis/aqToGdawsMapper.xml"/>
 		<mapper resource="mybatis/timeSeries.xml"/>
 	</mappers>
     

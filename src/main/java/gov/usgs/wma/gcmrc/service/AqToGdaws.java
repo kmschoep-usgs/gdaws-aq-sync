@@ -14,9 +14,9 @@ import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 import gov.usgs.aqcu.model.TimeSeries;
 import gov.usgs.aqcu.model.TimeSeriesPoint;
-import gov.usgs.wma.gcmrc.dao.AqToGdawsDAO;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
+import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
@@ -29,7 +29,7 @@ public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
 	
 	private static final Integer DEFAULT_DAYS_TO_FETCH = 30;
-	private final AqToGdawsDAO aqToGdawsDao;
+	private final TimeSeriesDAO timeSeriesDao;
 		
 	private List<SiteConfiguration> sitesToLoad;
 	private Integer daysToFetch;
@@ -49,7 +49,7 @@ public class AqToGdaws {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.dataService = dataService;
-		this.aqToGdawsDao = new AqToGdawsDAO(gdawsDaoFactory);
+		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
 		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
 		this.sourceId = sourceId;
 	}
@@ -60,11 +60,11 @@ public class AqToGdaws {
 		for(SiteConfiguration site : sitesToLoad) {
 			
 			//Temporary hack to only test on one specific site
-			/*
+			
 			if(site.getLocalSiteId() != 9402000){
 				continue;
 			}
-			*/
+			
 
 			if (site.getAqParam() != null) {
 				ZonedDateTime startTime = null;
@@ -118,7 +118,7 @@ public class AqToGdaws {
 						LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
 
 						//NOTE: Temporarily disabled until site configuration loading is completed
-						//aqToGdawsDao.insertTimeseriesData(toInsert);
+						timeSeriesDao.insertTimeseriesData(toInsert);
 					}
 				}
 
