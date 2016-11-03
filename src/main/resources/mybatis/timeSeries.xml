@@ -72,4 +72,48 @@
 		NOTES, 
 		ER_VALUE 
 	</sql>
+	
+	<!-- Note: AQ -> GDAWS SQL and Strategy primarily taken from AutoProc I
+		Strategy:
+		 *   - INSERT time series into staging table
+		 *   - DELETE data from main table already existing within the DateTime range of the input time seies
+		 *   - INSERT staging table into main table
+		 *   - Delete staging table records-->
+		
+	<!-- Insert data into Staging Table -->
+	<insert id="insertTimeseriesDataToStageTable">
+		INSERT ALL
+		<foreach collection="records" item="element" index="index" >
+		INTO TIME_SERIES_AP_STAGE (SITE_ID, GROUP_ID, MEASUREMENT_DATE, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID, SOURCE_ID) 
+			values (#{element.siteId,jdbcType=NUMERIC},#{element.groupId,jdbcType=NUMERIC},#{element.measurementDate,jdbcType=TIMESTAMP},#{element.finalValue,jdbcType=NUMERIC}, #{element.mainQualifierId,jdbcType=NUMERIC}, #{element.dataApprovalId,jdbcType=NUMERIC},#{element.sourceId,jdbcType=NUMERIC})
+		</foreach>
+		SELECT * FROM dual
+	</insert>
+		
+	<!-- Delete data from Main Table already existing within the DateTime range of the input time series -->
+	<delete id="deleteOverlappingDataInStarTable">
+		DELETE From TIME_SERIES_STAR
+			Where SITE_ID=#{siteId} And GROUP_ID=#{groupId} And SOURCE_ID=#{sourceId} And MEASUREMENT_DATE &gt;=#{startTime} And MEASUREMENT_DATE &lt;=#{endTime}
+	</delete>
+	
+	<!-- From AutoProc I: 
+		Hack alert: It is necessary to force Oracle to analyze the staging table bfore merging.  This seems to be a design issue of these star tables. 
+		Note: This binds this class to the schema name (GDAWS_PROD) of the database. -->
+	<select id="analyzeStageTable">
+		begin dbms_stats.gather_table_stats('GDAWS', 'TIME_SERIES_AP_STAGE' , null, 100, false, 'FOR ALL COLUMNS SIZE AUTO', 1, 'ALL', true); end;
+	</select>
+	
+	<!-- Insert Staging Table into Main Table -->
+	<insert id="copyStageTableToStarTable">
+		Insert Into TIME_SERIES_STAR(SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID)
+			Select SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID
+			From TIME_SERIES_AP_STAGE
+			Where SOURCE_ID=#{sourceId}
+			log errors into time_series_star_errlog('GdawsAutoProc') reject limit unlimited
+	</insert>
+	
+	<!-- Delete Staging Table records -->
+	<delete id="emptyStageTable">
+		truncate table TIME_SERIES_AP_STAGE
+	</delete>
 </mapper>

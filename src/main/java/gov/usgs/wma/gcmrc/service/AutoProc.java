@@ -1,7 +1,6 @@
 package gov.usgs.wma.gcmrc.service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +12,7 @@ import gov.usgs.wma.gcmrc.dao.AutoProcConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
+import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
 
 public class AutoProc {
 	private static final Logger LOG = LoggerFactory.getLogger(AutoProcConfigurationLoader.class);
@@ -38,7 +38,7 @@ public class AutoProc {
 		
 		for(Integer siteId : bedLoadParams.keySet()) {
 			List<TimeSeriesRecord> discharge = timeSeriesDAO.getTimeSeries(siteId, DISCHARGE_PARAMETER_NAME); 
-			Map<LocalDateTime, Integer> dischargeMillisIndex = asMillisIndexMap(discharge);
+			Map<LocalDateTime, Integer> dischargeMillisIndex = TimeSeriesUtils.asMillisIndexMap(discharge);
 			List<TimeSeriesRecord> suspendedSand = timeSeriesDAO.getTimeSeries(siteId, INST_SUSP_SAND_PARAMETER_NAME);
 			
 			Double c1 = bedLoadParams.get(siteId).get("c1");
@@ -55,37 +55,21 @@ public class AutoProc {
 				TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(time) != null ? discharge.get(dischargeMillisIndex.get(time)) : null;
 				if(correspondingDischarge == null) {
 					LOG.trace("Discharge interpolation needed for {}", susp.getMeasurementDate());
-					//TODO interpolate Q
-				} else {
+					correspondingDischarge = TimeSeriesUtils.getInterpolatedDischarge(discharge, dischargeMillisIndex, time);
+				} 
 
-					//Bedload calc Y=X(10.^(c1+c2logQ))
-					Double instBedload = susp.getFinalValue() * (Math.pow(10, (c1 + c2 * Math.log10(correspondingDischarge.getFinalValue())))); 
-					
-					LOG.trace("Calculated bed load {} {}", time, instBedload);
-					
-					//add result
-					results.add(new TimeSeriesRecord(time, instBedload, sourceId));
-				}
+				//Bedload calc Y=X(10.^(c1+c2logQ))
+				Double instBedload = susp.getFinalValue() * (Math.pow(10, (c1 + c2 * Math.log10(correspondingDischarge.getFinalValue())))); 
+				
+				LOG.trace("Calculated bed load {} {} {}", siteId, time, instBedload);
+				
+				//add result
+				results.add(new TimeSeriesRecord(time, instBedload, sourceId));
 			}
 			
-			//TODO upsert calculated data
-		}
-	}
-	
-	/**
-	 * For the purpose of quickly finding time-value pairs for interpolating random points
-	 */
-	private Map<LocalDateTime, Integer> asMillisIndexMap(List<TimeSeriesRecord> list) {
-		HashMap<LocalDateTime, Integer> newMap = new HashMap<>();
-		for(int i = 0; i < list.size(); i++) {
-			TimeSeriesRecord r = list.get(i);
-			if(newMap.putIfAbsent(r.getMeasurementDate(), i) != null) {
-				LOG.error("DUPE {} {} versus {} {}", r.getMeasurementDate(), r.getFinalValue(), 
-						list.get(newMap.get(r.getMeasurementDate())).getMeasurementDate(), list.get(newMap.get(r.getMeasurementDate())).getFinalValue());
-				throw new RuntimeException("Multiple points found at the same time in time series");
-			}
+			//TODO insert records into time_series_ap_stage
 		}
 		
-		return newMap;
+		//TODO merge time_series_stage into time_series_star
 	}
 }
