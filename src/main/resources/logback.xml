@@ -11,4 +11,6 @@
 	</root>
 	
 	<logger name="gov.usgs.wma.gcmrc" level="INFO" />
+	<logger name="java.sql" level="ERROR" />
+	<logger name="gov.usgs.wma.gcmrc.mapper" level="ERROR" />
 </configuration>
