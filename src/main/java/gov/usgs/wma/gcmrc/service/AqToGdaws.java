@@ -203,6 +203,7 @@ public class AqToGdaws {
 		
 		newPoint.setSiteId(site.getLocalSiteId());
 		newPoint.setGroupId(site.getLocalParamId());
+		
 		//Fix for points with no time
 		if(source.getTime().isSupported(ChronoUnit.HOURS)){
 			newPoint.setMeasurementDate(LocalDateTime.from(source.getTime()));
@@ -223,7 +224,7 @@ public class AqToGdaws {
 			}
 			//If we have a valid mapping for this qualifier
 			else if(gdawsQualifier != null){
-				//If the approval time period includes the current point apply the approval
+				//If the qualifier time period includes the current point apply the qualifier
 				if((LocalDateTime.from(aqQualifier.getStartDate()).isBefore(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getStartDate()).isEqual(newPoint.getMeasurementDate()))
 						&& (LocalDateTime.from(aqQualifier.getEndDate()).isAfter(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getEndDate()).isEqual(newPoint.getMeasurementDate()))){
 					newPoint.setMainQualifierId(gdawsQualifier);
