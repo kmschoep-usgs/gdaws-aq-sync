@@ -2,12 +2,13 @@ package gov.usgs.wma.gcmrc.model;
 
 import java.time.LocalDateTime;
 
+import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
+
 public class TimeSeriesRecord {
 	private Integer siteId;
 	private Integer subsiteId;             
 	private Integer groupId;             
 	private LocalDateTime measurementDate;   
-	private String measurementDateIso;    
 	private Double finalValue;             
 	private Double rawValue;             
 	private Integer mainQualifierId;             
@@ -30,10 +31,12 @@ public class TimeSeriesRecord {
 		//default
 	}
 	
-	public TimeSeriesRecord(LocalDateTime time, Double finalValue, Integer sourceId) {
-		this.measurementDate = time;
+	public TimeSeriesRecord(LocalDateTime time, Double finalValue, Integer sourceId, Integer groupId, Integer siteId) {
+		setMeasurementDate(time);
 		this.finalValue = finalValue;
 		this.sourceId = sourceId;
+		this.groupId = groupId;
+		this.siteId = siteId;
 	}
 	
 	public Integer getSiteId() {
@@ -61,11 +64,10 @@ public class TimeSeriesRecord {
 		this.measurementDate = measurementDate;
 	}      
 	public String getMeasurementDateIso() {
-		return measurementDateIso;
+		return ISO8601TemporalSerializer.print(measurementDate);
 	}
 
 	public void setMeasurementDateIso(String measurementDateIso) {
-		this.measurementDateIso = measurementDateIso;
 		this.measurementDate = LocalDateTime.parse(measurementDateIso);
 	}
 	public Double getFinalValue() {

@@ -1,7 +1,6 @@
 package gov.usgs.wma.gcmrc.service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.wma.gcmrc.dao.AutoProcConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
+import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
+import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
 
 public class AutoProc {
 	private static final Logger LOG = LoggerFactory.getLogger(AutoProcConfigurationLoader.class);
@@ -32,13 +33,13 @@ public class AutoProc {
 	
 	//TODO refactor bedload stuff out into it's own class and leave AutoProc as the top level service class for all future calculation
 	
-	public void processBedloadCalculations() {
+	public void processBedloadCalculations(Integer bedLoadParamId) {
 		Map<Integer, Map<String, Double>> bedLoadParams = 
 				autoProcConfLoader.asParamMap(autoProcConfLoader.loadBedLoadCalculationConfiguration());
 		
 		for(Integer siteId : bedLoadParams.keySet()) {
 			List<TimeSeriesRecord> discharge = timeSeriesDAO.getTimeSeries(siteId, DISCHARGE_PARAMETER_NAME); 
-			Map<LocalDateTime, Integer> dischargeMillisIndex = asMillisIndexMap(discharge);
+			Map<LocalDateTime, Integer> dischargeMillisIndex = TimeSeriesUtils.asMillisIndexMap(discharge);
 			List<TimeSeriesRecord> suspendedSand = timeSeriesDAO.getTimeSeries(siteId, INST_SUSP_SAND_PARAMETER_NAME);
 			
 			Double c1 = bedLoadParams.get(siteId).get("c1");
@@ -52,40 +53,63 @@ public class AutoProc {
 			
 			for(TimeSeriesRecord susp : suspendedSand) {
 				LocalDateTime time = susp.getMeasurementDate();
-				TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(time) != null ? discharge.get(dischargeMillisIndex.get(time)) : null;
-				if(correspondingDischarge == null) {
-					LOG.trace("Discharge interpolation needed for {}", susp.getMeasurementDate());
-					//TODO interpolate Q
+				
+				Double instBedload;
+				
+				if(susp.getFinalValue() == 0d) {
+					instBedload = 0d;
 				} else {
+					TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(time) != null ? discharge.get(dischargeMillisIndex.get(time)) : null;
 
+					if(correspondingDischarge == null) {
+						LOG.trace("Discharge interpolation needed for {}", susp.getMeasurementDate());
+						correspondingDischarge = TimeSeriesUtils.getInterpolatedDischarge(discharge, time, sourceId, bedLoadParamId, siteId);
+					} 
+					
 					//Bedload calc Y=X(10.^(c1+c2logQ))
-					Double instBedload = susp.getFinalValue() * (Math.pow(10, (c1 + c2 * Math.log10(correspondingDischarge.getFinalValue())))); 
-					
-					LOG.trace("Calculated bed load {} {}", time, instBedload);
-					
-					//add result
-					results.add(new TimeSeriesRecord(time, instBedload, sourceId));
+					instBedload = susp.getFinalValue() * (Math.pow(10, (c1 + c2 * Math.log10(correspondingDischarge.getFinalValue()))));
 				}
+
+				LOG.trace("Calculated bed load {} {} {}", siteId, time, instBedload);
+				
+				if(instBedload.isNaN()) {
+					LOG.warn("Calculated bed load isNaN");
+				}
+				
+				//add result
+				results.add(new TimeSeriesRecord(time, instBedload, sourceId, bedLoadParamId, siteId));
 			}
-			
-			//TODO upsert calculated data
-		}
-	}
-	
-	/**
-	 * For the purpose of quickly finding time-value pairs for interpolating random points
-	 */
-	private Map<LocalDateTime, Integer> asMillisIndexMap(List<TimeSeriesRecord> list) {
-		HashMap<LocalDateTime, Integer> newMap = new HashMap<>();
-		for(int i = 0; i < list.size(); i++) {
-			TimeSeriesRecord r = list.get(i);
-			if(newMap.putIfAbsent(r.getMeasurementDate(), i) != null) {
-				LOG.error("DUPE {} {} versus {} {}", r.getMeasurementDate(), r.getFinalValue(), 
-						list.get(newMap.get(r.getMeasurementDate())).getMeasurementDate(), list.get(newMap.get(r.getMeasurementDate())).getFinalValue());
-				throw new RuntimeException("Multiple points found at the same time in time series");
+
+			if(results.size() > 0) {
+				timeSeriesDAO.insertTimeseriesData(toGdawsTimeSeries(results, siteId, bedLoadParamId));
 			}
 		}
 		
-		return newMap;
+	}
+	
+	private GdawsTimeSeries toGdawsTimeSeries(List<TimeSeriesRecord> points, Integer siteId, Integer paramId){
+		GdawsTimeSeries newSeries = new GdawsTimeSeries();
+		
+		newSeries.setSiteId(siteId);
+		newSeries.setGroupId(paramId);
+		newSeries.setSourceId(this.sourceId);
+		newSeries.setRecords(points);
+		
+		LocalDateTime startTime = null, endTime = null;
+		
+		for(TimeSeriesRecord p : points){
+			if(startTime == null || p.getMeasurementDate().isBefore(startTime)){
+				startTime = p.getMeasurementDate();
+			}
+			
+			if(endTime == null || p.getMeasurementDate().isAfter(endTime)){
+				endTime = p.getMeasurementDate();
+			}
+		}
+		
+		newSeries.setStartTime(startTime);
+		newSeries.setEndTime(endTime);
+		
+		return newSeries;
 	}
 }

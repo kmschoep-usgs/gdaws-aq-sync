@@ -5,11 +5,27 @@
 			<pattern>%d{HH:mm:ss} %m \(%c{1}[%p]\)%n</pattern>
 		</encoder>
 	</appender>
+	<appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>gcmrc-data-processor.log</File>
+        <encoder>
+            <pattern>%d{HH:mm:ss} %p %c{1}: %m%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>gcmrc-data-processor.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <timeBasedFileNamingAndTriggeringPolicy
+            class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+            <maxFileSize>100MB</maxFileSize>
+        </timeBasedFileNamingAndTriggeringPolicy>
+    </appender>
 	
 	<root level="INFO">
 		<appender-ref ref="stdout" />
+		<appender-ref ref="file" />
 	</root>
 	
-	<logger name="gov.usgs.wma.gcmrc" level="INFO" />
-	<logger name="gov.usgs.wma.gcmrc.mapper" level="INFO"/>
+	<logger name="gov.usgs.wma.gcmrc" level="DEBUG" />
+	<logger name="java.sql" level="ERROR" />
+	<logger name="gov.usgs.wma.gcmrc.mapper" level="ERROR" />
 </configuration>

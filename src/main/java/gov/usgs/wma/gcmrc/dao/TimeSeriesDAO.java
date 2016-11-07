@@ -22,13 +22,20 @@ public class TimeSeriesDAO {
 		this.sessionFactory = gdawsDaoFactory.getSqlSessionFactory();
 	}
 	
-	//TODO Mybatis is mishandling the timestamps (which have no timezone) and shifting all datetimes to local timezone (EG: by -5 if running code in central timezone)
 	public List<TimeSeriesRecord> getTimeSeries(Integer siteId, String groupName) {
+		return getTimeSeries(siteId, groupName, true);
+	}
+	
+	public List<TimeSeriesRecord> getTimeSeries(Integer siteId, String groupName, Boolean excludeDummyValues) {
 		List<TimeSeriesRecord> timeSeries = null;
 
 		Map<String, Object> parms = new HashMap<String, Object>();
 		parms.put("siteId", siteId);
 		parms.put("groupName", groupName);
+		
+		if(excludeDummyValues) {
+			parms.put("excludeDummyValues", true);
+		}
 		
 		LOG.debug("Loading time series for site {} and group {}", siteId, groupName);
 		try (SqlSession session = sessionFactory.openSession()) {
@@ -54,11 +61,12 @@ public class TimeSeriesDAO {
 			try (SqlSession session = sessionFactory.openSession()) {
 				TimeSeriesMapper mapper = session.getMapper(TimeSeriesMapper.class);	
 				mapper.emptyStageTable(parms);	
-				mapper.insertTimeseriesDataToStageTable(parms);
-				session.commit();
+				for(TimeSeriesRecord r : series.getRecords()) {
+					mapper.insertTimeseriesDataToStageTable(r);
+				}
 				mapper.deleteOverlappingDataInStarTable(parms);
 				//Is this still necessary?
-				//mapper.analyzeTable(parms);
+				mapper.analyzeStageTable(parms);
 				mapper.copyStageTableToStarTable(parms);
 				mapper.emptyStageTable(parms);
 				session.commit();
