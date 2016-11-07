@@ -7,7 +7,7 @@ import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 
 /**
  *
- * @author thongsav
+ * @author thongsav, zmoore
  */
 public interface TimeSeriesMapper {
 	List<TimeSeriesRecord> getTimeSeries(Map<String, Object> parms);

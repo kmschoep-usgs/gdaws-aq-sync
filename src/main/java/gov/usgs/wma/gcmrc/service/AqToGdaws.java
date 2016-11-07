@@ -17,13 +17,13 @@ import gov.usgs.aqcu.model.TimeSeriesPoint;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
+import gov.usgs.wma.gcmrc.dao.TimeSeriesTranslationLoader;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
@@ -48,6 +48,7 @@ public class AqToGdaws {
 	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch, Integer sourceId) {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
+		
 		this.dataService = dataService;
 		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
 		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
