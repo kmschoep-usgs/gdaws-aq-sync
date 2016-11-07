@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.wma.gcmrc.dao.AutoProcConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
+import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
 
@@ -32,7 +33,7 @@ public class AutoProc {
 	
 	//TODO refactor bedload stuff out into it's own class and leave AutoProc as the top level service class for all future calculation
 	
-	public void processBedloadCalculations() {
+	public void processBedloadCalculations(Integer bedLoadParamId) {
 		Map<Integer, Map<String, Double>> bedLoadParams = 
 				autoProcConfLoader.asParamMap(autoProcConfLoader.loadBedLoadCalculationConfiguration());
 		
@@ -52,24 +53,63 @@ public class AutoProc {
 			
 			for(TimeSeriesRecord susp : suspendedSand) {
 				LocalDateTime time = susp.getMeasurementDate();
-				TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(time) != null ? discharge.get(dischargeMillisIndex.get(time)) : null;
-				if(correspondingDischarge == null) {
-					LOG.trace("Discharge interpolation needed for {}", susp.getMeasurementDate());
-					correspondingDischarge = TimeSeriesUtils.getInterpolatedDischarge(discharge, dischargeMillisIndex, time);
-				} 
-
-				//Bedload calc Y=X(10.^(c1+c2logQ))
-				Double instBedload = susp.getFinalValue() * (Math.pow(10, (c1 + c2 * Math.log10(correspondingDischarge.getFinalValue())))); 
 				
+				Double instBedload;
+				
+				if(susp.getFinalValue() == 0d) {
+					instBedload = 0d;
+				} else {
+					TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(time) != null ? discharge.get(dischargeMillisIndex.get(time)) : null;
+
+					if(correspondingDischarge == null) {
+						LOG.trace("Discharge interpolation needed for {}", susp.getMeasurementDate());
+						correspondingDischarge = TimeSeriesUtils.getInterpolatedDischarge(discharge, time, sourceId, bedLoadParamId, siteId);
+					} 
+					
+					//Bedload calc Y=X(10.^(c1+c2logQ))
+					instBedload = susp.getFinalValue() * (Math.pow(10, (c1 + c2 * Math.log10(correspondingDischarge.getFinalValue()))));
+				}
+
 				LOG.trace("Calculated bed load {} {} {}", siteId, time, instBedload);
 				
+				if(instBedload.isNaN()) {
+					LOG.warn("Calculated bed load isNaN");
+				}
+				
 				//add result
-				results.add(new TimeSeriesRecord(time, instBedload, sourceId));
+				results.add(new TimeSeriesRecord(time, instBedload, sourceId, bedLoadParamId, siteId));
 			}
-			
-			//TODO insert records into time_series_ap_stage
+
+			if(results.size() > 0) {
+				timeSeriesDAO.insertTimeseriesData(toGdawsTimeSeries(results, siteId, bedLoadParamId));
+			}
 		}
 		
-		//TODO merge time_series_stage into time_series_star
+	}
+	
+	private GdawsTimeSeries toGdawsTimeSeries(List<TimeSeriesRecord> points, Integer siteId, Integer paramId){
+		GdawsTimeSeries newSeries = new GdawsTimeSeries();
+		
+		newSeries.setSiteId(siteId);
+		newSeries.setGroupId(paramId);
+		newSeries.setSourceId(this.sourceId);
+		newSeries.setRecords(points);
+		
+		LocalDateTime startTime = null, endTime = null;
+		
+		for(TimeSeriesRecord p : points){
+			if(startTime == null || p.getMeasurementDate().isBefore(startTime)){
+				startTime = p.getMeasurementDate();
+			}
+			
+			if(endTime == null || p.getMeasurementDate().isAfter(endTime)){
+				endTime = p.getMeasurementDate();
+			}
+		}
+		
+		newSeries.setStartTime(startTime);
+		newSeries.setEndTime(endTime);
+		
+		return newSeries;
 	}
 }

@@ -37,6 +37,7 @@ public class GdawsSynchronizer {
 	private static final String GDAWS_PASS_PROP_NAME = "gdaws.dbPwd";
 	private static final String AQ_SOURCE_PROP_NAME = "aquarius.source.id";
 	private static final String AUTO_PROC_SOURCE_PROP_NAME = "autoproc.source.id";
+	private static final String BEDLOAD_GROUP_ID_PROP_NAME = "bedload.group.id";
 	private static final String DEFAULT_DAYS_TO_PULL_PROP_NAME = "default.days.to.fetch";
 	
 	
@@ -54,7 +55,8 @@ public class GdawsSynchronizer {
 			GDAWS_USER_PROP_NAME, "GDAWS Database user",
 			GDAWS_PASS_PROP_NAME, "GDAWS Database password",
 			AQ_SOURCE_PROP_NAME, "The source id to mark incoming records from aquarius with",
-			AUTO_PROC_SOURCE_PROP_NAME, "The source id to mark calculated values with"
+			AUTO_PROC_SOURCE_PROP_NAME, "The source id to mark calculated values with",
+			BEDLOAD_GROUP_ID_PROP_NAME, "The group id to mark calculated bed load values with"
 	};
 	
 	//prop names and descriptions
@@ -91,7 +93,7 @@ public class GdawsSynchronizer {
 
 			if(!isSkip(args, BEDLOAD_OPT)) {
 				LOG.info("Starting Bedload Calculations");
-				autoProc.processBedloadCalculations();
+				autoProc.processBedloadCalculations(runState.getIntProperty(BEDLOAD_GROUP_ID_PROP_NAME, null));
 				LOG.info("Finished Bedload Calculations");
 			} else {
 				LOG.info("Skipping Bedload Calculations");

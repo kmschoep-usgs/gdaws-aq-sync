@@ -7,7 +7,7 @@
 		<result property="siteId" column="SITE_ID"/>
 		<result property="subsiteId" column="SUBSITE_ID"/>             
 		<result property="groupId" column="GROUP_ID"/>             
-		<result property="measurementDateIso" column="MEASUREMENT_DATE"/>       
+		<result property="measurementDateIso" column="MEASUREMENT_DATE" />       
 		<result property="finalValue" column="FINAL_VALUE"/>             
 		<result property="rawValue" column="RAW_VALUE"/>             
 		<result property="mainQualifierId" column="MAIN_QUALIFIER_ID"/>             
@@ -45,6 +45,7 @@
 		<where>
 			<if test="siteId != null">AND SITE_ID = '${siteId}'</if> 
 			<if test="groupName != null">AND GROUP_ID = (SELECT DISTINCT(GROUP_ID) FROM GROUP_NAME WHERE NAME = '${groupName}')</if> 
+			<if test="excludeDummyValues != null and excludeDummyValues == true">AND FINAL_VALUE != -999</if> 
 		</where>
 		ORDER BY SITE_ID, MEASUREMENT_DATE
 	</sql>
@@ -53,7 +54,7 @@
 		SITE_ID,             
 		SUBSITE_ID,             
 		GROUP_ID,             
-		TO_CHAR(MEASUREMENT_DATE, 'YYYY-MM-DD') || 'T' || TO_CHAR(MEASUREMENT_DATE,'HH24:MI:SS') MEASUREMENT_DATE,       
+		<include refid="dateToIsoCast"/> MEASUREMENT_DATE,       
 		FINAL_VALUE,             
 		RAW_VALUE,             
 		MAIN_QUALIFIER_ID,             
@@ -73,6 +74,15 @@
 		ER_VALUE 
 	</sql>
 	
+	<!-- ***This set of casts is used to deal with a DST bug with the Oracle driver and
+	Timestamp columns. 2am times on DST days will show up shifted to 3am -->
+	<sql id="dateToIsoCast">
+	TO_CHAR(MEASUREMENT_DATE, 'YYYY-MM-DD') || 'T' || TO_CHAR(MEASUREMENT_DATE,'HH24:MI:SS') 
+	</sql>
+	<sql id="isoToDateCast">
+	TO_DATE(#{measurementDateIso,jdbcType=CHAR}, 'YYYY-MM-DD"T"HH24:MI:SS') 
+	</sql>
+	
 	<!-- Note: AQ -> GDAWS SQL and Strategy primarily taken from AutoProc I
 		Strategy:
 		 *   - INSERT time series into staging table
@@ -81,13 +91,9 @@
 		 *   - Delete staging table records-->
 		
 	<!-- Insert data into Staging Table -->
-	<insert id="insertTimeseriesDataToStageTable">
-		INSERT ALL
-		<foreach collection="records" item="element" index="index" >
-		INTO TIME_SERIES_AP_STAGE (SITE_ID, GROUP_ID, MEASUREMENT_DATE, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID, SOURCE_ID) 
-			values (#{element.siteId,jdbcType=NUMERIC},#{element.groupId,jdbcType=NUMERIC},#{element.measurementDate,jdbcType=TIMESTAMP},#{element.finalValue,jdbcType=NUMERIC}, #{element.mainQualifierId,jdbcType=NUMERIC}, #{element.dataApprovalId,jdbcType=NUMERIC},#{element.sourceId,jdbcType=NUMERIC})
-		</foreach>
-		SELECT * FROM dual
+	<insert id="insertTimeseriesDataToStageTable" parameterType="TimeSeriesRecord">
+		INSERT INTO TIME_SERIES_AP_STAGE (SITE_ID, GROUP_ID, MEASUREMENT_DATE, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID, SOURCE_ID) 
+		values (#{siteId,jdbcType=NUMERIC},#{groupId,jdbcType=NUMERIC},<include refid="isoToDateCast"/>,#{finalValue,jdbcType=NUMERIC}, #{mainQualifierId,jdbcType=NUMERIC}, #{dataApprovalId,jdbcType=NUMERIC},#{sourceId,jdbcType=NUMERIC})
 	</insert>
 		
 	<!-- Delete data from Main Table already existing within the DateTime range of the input time series -->
@@ -114,6 +120,6 @@
 	
 	<!-- Delete Staging Table records -->
 	<delete id="emptyStageTable">
-		truncate table TIME_SERIES_AP_STAGE
+		delete from TIME_SERIES_AP_STAGE
 	</delete>
 </mapper>
