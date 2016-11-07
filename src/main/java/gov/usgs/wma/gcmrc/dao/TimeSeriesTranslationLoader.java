@@ -19,9 +19,9 @@ public class TimeSeriesTranslationLoader {
 		this.sessionFactory = gdawsDaoFactory.getSqlSessionFactory();
 	}
 	
-	public Map<Number, Number> getAqGdawsApprovalMap(){
+	public Map<Integer, Integer> getAqGdawsApprovalMap(){
 		LOG.debug("Loading AQ -> GDAWS Approval Mapping");
-		Map<Number, Number> approvalMap = null;
+		Map<Integer, Integer> approvalMap = null;
 		
 		try (SqlSession session = sessionFactory.openSession()) {
 			TimeSeriesTranslationMapper mapper = session.getMapper(TimeSeriesTranslationMapper.class);
@@ -31,9 +31,9 @@ public class TimeSeriesTranslationLoader {
 		return approvalMap;
 	}
 	
-	public Map<String, Number> getAqGdawsQualifierMap(){
+	public Map<String, Integer> getAqGdawsQualifierMap(){
 		LOG.debug("Loading AQ -> GDAWS Qualifier Mapping");
-		Map<String, Number> qualifierMap = null;
+		Map<String, Integer> qualifierMap = null;
 		
 		try (SqlSession session = sessionFactory.openSession()) {
 			TimeSeriesTranslationMapper mapper = session.getMapper(TimeSeriesTranslationMapper.class);
