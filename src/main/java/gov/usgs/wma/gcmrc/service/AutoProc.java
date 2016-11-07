@@ -55,17 +55,16 @@ public class AutoProc {
 				LocalDateTime time = susp.getMeasurementDate();
 				
 				Double instBedload;
+
+				TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(time) != null ? discharge.get(dischargeMillisIndex.get(time)) : null;
+				if(correspondingDischarge == null) {
+					LOG.trace("Discharge interpolation needed for {}", susp.getMeasurementDate());
+					correspondingDischarge = TimeSeriesUtils.getInterpolatedDischarge(discharge, time, sourceId, bedLoadParamId, siteId);
+				} 
 				
-				if(susp.getFinalValue() == 0d) {
+				if(susp.getFinalValue() == 0d || correspondingDischarge.getFinalValue() == 0d) {
 					instBedload = 0d;
 				} else {
-					TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(time) != null ? discharge.get(dischargeMillisIndex.get(time)) : null;
-
-					if(correspondingDischarge == null) {
-						LOG.trace("Discharge interpolation needed for {}", susp.getMeasurementDate());
-						correspondingDischarge = TimeSeriesUtils.getInterpolatedDischarge(discharge, time, sourceId, bedLoadParamId, siteId);
-					} 
-					
 					//Bedload calc Y=X(10.^(c1+c2logQ))
 					instBedload = susp.getFinalValue() * (Math.pow(10, (c1 + c2 * Math.log10(correspondingDischarge.getFinalValue()))));
 				}
