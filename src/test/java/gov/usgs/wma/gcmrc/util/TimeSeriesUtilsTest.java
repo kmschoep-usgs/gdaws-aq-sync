@@ -19,8 +19,8 @@ public class TimeSeriesUtilsTest {
 			new TimeSeriesRecord(now.minus(7, ChronoUnit.HOURS), 1d, 0, 0, 0),
 			new TimeSeriesRecord(now.minus(6, ChronoUnit.HOURS), 2d, 0, 0, 0),
 			new TimeSeriesRecord(now.minus(5, ChronoUnit.HOURS), 3d, 0, 0, 0),
-			new TimeSeriesRecord(now.minus(4, ChronoUnit.HOURS), 4d, 0, 0, 0),
-			new TimeSeriesRecord(now.minus(3, ChronoUnit.HOURS), 5d, 0, 0, 0),
+			new TimeSeriesRecord(now.minus(4, ChronoUnit.HOURS), 5d, 0, 0, 0),
+			new TimeSeriesRecord(now.minus(3, ChronoUnit.HOURS), 4d, 0, 0, 0),
 			new TimeSeriesRecord(now.minus(2, ChronoUnit.HOURS), 6d, 0, 0, 0),
 			new TimeSeriesRecord(now.minus(1, ChronoUnit.HOURS), 7d, 0, 0, 0)
 	});
@@ -74,10 +74,10 @@ public class TimeSeriesUtilsTest {
 		
 		test = TimeSeriesUtils.getInterpolatedDischarge(testList, now.minus(225, ChronoUnit.MINUTES), 0, 0, 0);
 		assertEquals(test.getMeasurementDate(), now.minus(225, ChronoUnit.MINUTES));
-		assertEquals(test.getFinalValue(), Double.valueOf(4.25));
-		
-		test = TimeSeriesUtils.getInterpolatedDischarge(testList, now.minus(195, ChronoUnit.MINUTES), 0, 0, 0);
-		assertEquals(test.getMeasurementDate(), now.minus(195, ChronoUnit.MINUTES));
 		assertEquals(test.getFinalValue(), Double.valueOf(4.75));
+		
+		test = TimeSeriesUtils.getInterpolatedDischarge(testList, now.minus(345, ChronoUnit.MINUTES), 0, 0, 0);
+		assertEquals(test.getMeasurementDate(), now.minus(345, ChronoUnit.MINUTES));
+		assertEquals(test.getFinalValue(), Double.valueOf(2.25));
 	}
 }

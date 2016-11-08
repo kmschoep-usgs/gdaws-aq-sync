@@ -83,7 +83,6 @@ public class AutoProc {
 				timeSeriesDAO.insertTimeseriesData(toGdawsTimeSeries(results, siteId, bedLoadParamId));
 			}
 		}
-		
 	}
 	
 	private GdawsTimeSeries toGdawsTimeSeries(List<TimeSeriesRecord> points, Integer siteId, Integer paramId){
