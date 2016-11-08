@@ -33,6 +33,8 @@ public class TimeSeriesTranslationLoader {
 			for(Map<Integer, Integer> entry : approvalMap){
 				returnMap.put(((Number)entry.values().toArray()[0]).intValue(), ((Number)entry.values().toArray()[1]).intValue());
 			}
+			
+			LOG.trace("Loaded " + returnMap.entrySet().size() + " approval mappings.");
 		}
 		
 		return returnMap;
@@ -51,6 +53,9 @@ public class TimeSeriesTranslationLoader {
 			for(Map<String, Integer> entry : qualifierMap){
 				returnMap.put((String)entry.values().toArray()[0], ((Number)entry.values().toArray()[1]).intValue());
 			}
+			
+			
+			LOG.trace("Loaded " + returnMap.entrySet().size() + " qualifier mappings.");
 		}
 		
 		return returnMap;
