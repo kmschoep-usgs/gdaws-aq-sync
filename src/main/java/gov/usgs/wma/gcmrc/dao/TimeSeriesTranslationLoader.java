@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.mapper.TimeSeriesTranslationMapper;
 import java.util.HashMap;
+import java.util.List;
 
 public class TimeSeriesTranslationLoader {
 	private static final Logger LOG = LoggerFactory.getLogger(TimeSeriesTranslationLoader.class);
@@ -21,25 +22,37 @@ public class TimeSeriesTranslationLoader {
 	
 	public Map<Integer, Integer> getAqGdawsApprovalMap(){
 		LOG.debug("Loading AQ -> GDAWS Approval Mapping");
-		Map<Integer, Integer> approvalMap = null;
+		List<Map<Integer, Integer>> approvalMap = null;
+		Map<Integer, Integer> returnMap = null;
 		
 		try (SqlSession session = sessionFactory.openSession()) {
 			TimeSeriesTranslationMapper mapper = session.getMapper(TimeSeriesTranslationMapper.class);
 			approvalMap = mapper.getAqGdawsApprovalMap(new HashMap<>());
+			returnMap = new HashMap<>();
+					
+			for(Map<Integer, Integer> entry : approvalMap){
+				returnMap.put(((Number)entry.values().toArray()[0]).intValue(), ((Number)entry.values().toArray()[1]).intValue());
+			}
 		}
 		
-		return approvalMap;
+		return returnMap;
 	}
 	
 	public Map<String, Integer> getAqGdawsQualifierMap(){
 		LOG.debug("Loading AQ -> GDAWS Qualifier Mapping");
-		Map<String, Integer> qualifierMap = null;
+		List<Map<String, Integer>> qualifierMap = null;
+		Map<String, Integer> returnMap;
 		
 		try (SqlSession session = sessionFactory.openSession()) {
 			TimeSeriesTranslationMapper mapper = session.getMapper(TimeSeriesTranslationMapper.class);
 			qualifierMap = mapper.getAqGdawsQualifierMap(new HashMap<>());
+			returnMap = new HashMap<>();
+			
+			for(Map<String, Integer> entry : qualifierMap){
+				returnMap.put((String)entry.values().toArray()[0], ((Number)entry.values().toArray()[1]).intValue());
+			}
 		}
 		
-		return qualifierMap;
+		return returnMap;
 	}
 }

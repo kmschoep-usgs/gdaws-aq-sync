@@ -2,13 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
 
 <mapper namespace="gov.usgs.wma.gcmrc.mapper.TimeSeriesTranslationMapper">
-	<select id="getCount" parameterType="map" resultType="int">
-		SELECT
-			count(*)
-		FROM TIME_SERIES_STAR
-			<include refid="whereAndOrder"/>
-	</select>
-	
 	<select id="getAqGdawsQualifierMap" parameterType="map" resultType="map">
 		SELECT * FROM AQ_GDAWS_QUALIFIER_STAR
 	</select>
