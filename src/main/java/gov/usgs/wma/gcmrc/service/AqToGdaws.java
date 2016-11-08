@@ -220,7 +220,8 @@ public class AqToGdaws {
 			
 			//Apply ICE AFFECTED
 			if(aqQualifier.getIdentifier().equalsIgnoreCase("ICE")){
-				newPoint.setIceAffectedId(ICE_AFFECTED_ID);
+				//NOTE: Temporarily disabled until we confirm that this is desired behavior.
+				//newPoint.setIceAffectedId(ICE_AFFECTED_ID);
 			}
 			//If we have a valid mapping for this qualifier
 			else if(gdawsQualifier != null){
