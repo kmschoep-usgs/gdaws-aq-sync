@@ -56,12 +56,12 @@ public class TimeSeriesUtils {
 		if(targetDateTime.isAfter(midTime)) {
 			leftRightIndexes[0] = midPoint;
 			leftRightIndexes[1] = right;
-			return getBracketingPoints(timeseries, targetDateTime, leftRightIndexes);
 		} else {
 			leftRightIndexes[0] = left;
 			leftRightIndexes[1] = midPoint;
-			return leftRightIndexes;
 		}
+		
+		return getBracketingPoints(timeseries, targetDateTime, leftRightIndexes);
 	}
 	
 	
