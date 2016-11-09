@@ -12,26 +12,33 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
+import gov.usgs.aqcu.model.Approval;
+import gov.usgs.aqcu.model.Qualifier;
 import gov.usgs.aqcu.model.TimeSeries;
 import gov.usgs.aqcu.model.TimeSeriesPoint;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
+import gov.usgs.wma.gcmrc.dao.TimeSeriesTranslationLoader;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
 	
 	private static final Integer DEFAULT_DAYS_TO_FETCH = 30;
+	//From ICE_AFFECTED_STAR: 1 - TRUE, 2 - FALSE
+	private static final Integer ICE_AFFECTED_ID = 1;
 	private final TimeSeriesDAO timeSeriesDao;
+	private final TimeSeriesTranslationLoader timeSeriesTranslationLoader;
 		
 	private List<SiteConfiguration> sitesToLoad;
+	private Map<Integer, Integer> aqGdawsApprovalMap;
+	private Map<String, Integer> aqGdawsQualifierMap;
 	private Integer daysToFetch;
 	private Integer sourceId;
 	
@@ -48,6 +55,9 @@ public class AqToGdaws {
 	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch, Integer sourceId) {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
+		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
+		this.aqGdawsApprovalMap = this.timeSeriesTranslationLoader.getAqGdawsApprovalMap();
+		this.aqGdawsQualifierMap = this.timeSeriesTranslationLoader.getAqGdawsQualifierMap();
 		this.dataService = dataService;
 		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
 		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
@@ -170,7 +180,7 @@ public class AqToGdaws {
 		LocalDateTime startTime = null, endTime = null;
 		
 		for(TimeSeriesPoint point : source.getPoints()){
-			newRecords.add(aqToGdawsTimeSeriesPoint(point, site));
+			newRecords.add(aqToGdawsTimeSeriesPoint(point, site, source));
 			
 			if(startTime == null || newRecords.get(newRecords.size()-1).getMeasurementDate().isBefore(startTime)){
 				startTime = newRecords.get(newRecords.size()-1).getMeasurementDate();
@@ -188,11 +198,12 @@ public class AqToGdaws {
 		return newSeries;
 	}
 	
-	public TimeSeriesRecord aqToGdawsTimeSeriesPoint(TimeSeriesPoint source, SiteConfiguration site){
+	public TimeSeriesRecord aqToGdawsTimeSeriesPoint(TimeSeriesPoint source, SiteConfiguration site, TimeSeries sourceSeries){
 		TimeSeriesRecord newPoint = new TimeSeriesRecord();
 		
 		newPoint.setSiteId(site.getLocalSiteId());
 		newPoint.setGroupId(site.getLocalParamId());
+		
 		//Fix for points with no time
 		if(source.getTime().isSupported(ChronoUnit.HOURS)){
 			newPoint.setMeasurementDate(LocalDateTime.from(source.getTime()));
@@ -203,13 +214,42 @@ public class AqToGdaws {
 		newPoint.setFinalValue(source.getValue().doubleValue());
 		newPoint.setSourceId(this.sourceId);
 		
-		//TODO: Apply Qualifiers?
-		newPoint.setDataApprovalId(1);
+		//Apply Qualifiers
+		for(Qualifier aqQualifier : sourceSeries.getQualifiers()){
+			Integer gdawsQualifier = this.aqGdawsQualifierMap.get(aqQualifier.getIdentifier());
+			
+			//Apply ICE AFFECTED
+			if(aqQualifier.getIdentifier().equalsIgnoreCase("ICE")){
+				//NOTE: Temporarily disabled until we confirm that this is desired behavior.
+				//newPoint.setIceAffectedId(ICE_AFFECTED_ID);
+			}
+			//If we have a valid mapping for this qualifier
+			else if(gdawsQualifier != null){
+				//If the qualifier time period includes the current point apply the qualifier
+				if((LocalDateTime.from(aqQualifier.getStartDate()).isBefore(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getStartDate()).isEqual(newPoint.getMeasurementDate()))
+						&& (LocalDateTime.from(aqQualifier.getEndDate()).isAfter(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getEndDate()).isEqual(newPoint.getMeasurementDate()))){
+					newPoint.setMainQualifierId(gdawsQualifier);
+					break;
+				}
+			}
+		}
 		
-		//TODO: Apply Approvals?
-		newPoint.setMainQualifierId(1);
+		//Apply Approvals
+		for(Approval aqApproval : sourceSeries.getApprovals()){
+			Integer gdawsApproval = this.aqGdawsApprovalMap.get(aqApproval.getLevel());
+			
+			//If we have a valid mapping for this qualifier
+			if(gdawsApproval != null){
+				//If the approval time period includes the current point apply the approval
+				if((LocalDateTime.from(aqApproval.getStartTime()).isBefore(newPoint.getMeasurementDate()) || LocalDateTime.from(aqApproval.getStartTime()).isEqual(newPoint.getMeasurementDate()))
+						&& (LocalDateTime.from(aqApproval.getEndTime()).isAfter(newPoint.getMeasurementDate()) || LocalDateTime.from(aqApproval.getEndTime()).isEqual(newPoint.getMeasurementDate()))){
+					newPoint.setDataApprovalId(gdawsApproval);
+					break;
+				}
+			}
+		}
 		
-		//TODO: Other info needed?
+		//TODO: SubsiteId? Other?
 		
 		return newPoint;
 	}
