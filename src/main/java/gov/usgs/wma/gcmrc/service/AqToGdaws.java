@@ -56,8 +56,8 @@ public class AqToGdaws {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
-		this.aqGdawsApprovalMap = this.timeSeriesTranslationLoader.getAqGdawsApprovalMap();
-		this.aqGdawsQualifierMap = this.timeSeriesTranslationLoader.getAqGdawsQualifierMap();
+//		this.aqGdawsApprovalMap = this.timeSeriesTranslationLoader.getAqGdawsApprovalMap();
+//		this.aqGdawsQualifierMap = this.timeSeriesTranslationLoader.getAqGdawsQualifierMap();
 		this.dataService = dataService;
 		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
 		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
@@ -65,21 +65,16 @@ public class AqToGdaws {
 	}
 	
 	public void migrateAqData() {
-		fillInAquariusParamNames(sitesToLoad);
 		
 		for(SiteConfiguration site : sitesToLoad) {
 			
-			//Temporary hack to only test on one specific site
-			
-			if(site.getLocalSiteId() != 9402000){
-				continue;
-			}
-			
 
-			if (site.getAqParam() != null) {
+			if (site.getRemoteParamId() != null) {
 				ZonedDateTime startTime = null;
 				ZonedDateTime endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 
+				//Adjust start and end pull times based on the last data pull run
+				//and constrain by the max number of days we are willing to go back.
 				if (site.getLastNewPullStart() != null && site.getLastNewPullEnd() != null) {
 					//Pull data from since the last pull until now.
 					//Move the start time back a second, since we round to the nearest second.
@@ -87,31 +82,27 @@ public class AqToGdaws {
 				} else {
 					startTime = endTime.minusDays(daysToFetch);
 				}
-
-				LOG.debug("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
-						site.getLocalSiteId(), site.getPCode(), 
-						DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime), 
-						DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime));
-
-
-				//Long siteId = c.getSiteId();
-				String remoteSiteId = site.getRemoteSiteId();
-
-				//Only pull published timeseries
-				List<String> tsUids = dataService.getTimeSeriesUniqueIdsAtSite(remoteSiteId, true, null, site.getAqParam(), null, null);
-
-				//Hack to just load one site (if you want that)
-				/*
-				if (tsUids.size() > 1) {
-					String oneId = tsUids.get(0);
-					tsUids.clear();
-					tsUids.add(oneId);
+				
+				//Further constain the pull times by the 'never before' and 'never after' bounds
+				if (site.getNeverPullBefore() != null && startTime.isBefore(site.getNeverPullBefore())) {
+					startTime = site.getNeverPullBefore();
 				}
-				*/
+				
+				if (site.getNeverPullAfter() != null && endTime.isAfter(site.getNeverPullAfter())) {
+					endTime = site.getNeverPullAfter();
+				}
+				
+				if (startTime.isBefore(endTime)) {
+				
 
-				for(String uid: tsUids) {
+					LOG.debug("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
+							site.getLocalSiteId(), site.getPCode(), 
+							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime), 
+							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime));
+
+
 					TimeSeries retrieved = dataService.getTimeSeriesData(
-							remoteSiteId, uid, DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime),
+							site.getRemoteSiteId(), site.getRemoteParamId(), DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime),
 							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime), false, false);
 
 					//TODO transform and load into GDAWS
@@ -122,49 +113,28 @@ public class AqToGdaws {
 						LOG.trace("First point: " + 
 								ISO8601TemporalSerializer.print(retrieved.getPoints().get(0).getTime()) + 
 								" " + retrieved.getPoints().get(0).getValue());
-						
-						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site);
 
-						LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
+	//					GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site);
+	//
+	//					LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
 
 						//NOTE: Temporarily disabled until site configuration loading is completed
-						timeSeriesDao.insertTimeseriesData(toInsert);
+	//						timeSeriesDao.insertTimeseriesData(toInsert);
 					}
-				}
 
-				//Update the site w/ a new timestamp of the last pull
-				site.setLastNewPullStart(startTime);
-				site.setLastNewPullEnd(endTime);
-				siteConfiguationLoader.updateNewDataPullTimestamps(site);
+
+					//Update the site w/ a new timestamp of the last pull
+					site.setLastNewPullStart(startTime);
+					site.setLastNewPullEnd(endTime);
+					siteConfiguationLoader.updateNewDataPullTimestamps(site);
+				} else {
+					LOG.info("Skipping pull for site {}, parameter {} because the current pull dates are outside the neverbefore/after range: {} to {}", 
+							site.getLocalSiteId(), site.getPCode(), 
+							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(site.getNeverPullBefore()), 
+							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(site.getNeverPullAfter()));
+				}
 			}
 		}
-	}
-	
-	/**
-	 * This is badly hacked to deal w/ the fact that the test services is very
-	 * slow and e are not going to continue using the PCode mapping.
-	 * @param sitesToLoad 
-	 */
-	public void fillInAquariusParamNames(List<SiteConfiguration> sitesToLoad) {
-		
-		long time = System.currentTimeMillis();
-		LOG.trace("Starting request for PCode to AqParam mappings. . . .");
-		Map<String, String> pCodeMap = dataService.getPcodeToAquariusMap();
-		LOG.trace("And the PCode-AqCode request is done.  That was {} minutes", ((System.currentTimeMillis() - time) / 60000));
-		
-		LOG.debug("Found {}  PCode to Aquarius Name mappings", pCodeMap.size());
-		
-		pCodeMap.entrySet().stream().filter(p -> p.getKey().equals("00060")).forEach(m -> System.out.println("Found PCode '00060' mapped to AQ '" + m.getValue() + "'"));
-		
-		
-		//Temporary hack to disable loading of pcodes from the service
-		//Map<String, String> pCodeMap = new HashMap();
-		//pCodeMap.put("00060", "Discharge");
-		
-		//Fist line does the mapping
-		//Second line finds ones where the AqCode is still null and logs them as errors
-		sitesToLoad.stream().peek(s -> s.setAqParam(pCodeMap.get(StringUtils.trimToEmpty(s.getPCode())))).
-				filter(s -> s.getAqParam() == null).forEach(s -> LOG.error("Unable to map the pCode '{}' to an Aquarius Param Name (PCode not found)", s.getPCode()));
 	}
 	
 	public GdawsTimeSeries aqToGdawsTimeSeries(TimeSeries source, SiteConfiguration site){
