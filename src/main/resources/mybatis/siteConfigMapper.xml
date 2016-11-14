@@ -25,9 +25,6 @@
 	</select>
 	
 	<update id="updateNewDataPullTimestamps" parameterType="SiteConfiguration">
-	  select * from dual
-	</update>
-	<update id="updateNewDataPullTimestamps_new" parameterType="SiteConfiguration">
 	  update DATA_PROCESSOR_STATE set
 		LAST_NEW_DATA_PULL_START = #{lastNewPullStart},
 		LAST_NEW_DATA_PULL_END = #{lastNewPullEnd}
@@ -35,7 +32,7 @@
 	</update>
 	
 	
-	<sql id="getAllSql">
+	<sql id="getAllSql_DEBUG_SINGLE_SITE_FROM_DUAL">
 		SELECT
 			9251000 localSiteId,
 			5 localParamId,
@@ -50,7 +47,7 @@
 			dual
 	</sql>
 
-	<sql id="getAllSql_new">
+	<sql id="getAllSql">
 		SELECT
 		conf.SITE_ID localSiteId,
 		grp.GROUP_ID localParamId,
@@ -67,23 +64,5 @@
 		INNER JOIN state ON conf.AQ_TIMESERIES_UNIQUE_ID = state.AQ_TIMESERIES_UNIQUE_ID
 		ORDER BY conf.SITE_ID, conf.GROUP_ID
 	</sql>
-	
-	<!-- Here is a version that only selects one site for testing -->
-	<!--
-	<sql id="getAllSql">
-		SELECT
-		conf.SITE_ID localSiteId,
-		site.NWIS_SITE_NO remoteSiteId,
-		grp.PARM_CD pCode,
-		grp.GROUP_ID localParamId,
-		conf.LAST_NEW_DATA_PULL_START lastNewPullStart,
-		conf.LAST_NEW_DATA_PULL_END lastNewPullEnd
-		FROM
-		gdaws_aq_sync_config conf INNER JOIN site_star site ON conf.site_id = site.site_id
-		INNER JOIN group_name grp ON grp.group_id = conf.group_id
-		WHERE conf.SITE_ID = 226 AND grp.GROUP_ID = 2
-		ORDER BY conf.SITE_ID, conf.GROUP_ID
-	</sql>
-	-->
 	
 </mapper>

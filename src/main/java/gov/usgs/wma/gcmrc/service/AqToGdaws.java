@@ -56,8 +56,8 @@ public class AqToGdaws {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
-//		this.aqGdawsApprovalMap = this.timeSeriesTranslationLoader.getAqGdawsApprovalMap();
-//		this.aqGdawsQualifierMap = this.timeSeriesTranslationLoader.getAqGdawsQualifierMap();
+		this.aqGdawsApprovalMap = this.timeSeriesTranslationLoader.getAqGdawsApprovalMap();
+		this.aqGdawsQualifierMap = this.timeSeriesTranslationLoader.getAqGdawsQualifierMap();
 		this.dataService = dataService;
 		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
 		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
@@ -114,12 +114,12 @@ public class AqToGdaws {
 								ISO8601TemporalSerializer.print(retrieved.getPoints().get(0).getTime()) + 
 								" " + retrieved.getPoints().get(0).getValue());
 
-	//					GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site);
-	//
-	//					LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
+						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site);
+	
+						LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
 
 						//NOTE: Temporarily disabled until site configuration loading is completed
-	//						timeSeriesDao.insertTimeseriesData(toInsert);
+							timeSeriesDao.insertTimeseriesData(toInsert);
 					}
 
 
