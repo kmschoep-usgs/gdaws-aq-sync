@@ -14,8 +14,10 @@ public class SiteConfiguration {
 	private Integer localSiteId;		//One part (of 2) of the db identifier
 	private Integer localParamId;	//One part (of 2) of the db identifier
 	private String remoteSiteId;
+	private String remoteParamId;
 	private String pCode;
-	private String aqParam;
+	private ZonedDateTime neverPullBefore;
+	private ZonedDateTime neverPullAfter;
 	private ZonedDateTime lastNewPullStart;
 	private ZonedDateTime lastNewPullEnd;
 	
@@ -33,12 +35,14 @@ public class SiteConfiguration {
 	 * @param lastNewPullEnd
 	 * @param aqParam 
 	 */
-	public SiteConfiguration(Integer localSiteId, Integer localParamId, String remoteSiteId, String pCode, ZonedDateTime lastNewPullStart, ZonedDateTime lastNewPullEnd, String aqParam) {
+	public SiteConfiguration(Integer localSiteId, Integer localParamId, String remoteSiteId, String remoteParamId, String pCode, ZonedDateTime neverPullBefore, ZonedDateTime neverPullAfter, ZonedDateTime lastNewPullStart, ZonedDateTime lastNewPullEnd) {
 		this.pCode = pCode;
 		this.remoteSiteId = remoteSiteId;
 		this.localSiteId = localSiteId;
 		this.localParamId = localParamId;
-		this.aqParam = aqParam;
+		this.remoteParamId = remoteParamId;
+		this.neverPullBefore = neverPullBefore;
+		this.neverPullAfter = neverPullAfter;
 		this.lastNewPullStart = lastNewPullStart;
 		this.lastNewPullEnd = lastNewPullEnd;
 	}
@@ -70,12 +74,36 @@ public class SiteConfiguration {
 		this.remoteSiteId = siteNumber;
 	}
 
-	public String getAqParam() {
-		return aqParam;
+	public String getRemoteParamId() {
+		return remoteParamId;
 	}
 
-	public void setAqParam(String aqParam) {
-		this.aqParam = aqParam;
+	public void setRemoteParamId(String aqParam) {
+		this.remoteParamId = aqParam;
+	}
+	
+	public String getpCode() {
+		return pCode;
+	}
+
+	public void setpCode(String pCode) {
+		this.pCode = pCode;
+	}
+
+	public ZonedDateTime getNeverPullBefore() {
+		return neverPullBefore;
+	}
+
+	public void setNeverPullBefore(ZonedDateTime neverPullBefore) {
+		this.neverPullBefore = neverPullBefore;
+	}
+
+	public ZonedDateTime getNeverPullAfter() {
+		return neverPullAfter;
+	}
+
+	public void setNeverPullAfter(ZonedDateTime neverPullAfter) {
+		this.neverPullAfter = neverPullAfter;
 	}
 
 	public ZonedDateTime getLastNewPullStart() {

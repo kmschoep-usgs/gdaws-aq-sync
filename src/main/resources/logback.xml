@@ -25,7 +25,7 @@
 		<appender-ref ref="file" />
 	</root>
 	
-	<logger name="gov.usgs.wma.gcmrc" level="DEBUG" />
+	<logger name="gov.usgs.wma.gcmrc" level="TRACE" />
 	<logger name="java.sql" level="ERROR" />
 	<logger name="gov.usgs.wma.gcmrc.mapper" level="ERROR" />
 </configuration>

@@ -7,7 +7,10 @@
 		<result property="localSiteId" column="localSiteId"/>
 		<result property="localParamId" column="localParamId"/>
 		<result property="remoteSiteId" column="remoteSiteId"/>
+		<result property="remoteParamId" column="remoteParamId"/>
 		<result property="pCode" column="pCode"/>
+		<result property="neverPullBefore" column="neverPullBefore"/>
+		<result property="neverPullAfter" column="neverPullAfter"/>
 		<result property="lastNewPullStart" column="lastNewPullStart"/>
 		<result property="lastNewPullEnd" column="lastNewPullEnd"/>
 	</resultMap>
@@ -22,42 +25,44 @@
 	</select>
 	
 	<update id="updateNewDataPullTimestamps" parameterType="SiteConfiguration">
-	  update gdaws_aq_sync_config set
+	  update DATA_PROCESSOR_STATE set
 		LAST_NEW_DATA_PULL_START = #{lastNewPullStart},
 		LAST_NEW_DATA_PULL_END = #{lastNewPullEnd}
-	  where SITE_ID = #{localSiteId} and GROUP_ID = #{localParamId}
+	  where SITE_ID = #{localSiteId} and AQ_TIMESERIES_UNIQUE_ID = #{remoteParamId}
 	</update>
+	
+	
+	<sql id="getAllSql_DEBUG_SINGLE_SITE_FROM_DUAL">
+		SELECT
+			9251000 localSiteId,
+			5 localParamId,
+			'08374550' remoteSiteId,
+			'21705b8e5c7a49f6be3aeb86923ea374' remoteParamId,
+			'00065' pCode,
+			TIMESTAMP '2016-11-8 08:00:00.00 -06:00' neverPullBefore,
+			TIMESTAMP '2016-11-9 08:00:00.00 -06:00' neverPullAfter,
+			null lastNewPullStart,
+			null lastNewPullEnd
+		FROM
+			dual
+	</sql>
 
 	<sql id="getAllSql">
 		SELECT
 		conf.SITE_ID localSiteId,
-		site.NWIS_SITE_NO remoteSiteId,
-		grp.PARM_CD pCode,
 		grp.GROUP_ID localParamId,
-		conf.LAST_NEW_DATA_PULL_START lastNewPullStart,
-		conf.LAST_NEW_DATA_PULL_END lastNewPullEnd
+		site.NWIS_SITE_NO remoteSiteId,
+		conf.AQ_TIMESERIES_UNIQUE_ID remoteParamId,
+		grp.PARM_CD pCode,
+		conf.NEVER_PULL_DATA_BEOFRE_DATE neverPullBefore,
+		conf.NEVER_PULL_DATA_AFTER_DATE neverPullAfter,
+		state.LAST_NEW_DATA_PULL_START lastNewPullStart,
+		state.LAST_NEW_DATA_PULL_END lastNewPullEnd
 		FROM
 		gdaws_aq_sync_config conf INNER JOIN site_star site ON conf.site_id = site.site_id
 		INNER JOIN group_name grp ON grp.group_id = conf.group_id
+		INNER JOIN state ON conf.AQ_TIMESERIES_UNIQUE_ID = state.AQ_TIMESERIES_UNIQUE_ID
 		ORDER BY conf.SITE_ID, conf.GROUP_ID
 	</sql>
-	
-	<!-- Here is a version that only selects one site for testing -->
-	<!--
-	<sql id="getAllSql">
-		SELECT
-		conf.SITE_ID localSiteId,
-		site.NWIS_SITE_NO remoteSiteId,
-		grp.PARM_CD pCode,
-		grp.GROUP_ID localParamId,
-		conf.LAST_NEW_DATA_PULL_START lastNewPullStart,
-		conf.LAST_NEW_DATA_PULL_END lastNewPullEnd
-		FROM
-		gdaws_aq_sync_config conf INNER JOIN site_star site ON conf.site_id = site.site_id
-		INNER JOIN group_name grp ON grp.group_id = conf.group_id
-		WHERE conf.SITE_ID = 226 AND grp.GROUP_ID = 2
-		ORDER BY conf.SITE_ID, conf.GROUP_ID
-	</sql>
-	-->
 	
 </mapper>
