@@ -2,7 +2,7 @@
 <configuration>
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{HH:mm:ss} %m \(%c{1}[%p]\)%n</pattern>
+			<pattern>%d{HH:mm:ss} %p %m \(%c{1}\)%n</pattern>
 		</encoder>
 	</appender>
 	<appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -25,7 +25,7 @@
 		<appender-ref ref="file" />
 	</root>
 	
-	<logger name="gov.usgs.wma.gcmrc" level="TRACE" />
+	<logger name="gov.usgs.wma.gcmrc" level="INFO" />
 	<logger name="java.sql" level="ERROR" />
 	<logger name="gov.usgs.wma.gcmrc.mapper" level="ERROR" />
 </configuration>
