@@ -39,6 +39,13 @@ public class AutoProc {
 		
 		for(Integer siteId : bedLoadParams.keySet()) {
 			List<TimeSeriesRecord> discharge = timeSeriesDAO.getTimeSeries(siteId, DISCHARGE_PARAMETER_NAME); 
+			
+			//we can't do anything if we don't have discharge
+			if(discharge.size() == 0) {
+				LOG.warn("No discharge data was found for {}, skipping bedload calculations", siteId);
+				continue;
+			}
+			
 			Map<LocalDateTime, Integer> dischargeMillisIndex = TimeSeriesUtils.asMillisIndexMap(discharge);
 			List<TimeSeriesRecord> suspendedSand = timeSeriesDAO.getTimeSeries(siteId, INST_SUSP_SAND_PARAMETER_NAME);
 			
