@@ -130,8 +130,8 @@ public class AqToGdaws {
 				} else {
 					LOG.info("Skipping pull for site {}, parameter {} because the current pull dates are outside the neverbefore/after range: {} to {}", 
 							site.getLocalSiteId(), site.getPCode(), 
-							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(site.getNeverPullBefore()), 
-							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(site.getNeverPullAfter()));
+							(site.getNeverPullBefore()!=null)?DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(site.getNeverPullBefore()):"[unspecified]", 
+							(site.getNeverPullAfter()!=null)?DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(site.getNeverPullAfter()):"[unspecified]");
 				}
 			}
 		}
