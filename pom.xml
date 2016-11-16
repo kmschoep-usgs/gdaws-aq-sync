@@ -66,6 +66,11 @@
 			<url>https://internal.cida.usgs.gov/maven/content/repositories/cida-snapshots</url>
 		</repository>
 		<repository>
+			<id>maven1</id>
+			<name>maven repo 1</name>
+			<url>https://repo1.maven.org/maven2/</url>
+		</repository>
+		<repository>
 			<id>cida-thirdparty-internal</id>
 			<name>CIDA 3rd party Nexus</name>
 			<url>http://internal.cida.usgs.gov/maven/content/repositories/cida-thirdparty/</url>
