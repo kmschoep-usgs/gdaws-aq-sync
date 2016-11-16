@@ -3,10 +3,10 @@
 
 <mapper namespace="gov.usgs.wma.gcmrc.mapper.TimeSeriesTranslationMapper">
 	<select id="getAqGdawsQualifierMap" parameterType="map" resultType="map">
-		SELECT * FROM AQ_GDAWS_QUALIFIER_STAR
+		SELECT * FROM GDAWS_AQ_QUALIFIER_MAP
 	</select>
 	
 	<select id="getAqGdawsApprovalMap" parameterType="map" resultType="map">
-		SELECT * FROM AQ_GDAWS_APPROVAL_STAR
+		SELECT * FROM GDAWS_AQ_APPROVAL_MAP
 	</select>
 </mapper>
