@@ -38,7 +38,7 @@ public class GdawsSynchronizer {
 	private static final String AQ_SOURCE_PROP_NAME = "aquarius.source.id";
 	private static final String AUTO_PROC_SOURCE_PROP_NAME = "autoproc.source.id";
 	private static final String BEDLOAD_GROUP_ID_PROP_NAME = "bedload.group.id";
-	private static final String DEFAULT_DAYS_TO_PULL_PROP_NAME = "default.days.to.fetch";
+	private static final String DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES = "default.days.to.fetch.for.new.timeseries";
 	
 	
 	//prop names and descriptions
@@ -62,7 +62,7 @@ public class GdawsSynchronizer {
 	//prop names and descriptions
 	private static final String[] OPTIONAL_PROPS = new String[] {
 			ConfigLoader.CONFIG_FILE_PROP_NAME, "File used to set all required props",
-			DEFAULT_DAYS_TO_PULL_PROP_NAME, "If a site has not been fetched before, this is the number of days to fetch."
+			DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES, "If a site has not been fetched before, this is the number of days to fetch."
 	};
 	
 	private static final int HELP_COLUMN_SIZE = 30;
@@ -81,7 +81,7 @@ public class GdawsSynchronizer {
 				AqToGdaws aqToGdaws = new AqToGdaws(
 						runState.getAquariusDataService(), 
 						gdawsDaoFactory, 
-						runState.getIntProperty(DEFAULT_DAYS_TO_PULL_PROP_NAME, null),
+						runState.getIntProperty(DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES, null),
 						runState.getIntProperty(AQ_SOURCE_PROP_NAME, null));
 				aqToGdaws.migrateAqData();
 				LOG.info("Finished AQ to GDAWS Sync");

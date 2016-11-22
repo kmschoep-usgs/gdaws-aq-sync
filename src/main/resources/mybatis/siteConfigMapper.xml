@@ -25,10 +25,34 @@
 	</select>
 	
 	<update id="updateNewDataPullTimestamps" parameterType="SiteConfiguration">
-	  update DATA_PROCESSOR_STATE set
-		LAST_NEW_DATA_PULL_START = #{lastNewPullStart},
-		LAST_NEW_DATA_PULL_END = #{lastNewPullEnd}
-	  where SITE_ID = #{localSiteId} and AQ_TIMESERIES_UNIQUE_ID = #{remoteParamId}
+		
+		MERGE INTO DATA_PROCESSOR_STATE state
+		USING (
+			SELECT
+				#{localSiteId} SITE_ID,
+				#{remoteParamId} AQ_TIMESERIES_UNIQUE_ID,
+				#{lastNewPullStart} LAST_NEW_DATA_PULL_START,
+				#{lastNewPullEnd} LAST_NEW_DATA_PULL_END
+			FROM DUAL
+		) record
+		ON (
+			state.SITE_ID = record.SITE_ID AND 
+			state.AQ_TIMESERIES_UNIQUE_ID = record.AQ_TIMESERIES_UNIQUE_ID
+		)
+		WHEN MATCHED THEN UPDATE SET
+			state.LAST_NEW_DATA_PULL_START = record.LAST_NEW_DATA_PULL_START,
+			state.LAST_NEW_DATA_PULL_END = record.LAST_NEW_DATA_PULL_END
+		WHEN NOT MATCHED THEN INSERT (
+			SITE_ID,
+			AQ_TIMESERIES_UNIQUE_ID,
+			LAST_NEW_DATA_PULL_START,
+			LAST_NEW_DATA_PULL_END)
+			VALUES (
+				record.SITE_ID,
+				record.AQ_TIMESERIES_UNIQUE_ID,
+				record.LAST_NEW_DATA_PULL_START,
+				record.LAST_NEW_DATA_PULL_END
+			)
 	</update>
 	
 	
