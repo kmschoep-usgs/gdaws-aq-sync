@@ -30,7 +30,7 @@ import java.util.ArrayList;
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
 	
-	private static final Integer DEFAULT_DAYS_TO_FETCH = 30;
+	private static final Integer DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES = 30;
 	//From ICE_AFFECTED_STAR: 1 - TRUE, 2 - FALSE
 	private static final Integer ICE_AFFECTED_ID = 1;
 	private final TimeSeriesDAO timeSeriesDao;
@@ -39,7 +39,7 @@ public class AqToGdaws {
 	private List<SiteConfiguration> sitesToLoad;
 	private Map<Integer, Integer> aqGdawsApprovalMap;
 	private Map<String, Integer> aqGdawsQualifierMap;
-	private Integer daysToFetch;
+	private Integer daysToFetchForNewTimeseries;
 	private Integer sourceId;
 	
 	private DataService dataService;
@@ -52,7 +52,7 @@ public class AqToGdaws {
 	 * @param gdawsDaoFactory
 	 * @param defaultDaysToFetch 
 	 */
-	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer defaultDaysToFetch, Integer sourceId) {
+	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer daysToFetchForNewTimeseries, Integer sourceId) {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
@@ -60,7 +60,7 @@ public class AqToGdaws {
 		this.aqGdawsQualifierMap = this.timeSeriesTranslationLoader.getAqGdawsQualifierMap();
 		this.dataService = dataService;
 		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
-		this.daysToFetch = defaultDaysToFetch != null ? defaultDaysToFetch : DEFAULT_DAYS_TO_FETCH;
+		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
 		this.sourceId = sourceId;
 	}
 	
@@ -80,7 +80,7 @@ public class AqToGdaws {
 					//Move the start time back a second, since we round to the nearest second.
 					startTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
 				} else {
-					startTime = endTime.minusDays(daysToFetch);
+					startTime = endTime.minusDays(daysToFetchForNewTimeseries);
 				}
 				
 				//Further constain the pull times by the 'never before' and 'never after' bounds
