@@ -46,12 +46,23 @@ public class TimeSeriesDAO {
 		return timeSeries;
 	}
 	
-	public void insertTimeseriesData(GdawsTimeSeries series){
+	/**
+	 * Multi-step update from TIME_SERIES_AP_STAGE TO TIME_SERIES_STAR.
+	 * 
+	 * Please review the code carefully before using this method - it has lots of
+	 * side effects.
+	 * 
+	 * @param series The new series of data to insert
+	 * @param oldSourceId A legacy source id for which it is OK to replace data
+	 *		for if it overlaps the new data.
+	 */
+	public void insertTimeseriesData(GdawsTimeSeries series, Integer oldSourceId){
 		LOG.debug("Starting insert of timeseries data from AQ");
 		
 		Map<String, Object> parms = new HashMap<String, Object>();
 			parms.put("records", series.getRecords());
 			parms.put("sourceId", series.getSourceId());
+			parms.put("oldSourceId", oldSourceId);
 			parms.put("groupId", series.getGroupId());
 			parms.put("siteId", series.getSiteId());
 			parms.put("startTime", series.getStartTime());
