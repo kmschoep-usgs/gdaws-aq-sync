@@ -115,7 +115,6 @@ public class AqToGdaws {
 							site.getRemoteSiteId(), site.getRemoteParamId(), DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime),
 							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime), false, false);
 
-					//TODO transform and load into GDAWS
 					Integer numOfPoints = retrieved.getPoints().size();
 					LOG.trace("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
 							", which contains " + numOfPoints + " points");
@@ -128,8 +127,7 @@ public class AqToGdaws {
 	
 						LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
 
-						//NOTE: Temporarily disabled until site configuration loading is completed
-							timeSeriesDao.insertTimeseriesData(toInsert, oldSourceId);
+						timeSeriesDao.insertTimeseriesData(toInsert, oldSourceId);
 					}
 
 
