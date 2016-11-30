@@ -54,7 +54,8 @@ public class TimeSeriesDAO {
 	 * 
 	 * @param series The new series of data to insert
 	 * @param oldSourceId A legacy source id for which it is OK to replace data
-	 *		for if it overlaps the new data.
+	 *		for if it overlaps the new data.  OK to leave as null if there is no
+	 *		legacy data for this series.
 	 */
 	public void insertTimeseriesData(GdawsTimeSeries series, Integer oldSourceId){
 		LOG.debug("Starting insert of timeseries data from AQ");
