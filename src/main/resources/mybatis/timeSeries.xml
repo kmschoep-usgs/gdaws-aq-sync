@@ -99,7 +99,19 @@
 	<!-- Delete data from Main Table already existing within the DateTime range of the input time series -->
 	<delete id="deleteOverlappingDataInStarTable">
 		DELETE From TIME_SERIES_STAR
-			Where SITE_ID=#{siteId} And GROUP_ID=#{groupId} And SOURCE_ID=#{sourceId} And MEASUREMENT_DATE &gt;=#{startTime} And MEASUREMENT_DATE &lt;=#{endTime}
+		WHERE
+			SITE_ID=#{siteId} AND
+			GROUP_ID=#{groupId} AND
+		<choose>
+			<when test="oldSourceId != null">
+				(SOURCE_ID=#{sourceId} OR SOURCE_ID=#{oldSourceId}) AND
+			</when>
+			<otherwise>
+				SOURCE_ID=#{sourceId} AND
+			</otherwise>
+			
+		</choose>
+			MEASUREMENT_DATE &gt;=#{startTime} AND MEASUREMENT_DATE &lt;=#{endTime}
 	</delete>
 	
 	<!-- From AutoProc I: 

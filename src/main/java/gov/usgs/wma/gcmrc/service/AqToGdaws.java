@@ -44,15 +44,24 @@ public class AqToGdaws {
 	
 	private DataService dataService;
 	private SiteConfigurationLoader siteConfiguationLoader;
+	private final Integer oldSourceId;
 
 	/**
 	 * Constructor that loads its own site configuration and automatically loads data since
 	 * the last timestamp.
+	 * 
+	 * Records that are within the data range and have either sourceID or OldSourceId
+	 * as their source can be overwritten by the process.
+	 * 
 	 * @param dataService
 	 * @param gdawsDaoFactory
+	 * @param daysToFetchForNewTimeseries
+	 * @param sourceId Source ID for new records that are written
+	 * @param oldSourceId Source ID for legacy records that may be overwritten
 	 * @param defaultDaysToFetch 
 	 */
-	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, Integer daysToFetchForNewTimeseries, Integer sourceId) {
+	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, 
+			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId) {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
@@ -62,6 +71,7 @@ public class AqToGdaws {
 		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
 		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
 		this.sourceId = sourceId;
+		this.oldSourceId = oldSourceId;
 	}
 	
 	public void migrateAqData() {
@@ -105,7 +115,6 @@ public class AqToGdaws {
 							site.getRemoteSiteId(), site.getRemoteParamId(), DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime),
 							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime), false, false);
 
-					//TODO transform and load into GDAWS
 					Integer numOfPoints = retrieved.getPoints().size();
 					LOG.trace("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
 							", which contains " + numOfPoints + " points");
@@ -118,8 +127,7 @@ public class AqToGdaws {
 	
 						LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
 
-						//NOTE: Temporarily disabled until site configuration loading is completed
-							timeSeriesDao.insertTimeseriesData(toInsert);
+						timeSeriesDao.insertTimeseriesData(toInsert, oldSourceId);
 					}
 
 

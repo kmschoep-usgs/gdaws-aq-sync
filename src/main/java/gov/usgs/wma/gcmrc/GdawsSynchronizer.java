@@ -36,6 +36,7 @@ public class GdawsSynchronizer {
 	private static final String GDAWS_USER_PROP_NAME = "gdaws.dbUser";
 	private static final String GDAWS_PASS_PROP_NAME = "gdaws.dbPwd";
 	private static final String AQ_SOURCE_PROP_NAME = "aquarius.source.id";
+	private static final String OLD_GADSYNC_SOURCE_PROP_NAME = "old.gadsync.source.id";
 	private static final String AUTO_PROC_SOURCE_PROP_NAME = "autoproc.source.id";
 	private static final String BEDLOAD_GROUP_ID_PROP_NAME = "bedload.group.id";
 	private static final String DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES = "default.days.to.fetch.for.new.timeseries";
@@ -55,6 +56,7 @@ public class GdawsSynchronizer {
 			GDAWS_USER_PROP_NAME, "GDAWS Database user",
 			GDAWS_PASS_PROP_NAME, "GDAWS Database password",
 			AQ_SOURCE_PROP_NAME, "The source id to mark incoming records from aquarius with",
+			OLD_GADSYNC_SOURCE_PROP_NAME, "The source id of the old GADSYNC records, which can be safely overwritten by the new AQ source",
 			AUTO_PROC_SOURCE_PROP_NAME, "The source id to mark calculated values with",
 			BEDLOAD_GROUP_ID_PROP_NAME, "The group id to mark calculated bed load values with"
 	};
@@ -82,7 +84,8 @@ public class GdawsSynchronizer {
 						runState.getAquariusDataService(), 
 						gdawsDaoFactory, 
 						runState.getIntProperty(DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES, null),
-						runState.getIntProperty(AQ_SOURCE_PROP_NAME, null));
+						runState.getIntProperty(AQ_SOURCE_PROP_NAME, null),
+						runState.getIntProperty(OLD_GADSYNC_SOURCE_PROP_NAME, null));
 				aqToGdaws.migrateAqData();
 				LOG.info("Finished AQ to GDAWS Sync");
 			} else {

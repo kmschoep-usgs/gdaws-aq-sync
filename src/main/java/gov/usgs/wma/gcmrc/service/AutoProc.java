@@ -87,7 +87,7 @@ public class AutoProc {
 			}
 
 			if(results.size() > 0) {
-				timeSeriesDAO.insertTimeseriesData(toGdawsTimeSeries(results, siteId, bedLoadParamId));
+				timeSeriesDAO.insertTimeseriesData(toGdawsTimeSeries(results, siteId, bedLoadParamId), null);
 			}
 		}
 	}
