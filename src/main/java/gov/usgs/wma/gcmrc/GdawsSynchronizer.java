@@ -40,6 +40,9 @@ public class GdawsSynchronizer {
 	private static final String AUTO_PROC_SOURCE_PROP_NAME = "autoproc.source.id";
 	private static final String BEDLOAD_GROUP_ID_PROP_NAME = "bedload.group.id";
 	private static final String DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES = "default.days.to.fetch.for.new.timeseries";
+	private static final String SYNC_START_DATE_PROP_NAME = "sync.start.date";
+	private static final String SYNC_END_DATE_PROP_NAME = "sync.end.date";
+	private static final String SYNC_TIMESERIES_ID_LIST_PROP_NAME = "sync.ts.id.list";
 	
 	
 	//prop names and descriptions
@@ -64,7 +67,10 @@ public class GdawsSynchronizer {
 	//prop names and descriptions
 	private static final String[] OPTIONAL_PROPS = new String[] {
 			ConfigLoader.CONFIG_FILE_PROP_NAME, "File used to set all required props",
-			DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES, "If a site has not been fetched before, this is the number of days to fetch."
+			DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES, "If a site has not been fetched before, this is the number of days to fetch.",
+			SYNC_START_DATE_PROP_NAME, "Optional date & time to force synchronizing from.",
+			SYNC_END_DATE_PROP_NAME, "Optional date & time to force synchronizing to.",
+			SYNC_TIMESERIES_ID_LIST_PROP_NAME, "Optional list of TS GUIDS to limit synchronizing to."
 	};
 	
 	private static final int HELP_COLUMN_SIZE = 30;
