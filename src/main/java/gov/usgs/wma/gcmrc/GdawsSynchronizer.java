@@ -68,8 +68,8 @@ public class GdawsSynchronizer {
 	private static final String[] OPTIONAL_PROPS = new String[] {
 			ConfigLoader.CONFIG_FILE_PROP_NAME, "File used to set all required props",
 			DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES, "If a site has not been fetched before, this is the number of days to fetch.",
-			SYNC_START_DATE_PROP_NAME, "Optional date & time to force synchronizing from.",
-			SYNC_END_DATE_PROP_NAME, "Optional date & time to force synchronizing to.",
+			SYNC_START_DATE_PROP_NAME, "Optional date & time to force synchronizing to start from.",
+			SYNC_END_DATE_PROP_NAME, "Optional date & time to force synchronizing to finish at.",
 			SYNC_TIMESERIES_ID_LIST_PROP_NAME, "Optional list of TS GUIDS to limit synchronizing to."
 	};
 	
