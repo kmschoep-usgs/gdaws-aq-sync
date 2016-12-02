@@ -40,8 +40,8 @@ public class GdawsSynchronizer {
 	private static final String AUTO_PROC_SOURCE_PROP_NAME = "autoproc.source.id";
 	private static final String BEDLOAD_GROUP_ID_PROP_NAME = "bedload.group.id";
 	private static final String DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES = "default.days.to.fetch.for.new.timeseries";
-	private static final String SYNC_START_DATE_PROP_NAME = "sync.start.date";
-	private static final String SYNC_END_DATE_PROP_NAME = "sync.end.date";
+	private static final String SYNC_START_DATE_PROP_NAME = "sync.start.time";
+	private static final String SYNC_END_DATE_PROP_NAME = "sync.end.time";
 	private static final String SYNC_TIMESERIES_ID_LIST_PROP_NAME = "sync.timeseries.id.list";
 	
 	
