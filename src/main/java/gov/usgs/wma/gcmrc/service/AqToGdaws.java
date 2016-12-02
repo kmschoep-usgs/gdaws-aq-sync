@@ -62,9 +62,9 @@ public class AqToGdaws {
 	 * @param daysToFetchForNewTimeseries
 	 * @param sourceId Source ID for new records that are written
 	 * @param oldSourceId Source ID for legacy records that may be overwritten
-	 * @param startTime 
-	 * @param endTime
-	 * @param tsToPullList 
+	 * @param startTime Optional time to start data pull at
+	 * @param endTime Optional time to end data pull at
+	 * @param tsToPullList Optional list of timeseries GUIDs to limit the pull to
 	 */
 	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, 
 			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId, LocalDateTime startTime, LocalDateTime endTime, ArrayList<String> tsToPullList) {
