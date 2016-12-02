@@ -8,6 +8,11 @@ import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.cida.config.DynamicReadOnlyProperties;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
 import gov.usgs.wma.gcmrc.util.UnmodifiableProperties;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.naming.NamingException;
 
 /**
@@ -15,6 +20,8 @@ import javax.naming.NamingException;
  * @author eeverman
  */
 public class RunConfiguration {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(RunConfiguration.class);
 	
 	private static RunConfiguration singleton;
 	private static final Object syncLock = new Object();
@@ -93,6 +100,56 @@ public class RunConfiguration {
 			}
 		} else {
 			return defaultValue;
+		}
+	}
+	
+	/**
+	 * Returns the LocalDateTime value of a property if it is non-null and can be parsed as LocalDateTime.
+	 * 
+	 * Otherwise it returns the defaultValue.
+	 * @param prop The property name
+	 * @param defaultValue
+	 * @return 
+	 */
+	public LocalDateTime getDateTimeProperty(String prop, LocalDateTime defaultValue) {
+		String s = getProperties().getProperty(prop);
+		
+		if (s != null) {
+			try {
+				return LocalDateTime.parse(s.trim(), DateTimeFormatter.ISO_DATE_TIME);
+			} catch (Exception e) {
+				return defaultValue;
+			}
+		} else {
+			return defaultValue;
+		}
+	}
+	
+	/**
+	 * Returns an array from a comma-separated list property if all of the 
+	 * values are non-null and can be parsed as the provided Type
+	 * 
+	 * Otherwise it returns an empty array of the provided type.
+	 * @param prop The property name
+	 * @param type The class to convert the property elements to
+	 * @return 
+	 */
+	public <T> ArrayList<T> getArrayProperty(String prop, Class<T> type){
+		String s = getProperties().getProperty(prop);
+		ArrayList<T> toReturn = new ArrayList<>();
+				
+		if (s != null) {
+			for(String st : s.split(",")){
+				try {
+					toReturn.add(type.getConstructor(String.class).newInstance(st.trim()));
+				} catch(Exception e) {
+					return new ArrayList<>();
+				}
+			}
+			
+			return toReturn;
+		} else {
+			return new ArrayList<>();
 		}
 	}
 	

@@ -44,7 +44,11 @@ public class AqToGdaws {
 	
 	private DataService dataService;
 	private SiteConfigurationLoader siteConfiguationLoader;
+	private ZonedDateTime startTime;
+	private ZonedDateTime endTime;
 	private final Integer oldSourceId;
+	private final ArrayList<String> tsToPullList;
+	private Boolean doUpdateLastPullTime;
 
 	/**
 	 * Constructor that loads its own site configuration and automatically loads data since
@@ -58,10 +62,12 @@ public class AqToGdaws {
 	 * @param daysToFetchForNewTimeseries
 	 * @param sourceId Source ID for new records that are written
 	 * @param oldSourceId Source ID for legacy records that may be overwritten
-	 * @param defaultDaysToFetch 
+	 * @param startTime Optional time to start data pull at
+	 * @param endTime Optional time to end data pull at
+	 * @param tsToPullList Optional list of timeseries GUIDs to limit the pull to
 	 */
 	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, 
-			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId) {
+			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId, LocalDateTime startTime, LocalDateTime endTime, ArrayList<String> tsToPullList) {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
@@ -72,27 +78,34 @@ public class AqToGdaws {
 		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
 		this.sourceId = sourceId;
 		this.oldSourceId = oldSourceId;
+		this.startTime = startTime != null ? startTime.atZone(ZonedDateTime.now().getZone()) : null;
+		this.endTime = endTime != null ? endTime.atZone(ZonedDateTime.now().getZone()) : null;
+		this.tsToPullList = tsToPullList;
+		
+		//If the user is providing any part of a date range to pull then we should NOT update the last pull dates
+		this.doUpdateLastPullTime = startTime == null && endTime == null;
 	}
 	
 	public void migrateAqData() {
 		
 		for(SiteConfiguration site : sitesToLoad) {
-			
-
-			if (site.getRemoteParamId() != null) {
-				ZonedDateTime startTime = null;
-				ZonedDateTime endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-
-				//Adjust start and end pull times based on the last data pull run
-				//and constrain by the max number of days we are willing to go back.
-				if (site.getLastNewPullStart() != null && site.getLastNewPullEnd() != null) {
-					//Pull data from since the last pull until now.
-					//Move the start time back a second, since we round to the nearest second.
-					startTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
-				} else {
-					startTime = endTime.minusDays(daysToFetchForNewTimeseries);
+			if (site.getRemoteParamId() != null && (tsToPullList.isEmpty() || tsToPullList.contains(site.getRemoteParamId()))) {	
+				if(endTime == null){
+					endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 				}
 				
+				if(startTime == null){
+					//Adjust start and end pull times based on the last data pull run
+					//and constrain by the max number of days we are willing to go back.
+					if (site.getLastNewPullStart() != null && site.getLastNewPullEnd() != null) {
+						//Pull data from since the last pull until now.
+						//Move the start time back a second, since we round to the nearest second.
+						startTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
+					} else {
+						startTime = endTime.minusDays(daysToFetchForNewTimeseries);
+					}
+				}
+								
 				//Further constain the pull times by the 'never before' and 'never after' bounds
 				if (site.getNeverPullBefore() != null && startTime.isBefore(site.getNeverPullBefore())) {
 					startTime = site.getNeverPullBefore();
@@ -132,9 +145,11 @@ public class AqToGdaws {
 
 
 					//Update the site w/ a new timestamp of the last pull
-					site.setLastNewPullStart(startTime);
-					site.setLastNewPullEnd(endTime);
-					siteConfiguationLoader.updateNewDataPullTimestamps(site);
+					if(doUpdateLastPullTime){
+						site.setLastNewPullStart(startTime);
+						site.setLastNewPullEnd(endTime);
+						siteConfiguationLoader.updateNewDataPullTimestamps(site);
+					}
 				} else {
 					LOG.info("Skipping pull for site {}, parameter {} because the current pull dates are outside the neverbefore/after range: {} to {}", 
 							site.getLocalSiteId(), site.getPCode(), 
