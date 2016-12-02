@@ -141,7 +141,6 @@ public class RunConfiguration {
 		if (s != null) {
 			for(String st : s.split(",")){
 				try {
-					System.out.println("TS Entry: " + st);
 					toReturn.add(type.getConstructor(String.class).newInstance(st.trim()));
 				} catch(Exception e) {
 					return new ArrayList<>();

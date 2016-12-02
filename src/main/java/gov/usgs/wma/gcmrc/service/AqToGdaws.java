@@ -77,7 +77,6 @@ public class AqToGdaws {
 		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
 		this.sourceId = sourceId;
 		this.oldSourceId = oldSourceId;
-		System.out.println("StartTime: " + startTime.toString() + " | End Time:" + endTime.toString());
 		this.startTime = startTime != null ? startTime.atZone(ZonedDateTime.now().getZone()) : null;
 		this.endTime = endTime != null ? endTime.atZone(ZonedDateTime.now().getZone()) : null;
 		this.tsToPullList = tsToPullList;
