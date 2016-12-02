@@ -77,6 +77,7 @@ public class AqToGdaws {
 		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
 		this.sourceId = sourceId;
 		this.oldSourceId = oldSourceId;
+		System.out.println("StartTime: " + startTime.toString() + " | End Time:" + endTime.toString());
 		this.startTime = startTime != null ? startTime.atZone(ZonedDateTime.now().getZone()) : null;
 		this.endTime = endTime != null ? endTime.atZone(ZonedDateTime.now().getZone()) : null;
 		this.tsToPullList = tsToPullList;
@@ -85,7 +86,11 @@ public class AqToGdaws {
 	public void migrateAqData() {
 		
 		for(SiteConfiguration site : sitesToLoad) {
-			if (site.getRemoteParamId() != null && (tsToPullList.isEmpty() || tsToPullList.contains(site.getRemoteParamId()))) {				
+			if (site.getRemoteParamId() != null && (tsToPullList.isEmpty() || tsToPullList.contains(site.getRemoteParamId()))) {	
+				if(endTime == null){
+					endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+				}
+				
 				if(startTime == null){
 					//Adjust start and end pull times based on the last data pull run
 					//and constrain by the max number of days we are willing to go back.
@@ -97,11 +102,7 @@ public class AqToGdaws {
 						startTime = endTime.minusDays(daysToFetchForNewTimeseries);
 					}
 				}
-				
-				if(endTime == null){
-					endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-				}
-				
+								
 				//Further constain the pull times by the 'never before' and 'never after' bounds
 				if (site.getNeverPullBefore() != null && startTime.isBefore(site.getNeverPullBefore())) {
 					startTime = site.getNeverPullBefore();

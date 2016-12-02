@@ -10,7 +10,6 @@ import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.service.AqToGdaws;
 import gov.usgs.wma.gcmrc.service.AutoProc;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
-import java.time.LocalDateTime;
 
 public class GdawsSynchronizer {
 	private static final Logger LOG = LoggerFactory.getLogger(GdawsSynchronizer.class);
@@ -43,7 +42,7 @@ public class GdawsSynchronizer {
 	private static final String DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES = "default.days.to.fetch.for.new.timeseries";
 	private static final String SYNC_START_DATE_PROP_NAME = "sync.start.date";
 	private static final String SYNC_END_DATE_PROP_NAME = "sync.end.date";
-	private static final String SYNC_TIMESERIES_ID_LIST_PROP_NAME = "sync.ts.id.list";
+	private static final String SYNC_TIMESERIES_ID_LIST_PROP_NAME = "sync.timeseries.id.list";
 	
 	
 	//prop names and descriptions

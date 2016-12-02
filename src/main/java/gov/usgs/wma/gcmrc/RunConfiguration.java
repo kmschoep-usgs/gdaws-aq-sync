@@ -9,6 +9,7 @@ import gov.usgs.cida.config.DynamicReadOnlyProperties;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
 import gov.usgs.wma.gcmrc.util.UnmodifiableProperties;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +116,7 @@ public class RunConfiguration {
 		
 		if (s != null) {
 			try {
-				return LocalDateTime.parse(s);
+				return LocalDateTime.parse(s.trim(), DateTimeFormatter.ISO_DATE_TIME);
 			} catch (Exception e) {
 				return defaultValue;
 			}
@@ -140,6 +141,7 @@ public class RunConfiguration {
 		if (s != null) {
 			for(String st : s.split(",")){
 				try {
+					System.out.println("TS Entry: " + st);
 					toReturn.add(type.getConstructor(String.class).newInstance(st.trim()));
 				} catch(Exception e) {
 					return new ArrayList<>();
