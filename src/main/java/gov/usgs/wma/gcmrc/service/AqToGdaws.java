@@ -85,8 +85,7 @@ public class AqToGdaws {
 	public void migrateAqData() {
 		
 		for(SiteConfiguration site : sitesToLoad) {
-			
-			if (site.getRemoteParamId() != null) {				
+			if (site.getRemoteParamId() != null && (tsToPullList.isEmpty() || tsToPullList.contains(site.getRemoteParamId()))) {				
 				if(startTime == null){
 					//Adjust start and end pull times based on the last data pull run
 					//and constrain by the max number of days we are willing to go back.
