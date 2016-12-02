@@ -44,9 +44,9 @@ public class AqToGdaws {
 	
 	private DataService dataService;
 	private SiteConfigurationLoader siteConfiguationLoader;
+	private ZonedDateTime startTime;
+	private ZonedDateTime endTime;
 	private final Integer oldSourceId;
-	private final LocalDateTime startDate;
-	private final LocalDateTime endDate;
 	private final ArrayList<String> tsToPullList;
 
 	/**
@@ -61,12 +61,12 @@ public class AqToGdaws {
 	 * @param daysToFetchForNewTimeseries
 	 * @param sourceId Source ID for new records that are written
 	 * @param oldSourceId Source ID for legacy records that may be overwritten
-	 * @param startDate 
-	 * @param endDate
+	 * @param startTime 
+	 * @param endTime
 	 * @param tsToPullList 
 	 */
 	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, 
-			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId, LocalDateTime startDate, LocalDateTime endDate, ArrayList<String> tsToPullList) {
+			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId, LocalDateTime startTime, LocalDateTime endTime, ArrayList<String> tsToPullList) {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
@@ -77,8 +77,8 @@ public class AqToGdaws {
 		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
 		this.sourceId = sourceId;
 		this.oldSourceId = oldSourceId;
-		this.startDate = startDate;
-		this.endDate = endDate;
+		this.startTime = startTime != null ? startTime.atZone(ZonedDateTime.now().getZone()) : null;
+		this.endTime = endTime != null ? endTime.atZone(ZonedDateTime.now().getZone()) : null;
 		this.tsToPullList = tsToPullList;
 	}
 	
@@ -86,19 +86,21 @@ public class AqToGdaws {
 		
 		for(SiteConfiguration site : sitesToLoad) {
 			
-
-			if (site.getRemoteParamId() != null) {
-				ZonedDateTime startTime = null;
-				ZonedDateTime endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-
-				//Adjust start and end pull times based on the last data pull run
-				//and constrain by the max number of days we are willing to go back.
-				if (site.getLastNewPullStart() != null && site.getLastNewPullEnd() != null) {
-					//Pull data from since the last pull until now.
-					//Move the start time back a second, since we round to the nearest second.
-					startTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
-				} else {
-					startTime = endTime.minusDays(daysToFetchForNewTimeseries);
+			if (site.getRemoteParamId() != null) {				
+				if(startTime == null){
+					//Adjust start and end pull times based on the last data pull run
+					//and constrain by the max number of days we are willing to go back.
+					if (site.getLastNewPullStart() != null && site.getLastNewPullEnd() != null) {
+						//Pull data from since the last pull until now.
+						//Move the start time back a second, since we round to the nearest second.
+						startTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
+					} else {
+						startTime = endTime.minusDays(daysToFetchForNewTimeseries);
+					}
+				}
+				
+				if(endTime == null){
+					endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 				}
 				
 				//Further constain the pull times by the 'never before' and 'never after' bounds
