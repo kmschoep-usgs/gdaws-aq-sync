@@ -48,6 +48,7 @@ public class AqToGdaws {
 	private ZonedDateTime endTime;
 	private final Integer oldSourceId;
 	private final ArrayList<String> tsToPullList;
+	private Boolean doUpdateLastPullTime;
 
 	/**
 	 * Constructor that loads its own site configuration and automatically loads data since
@@ -80,6 +81,9 @@ public class AqToGdaws {
 		this.startTime = startTime != null ? startTime.atZone(ZonedDateTime.now().getZone()) : null;
 		this.endTime = endTime != null ? endTime.atZone(ZonedDateTime.now().getZone()) : null;
 		this.tsToPullList = tsToPullList;
+		
+		//If the user is providing any part of a date range to pull then we should NOT update the last pull dates
+		this.doUpdateLastPullTime = startTime == null && endTime == null;
 	}
 	
 	public void migrateAqData() {
@@ -141,9 +145,11 @@ public class AqToGdaws {
 
 
 					//Update the site w/ a new timestamp of the last pull
-					site.setLastNewPullStart(startTime);
-					site.setLastNewPullEnd(endTime);
-					siteConfiguationLoader.updateNewDataPullTimestamps(site);
+					if(doUpdateLastPullTime){
+						site.setLastNewPullStart(startTime);
+						site.setLastNewPullEnd(endTime);
+						siteConfiguationLoader.updateNewDataPullTimestamps(site);
+					}
 				} else {
 					LOG.info("Skipping pull for site {}, parameter {} because the current pull dates are outside the neverbefore/after range: {} to {}", 
 							site.getLocalSiteId(), site.getPCode(), 
