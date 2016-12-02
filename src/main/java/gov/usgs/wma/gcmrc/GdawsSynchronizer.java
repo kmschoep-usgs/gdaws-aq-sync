@@ -10,6 +10,7 @@ import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.service.AqToGdaws;
 import gov.usgs.wma.gcmrc.service.AutoProc;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
+import java.time.LocalDateTime;
 
 public class GdawsSynchronizer {
 	private static final Logger LOG = LoggerFactory.getLogger(GdawsSynchronizer.class);
@@ -69,7 +70,7 @@ public class GdawsSynchronizer {
 			ConfigLoader.CONFIG_FILE_PROP_NAME, "File used to set all required props",
 			DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES, "If a site has not been fetched before, this is the number of days to fetch.",
 			SYNC_START_DATE_PROP_NAME, "Optional date & time to force synchronizing to start from.",
-			SYNC_END_DATE_PROP_NAME, "Optional date & time to force synchronizing to finish at.",
+			SYNC_END_DATE_PROP_NAME, "Optional date & time to force synchronizing to end at.",
 			SYNC_TIMESERIES_ID_LIST_PROP_NAME, "Optional list of TS GUIDS to limit synchronizing to."
 	};
 	
@@ -91,7 +92,11 @@ public class GdawsSynchronizer {
 						gdawsDaoFactory, 
 						runState.getIntProperty(DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES, null),
 						runState.getIntProperty(AQ_SOURCE_PROP_NAME, null),
-						runState.getIntProperty(OLD_GADSYNC_SOURCE_PROP_NAME, null));
+						runState.getIntProperty(OLD_GADSYNC_SOURCE_PROP_NAME, null),
+						runState.getDateTimeProperty(SYNC_START_DATE_PROP_NAME, null),
+						runState.getDateTimeProperty(SYNC_END_DATE_PROP_NAME, null),
+						runState.getArrayProperty(SYNC_TIMESERIES_ID_LIST_PROP_NAME, String.class)
+				);
 				aqToGdaws.migrateAqData();
 				LOG.info("Finished AQ to GDAWS Sync");
 			} else {

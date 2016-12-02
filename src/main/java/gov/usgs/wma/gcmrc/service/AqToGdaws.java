@@ -45,6 +45,9 @@ public class AqToGdaws {
 	private DataService dataService;
 	private SiteConfigurationLoader siteConfiguationLoader;
 	private final Integer oldSourceId;
+	private final LocalDateTime startDate;
+	private final LocalDateTime endDate;
+	private final ArrayList<String> tsToPullList;
 
 	/**
 	 * Constructor that loads its own site configuration and automatically loads data since
@@ -58,10 +61,12 @@ public class AqToGdaws {
 	 * @param daysToFetchForNewTimeseries
 	 * @param sourceId Source ID for new records that are written
 	 * @param oldSourceId Source ID for legacy records that may be overwritten
-	 * @param defaultDaysToFetch 
+	 * @param startDate 
+	 * @param endDate
+	 * @param tsToPullList 
 	 */
 	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, 
-			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId) {
+			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId, LocalDateTime startDate, LocalDateTime endDate, ArrayList<String> tsToPullList) {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
@@ -72,6 +77,9 @@ public class AqToGdaws {
 		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
 		this.sourceId = sourceId;
 		this.oldSourceId = oldSourceId;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.tsToPullList = tsToPullList;
 	}
 	
 	public void migrateAqData() {
