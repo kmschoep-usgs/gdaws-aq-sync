@@ -115,7 +115,6 @@
 	</delete>
 	
 	<!-- From AutoProc I: 
-		Hack alert: It is necessary to force Oracle to analyze the staging table bfore merging.  This seems to be a design issue of these star tables. 
 		Note: This binds this class to the schema name (GDAWS_PROD) of the database. -->
 	<select id="analyzeStageTable">
 		begin dbms_stats.gather_table_stats('GDAWS', 'TIME_SERIES_AP_STAGE' , null, 100, false, 'FOR ALL COLUMNS SIZE AUTO', 1, 'ALL', true); end;
