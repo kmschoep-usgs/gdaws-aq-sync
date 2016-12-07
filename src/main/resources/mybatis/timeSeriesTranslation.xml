@@ -9,4 +9,9 @@
 	<select id="getAqGdawsApprovalMap" parameterType="map" resultType="map">
 		SELECT * FROM GDAWS_AQ_APPROVAL_MAP
 	</select>
+	
+	<select id="getNetworkHoursOffsetMap" parameterType="map" resultType="map">
+		SELECT S.SITE_ID, N.OFFSET_FROM_MST FROM SITE_STAR S, NETWORK N
+			WHERE S.NETWORK_NAME = N.NETWORK_NM
+	</select>
 </mapper>

@@ -39,6 +39,7 @@ public class AqToGdaws {
 	private List<SiteConfiguration> sitesToLoad;
 	private Map<Integer, Integer> aqGdawsApprovalMap;
 	private Map<String, Integer> aqGdawsQualifierMap;
+	private Map<Integer, Integer> networkHoursOffsetMap;
 	private Integer daysToFetchForNewTimeseries;
 	private Integer sourceId;
 	
@@ -73,6 +74,7 @@ public class AqToGdaws {
 		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
 		this.aqGdawsApprovalMap = this.timeSeriesTranslationLoader.getAqGdawsApprovalMap();
 		this.aqGdawsQualifierMap = this.timeSeriesTranslationLoader.getAqGdawsQualifierMap();
+		this.networkHoursOffsetMap = this.timeSeriesTranslationLoader.getNetworkHoursOffsetMap();
 		this.dataService = dataService;
 		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
 		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
@@ -242,6 +244,12 @@ public class AqToGdaws {
 			}
 		}
 		
+		//Apply Network Hours Offset
+			Integer networkHoursOffset = this.networkHoursOffsetMap.get(newPoint.getSiteId());
+			LocalDateTime aqMeasurementDate = newPoint.getMeasurementDate();
+			LocalDateTime gdawsMeasurementDate = aqMeasurementDate.plusHours(networkHoursOffset);		
+			newPoint.setMeasurementDate(gdawsMeasurementDate);
+			
 		//TODO: SubsiteId? Other?
 		
 		return newPoint;
