@@ -60,23 +60,4 @@ public class TimeSeriesTranslationLoader {
 		
 		return returnMap;
 	}
-	public Map<Integer, Integer> getNetworkHoursOffsetMap(){
-		LOG.debug("Loading AQ -> GDAWS Network hours offset from MST Mapping");
-		List<Map<Integer, Integer>> networkHoursOffsetMap = null;
-		Map<Integer, Integer> returnMap = null;
-		
-		try (SqlSession session = sessionFactory.openSession()) {
-			TimeSeriesTranslationMapper mapper = session.getMapper(TimeSeriesTranslationMapper.class);
-			networkHoursOffsetMap = mapper.getNetworkHoursOffsetMap(new HashMap<>());
-			returnMap = new HashMap<>();
-					
-			for(Map<Integer, Integer> entry : networkHoursOffsetMap){
-				returnMap.put(((Number)entry.values().toArray()[0]).intValue(), ((Number)entry.values().toArray()[1]).intValue());
-			}
-			
-			LOG.trace("Loaded " + returnMap.entrySet().size() + " network hours offset from MST mappings.");
-		}
-		
-		return returnMap;
-	}
 }

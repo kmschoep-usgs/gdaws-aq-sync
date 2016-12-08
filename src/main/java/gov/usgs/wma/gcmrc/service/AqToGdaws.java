@@ -25,6 +25,8 @@ import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 public class AqToGdaws {
@@ -74,7 +76,6 @@ public class AqToGdaws {
 		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
 		this.aqGdawsApprovalMap = this.timeSeriesTranslationLoader.getAqGdawsApprovalMap();
 		this.aqGdawsQualifierMap = this.timeSeriesTranslationLoader.getAqGdawsQualifierMap();
-		this.networkHoursOffsetMap = this.timeSeriesTranslationLoader.getNetworkHoursOffsetMap();
 		this.dataService = dataService;
 		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
 		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
@@ -199,9 +200,18 @@ public class AqToGdaws {
 		newPoint.setSiteId(site.getLocalSiteId());
 		newPoint.setGroupId(site.getLocalParamId());
 		
+		ZonedDateTime newZonedDateTime;
+		ZoneOffset newTimeZone;
+		
 		//Fix for points with no time
 		if(source.getTime().isSupported(ChronoUnit.HOURS)){
+			if (ZonedDateTime.from(source.getTime()).getZone() != ZoneOffset.of("-07:00")){
+				newTimeZone = ZoneOffset.of("-07:00");
+				newZonedDateTime = ZonedDateTime.from(source.getTime()).withZoneSameInstant(newTimeZone);
+				newPoint.setMeasurementDate(LocalDateTime.from(newZonedDateTime));
+			} else {
 			newPoint.setMeasurementDate(LocalDateTime.from(source.getTime()));
+			}
 		} else {
 			LOG.debug("Found point without associated time: " + source.getTime());
 			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay());
@@ -244,12 +254,6 @@ public class AqToGdaws {
 			}
 		}
 		
-		//Apply Network Hours Offset
-			Integer networkHoursOffset = this.networkHoursOffsetMap.get(newPoint.getSiteId());
-			LocalDateTime aqMeasurementDate = newPoint.getMeasurementDate();
-			LocalDateTime gdawsMeasurementDate = aqMeasurementDate.plusHours(networkHoursOffset);		
-			newPoint.setMeasurementDate(gdawsMeasurementDate);
-			
 		//TODO: SubsiteId? Other?
 		
 		return newPoint;
