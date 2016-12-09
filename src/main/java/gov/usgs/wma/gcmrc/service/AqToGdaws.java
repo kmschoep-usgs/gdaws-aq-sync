@@ -109,7 +109,7 @@ public class AqToGdaws {
 					}
 				}
 								
-				//Further constain the pull times by the 'never before' and 'never after' bounds
+				//Further constrain the pull times by the 'never before' and 'never after' bounds
 				if (site.getNeverPullBefore() != null && startTime.isBefore(site.getNeverPullBefore())) {
 					startTime = site.getNeverPullBefore();
 				}
