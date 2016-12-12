@@ -31,7 +31,7 @@ public class CumulativeBedloadDAO {
 	 * @param sourceGroupId The source data group_id, which should be the instantaneous load data series
 	 * @param destinationGroupId The destination group_id, which is the data series we are calculating
 	 */
-	public void calcCumulatieBedloadToStageTable(Integer siteId, 
+	public void calcCumulativeBedloadToStageTable(Integer siteId, 
 			Integer sourceId, Integer sourceGroupId, Integer destinationGroupId) {
 		List<TimeSeriesRecord> timeSeries = null;
 
@@ -58,7 +58,7 @@ public class CumulativeBedloadDAO {
 			LOG.trace("Will calculate cumulative bedload");
 			
 			long time = System.currentTimeMillis();
-			cbmMapper.calcCumulatieBedloadToStageTable(params);
+			cbmMapper.calcCumulativeBedloadToStageTable(params);
 			session.flushStatements();
 			LOG.trace("Cumulative Calcs took {} seconds for site id {}",
 					(System.currentTimeMillis() - time) / 1000, siteId);

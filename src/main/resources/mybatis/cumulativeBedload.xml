@@ -4,7 +4,7 @@
 <mapper namespace="gov.usgs.wma.gcmrc.mapper.CumulativeBedloadMapper">
 
 	
-	<insert id="calcCumulatieBedloadToStageTable" parameterType="map" timeout="180">
+	<insert id="calcCumulativeBedloadToStageTable" parameterType="map" timeout="180">
 INSERT INTO TIME_SERIES_AP_STAGE (
 	SITE_ID, 
 	GROUP_ID,

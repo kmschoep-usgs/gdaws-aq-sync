@@ -93,7 +93,7 @@ public class AutoProc {
 				timeSeriesDAO.insertTimeseriesData(toGdawsTimeSeries(results, siteId, instantaneousBedloadGroupId), null);
 			}
 			
-			cumulativeBedloadDAO.calcCumulatieBedloadToStageTable(siteId, sourceId, instantaneousBedloadGroupId, cumulativeBedloadGroupId);
+			cumulativeBedloadDAO.calcCumulativeBedloadToStageTable(siteId, sourceId, instantaneousBedloadGroupId, cumulativeBedloadGroupId);
 		}
 	}
 	

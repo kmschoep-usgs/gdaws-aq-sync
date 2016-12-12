@@ -1,9 +1,7 @@
 package gov.usgs.wma.gcmrc.mapper;
 
-import java.util.List;
 import java.util.Map;
 
-import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 
 /**
  *
@@ -11,6 +9,6 @@ import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
  */
 public interface CumulativeBedloadMapper {
 
-	void calcCumulatieBedloadToStageTable(Map<String, Object> parms);
+	void calcCumulativeBedloadToStageTable(Map<String, Object> parms);
 
 }
