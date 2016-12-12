@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<mapper namespace="gov.usgs.wma.gcmrc.mapper.CumulativeBedloadMapper">
+
+	
+	<insert id="calcCumulativeBedloadToStageTable" parameterType="map" timeout="180">
+INSERT INTO TIME_SERIES_AP_STAGE (
+	SITE_ID, 
+	GROUP_ID,
+	MEASUREMENT_DATE,
+	FINAL_VALUE,
+	MAIN_QUALIFIER_ID,
+	DATA_APPROVAL_ID,
+	SOURCE_ID
+) 
+	SELECT
+		SITE_ID, 
+		GROUP_ID,
+		MEASUREMENT_DATE,
+		FINAL_VALUE,
+		NULL AS MAIN_QUALIFIER_ID,
+		NULL AS DATA_APPROVAL_ID,
+		SOURCE_ID
+	FROM (<include refid="source_data"/>)
+	</insert>
+	
+	<sql id="source_data">
+WITH INSTANTANIOUS_DATA (site_id, group_id, this_value, prev_value, this_time, prev_time, duration_seconds) AS (
+  SELECT
+    site_id,
+    #{groupId,jdbcType=NUMERIC} group_id,
+    final_value this_value, 
+    LAG(final_value) OVER (ORDER BY measurement_date) prev_value, 
+    measurement_date this_time,
+    LAG(measurement_date) OVER (ORDER BY measurement_date) prev_time,
+    EXTRACT(DAY FROM (measurement_date - LAG(measurement_date) OVER (ORDER BY measurement_date)) * 24*60*60) duration_seconds
+  FROM TIME_SERIES_STAR
+  WHERE site_id = #{siteId,jdbcType=NUMERIC} AND group_id =  #{sourceGroupId,jdbcType=NUMERIC}
+  ORDER BY measurement_date
+), INCREMENTAL_DATA (site_id, group_id, this_value, prev_value, this_time, prev_time, duration_seconds, incremental_load) AS (
+SELECT
+  site_id, group_id, this_value, prev_value, this_time, prev_time, duration_seconds,
+  .5 * (this_value + prev_value) * duration_seconds AS incremental_load
+  FROM INSTANTANIOUS_DATA
+  WHERE this_value IS NOT NULL AND prev_value IS NOT NULL AND this_time IS NOT NULL AND prev_time IS NOT NULL
+)
+
+SELECT
+	site_id, group_id,
+	this_time as measurement_date,
+	SUM(incremental_load) OVER (ORDER BY this_time ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS final_value,
+	#{sourceId,jdbcType=NUMERIC} as source_id,
+	prev_value, this_value, this_time, prev_time, duration_seconds, incremental_load
+FROM INCREMENTAL_DATA
+	</sql>
+	
+
+</mapper>

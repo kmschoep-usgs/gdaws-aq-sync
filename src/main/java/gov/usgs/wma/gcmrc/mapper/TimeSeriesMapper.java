@@ -12,10 +12,12 @@ import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 public interface TimeSeriesMapper {
 	List<TimeSeriesRecord> getTimeSeries(Map<String, Object> parms);
 	
+	int getStageCount();
+	
 	//AQ -> GDAWS Sync Methods
 	void insertTimeseriesDataToStageTable(TimeSeriesRecord record);
 	void deleteOverlappingDataInStarTable(Map<String, Object> parms);
 	void copyStageTableToStarTable(Map<String, Object> parms);
-	void emptyStageTable(Map<String, Object> parms);	
-	void analyzeStageTable(Map<String, Object> parms);
+	void emptyStageTable();	
+	void analyzeStageTable();
 }
