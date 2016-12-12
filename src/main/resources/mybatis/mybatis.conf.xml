@@ -8,7 +8,7 @@
 		<setting name="lazyLoadingEnabled" value="false"/>
 		<setting name="aggressiveLazyLoading" value="false"/>
 		<setting name="defaultExecutorType" value="BATCH"/>
-		<setting name="defaultStatementTimeout" value="30"/>
+		<setting name="defaultStatementTimeout" value="180"/>
 		<setting name="logImpl" value="SLF4J"/>
 		<setting name="autoMappingBehavior" value="PARTIAL"/>
 	</settings>
