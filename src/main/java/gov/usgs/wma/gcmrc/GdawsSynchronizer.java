@@ -86,26 +86,6 @@ public class GdawsSynchronizer {
 			
 			GdawsDaoFactory gdawsDaoFactory = new GdawsDaoFactory(runState.getProperties());
 			
-			///hack
-//			try (SqlSession session = gdawsDaoFactory.getSqlSessionFactory().openSession()) {
-//				CumulativeBedloadMapper cbmMapper = session.getMapper(CumulativeBedloadMapper.class);
-//	
-//				Map<String, Object> params = new HashMap<String, Object>();
-//				params.put("siteId", siteId);
-//				params.put("sourceId", sourceId);
-//				params.put("sourceGroupId", sourceGroupId);
-//				params.put("groupId", destinationGroupId);	//for consistency, use 'groupId' as SQL param
-//
-//				cbmMapper.calcCumulatieBedloadToStageTable(params);
-//
-//			}
-//			
-//			return;
-//			
-//			
-			
-			///hack
-			
 			if(!isSkip(args, AQUARIUS_SYNC_OPT)) {
 				LOG.info("Starting AQ to GDAWS Sync");
 				AqToGdaws aqToGdaws = new AqToGdaws(
