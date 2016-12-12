@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.dao.AutoProcConfigurationLoader;
+import gov.usgs.wma.gcmrc.dao.CumulativeBedloadDAO;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
@@ -16,10 +17,11 @@ import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
 
 public class AutoProc {
-	private static final Logger LOG = LoggerFactory.getLogger(AutoProcConfigurationLoader.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AutoProc.class);
 	
 	private AutoProcConfigurationLoader autoProcConfLoader;
 	private TimeSeriesDAO timeSeriesDAO;
+	private CumulativeBedloadDAO cumulativeBedloadDAO;
 	private Integer sourceId;
 	
 	public static final String DISCHARGE_PARAMETER_NAME = "Discharge"; //TODO give user way to override this;
@@ -28,12 +30,13 @@ public class AutoProc {
 	public AutoProc(GdawsDaoFactory gdawsDaoFactory, Integer sourceId) {
 		this.autoProcConfLoader = new AutoProcConfigurationLoader(gdawsDaoFactory);
 		this.timeSeriesDAO = new TimeSeriesDAO(gdawsDaoFactory);
+		this.cumulativeBedloadDAO = new CumulativeBedloadDAO(gdawsDaoFactory);
 		this.sourceId = sourceId;
 	}
 	
 	//TODO refactor bedload stuff out into it's own class and leave AutoProc as the top level service class for all future calculation
 	
-	public void processBedloadCalculations(Integer bedLoadParamId) {
+	public void processBedloadCalculations(Integer instantaneousBedloadGroupId, Integer cumulativeBedloadGroupId) {
 		Map<Integer, Map<String, Double>> bedLoadParams = 
 				autoProcConfLoader.asParamMap(autoProcConfLoader.loadBedLoadCalculationConfiguration());
 		
@@ -52,7 +55,7 @@ public class AutoProc {
 			Double c1 = bedLoadParams.get(siteId).get("c1");
 			Double c2 = bedLoadParams.get(siteId).get("c2");
 			
-			LOG.info("Running bedload calculations for site {} with C1 {} C2 {}, {} discharge points, {} suspended sand load points", siteId, c1, c2,
+			LOG.info("Running instantaneous bedload calculations for site {} with C1 {} C2 {}, {} discharge points, {} suspended sand load points", siteId, c1, c2,
 					discharge.size(), suspendedSand.size()
 					);
 			
@@ -66,7 +69,7 @@ public class AutoProc {
 				TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(time) != null ? discharge.get(dischargeMillisIndex.get(time)) : null;
 				if(correspondingDischarge == null) {
 					LOG.trace("Discharge interpolation needed for {}", susp.getMeasurementDate());
-					correspondingDischarge = TimeSeriesUtils.getInterpolatedDischarge(discharge, time, sourceId, bedLoadParamId, siteId);
+					correspondingDischarge = TimeSeriesUtils.getInterpolatedDischarge(discharge, time, sourceId, instantaneousBedloadGroupId, siteId);
 				} 
 				
 				if(susp.getFinalValue() == 0d || correspondingDischarge.getFinalValue() == 0d) {
@@ -76,19 +79,21 @@ public class AutoProc {
 					instBedload = susp.getFinalValue() * (Math.pow(10, (c1 + c2 * Math.log10(correspondingDischarge.getFinalValue()))));
 				}
 
-				LOG.trace("Calculated bed load {} {} {}", siteId, time, instBedload);
+				LOG.trace("Calculated instantaneous bed load {} {} {}", siteId, time, instBedload);
 				
 				if(instBedload.isNaN()) {
-					LOG.warn("Calculated bed load isNaN");
+					LOG.warn("Calculated instantaneous bed load isNaN");
 				}
 				
 				//add result
-				results.add(new TimeSeriesRecord(time, instBedload, sourceId, bedLoadParamId, siteId));
+				results.add(new TimeSeriesRecord(time, instBedload, sourceId, instantaneousBedloadGroupId, siteId));
 			}
 
 			if(results.size() > 0) {
-				timeSeriesDAO.insertTimeseriesData(toGdawsTimeSeries(results, siteId, bedLoadParamId), null);
+				timeSeriesDAO.insertTimeseriesData(toGdawsTimeSeries(results, siteId, instantaneousBedloadGroupId), null);
 			}
+			
+			cumulativeBedloadDAO.calcCumulatieBedloadToStageTable(siteId, sourceId, instantaneousBedloadGroupId, cumulativeBedloadGroupId);
 		}
 	}
 	

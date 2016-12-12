@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
 
-<mapper namespace="gov.usgs.wma.gcmrc.mapper.cumulativeBedload">
+<mapper namespace="gov.usgs.wma.gcmrc.mapper.CumulativeBedloadMapper">
 
 	
-	<insert id="insertTimeseriesDataToStageTable">
+	<insert id="calcCumulatieBedloadToStageTable" parameterType="map" timeout="180">
 INSERT INTO TIME_SERIES_AP_STAGE (
 	SITE_ID, 
 	GROUP_ID,
@@ -23,14 +23,13 @@ INSERT INTO TIME_SERIES_AP_STAGE (
 		NULL AS DATA_APPROVAL_ID,
 		SOURCE_ID
 	FROM (<include refid="source_data"/>)
-)
 	</insert>
 	
 	<sql id="source_data">
 WITH INSTANTANIOUS_DATA (site_id, group_id, this_value, prev_value, this_time, prev_time, duration_seconds) AS (
   SELECT
     site_id,
-    #{destinationGroupId,jdbcType=NUMERIC} group_id,
+    #{groupId,jdbcType=NUMERIC} group_id,
     final_value this_value, 
     LAG(final_value) OVER (ORDER BY measurement_date) prev_value, 
     measurement_date this_time,

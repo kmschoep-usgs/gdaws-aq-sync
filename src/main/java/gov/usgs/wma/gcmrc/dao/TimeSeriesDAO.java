@@ -72,15 +72,18 @@ public class TimeSeriesDAO {
 		if(series.getRecords().size() > 0){
 			try (SqlSession session = sessionFactory.openSession()) {
 				TimeSeriesMapper mapper = session.getMapper(TimeSeriesMapper.class);	
-				mapper.emptyStageTable(parms);	
+				mapper.emptyStageTable();	
 				for(TimeSeriesRecord r : series.getRecords()) {
 					mapper.insertTimeseriesDataToStageTable(r);
 				}
+				session.flushStatements();
 				mapper.deleteOverlappingDataInStarTable(parms);
+				
+				session.flushStatements();
 				//Is this still necessary?
-				mapper.analyzeStageTable(parms);
+				mapper.analyzeStageTable();
 				mapper.copyStageTableToStarTable(parms);
-				mapper.emptyStageTable(parms);
+				mapper.emptyStageTable();
 				session.commit();
 			}
 		}
