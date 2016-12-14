@@ -37,6 +37,7 @@
 		<mapper resource="mybatis/autoProcConfigMapper.xml"/>
 		<mapper resource="mybatis/timeSeries.xml"/>
 		<mapper resource="mybatis/timeSeriesTranslation.xml"/>
+		<mapper resource="mybatis/cumulativeBedload.xml"/>
 	</mappers>
     
 </configuration>

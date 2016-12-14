@@ -39,6 +39,7 @@ public class GdawsSynchronizer {
 	private static final String OLD_GADSYNC_SOURCE_PROP_NAME = "old.gadsync.source.id";
 	private static final String AUTO_PROC_SOURCE_PROP_NAME = "autoproc.source.id";
 	private static final String BEDLOAD_GROUP_ID_PROP_NAME = "bedload.group.id";
+	private static final String CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME = "cumulative.bedload.group.id";
 	private static final String DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES = "default.days.to.fetch.for.new.timeseries";
 	private static final String SYNC_START_DATE_PROP_NAME = "sync.start.time";
 	private static final String SYNC_END_DATE_PROP_NAME = "sync.end.time";
@@ -61,7 +62,8 @@ public class GdawsSynchronizer {
 			AQ_SOURCE_PROP_NAME, "The source id to mark incoming records from aquarius with",
 			OLD_GADSYNC_SOURCE_PROP_NAME, "The source id of the old GADSYNC records, which can be safely overwritten by the new AQ source",
 			AUTO_PROC_SOURCE_PROP_NAME, "The source id to mark calculated values with",
-			BEDLOAD_GROUP_ID_PROP_NAME, "The group id to mark calculated bed load values with"
+			BEDLOAD_GROUP_ID_PROP_NAME, "The group id to mark instantaneous calculated bed load values with",
+			CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, "The group id for mark cumulative bedload calculations with"
 	};
 	
 	//prop names and descriptions
@@ -106,7 +108,9 @@ public class GdawsSynchronizer {
 
 			if(!isSkip(args, BEDLOAD_OPT)) {
 				LOG.info("Starting Bedload Calculations");
-				autoProc.processBedloadCalculations(runState.getIntProperty(BEDLOAD_GROUP_ID_PROP_NAME, null));
+				autoProc.processBedloadCalculations(
+						runState.getIntProperty(BEDLOAD_GROUP_ID_PROP_NAME, null),
+						runState.getIntProperty(CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, null));
 				LOG.info("Finished Bedload Calculations");
 			} else {
 				LOG.info("Skipping Bedload Calculations");

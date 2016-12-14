@@ -34,6 +34,12 @@
 			<include refid="whereAndOrder"/>
 	</select>
 	
+	<select id="getStageCount" resultType="int">
+		SELECT
+			count(*)
+		FROM TIME_SERIES_AP_STAGE
+	</select>
+	
 	<select id="getTimeSeries" resultMap="TimeSeriesRecordMap" fetchSize="250000" >
 		SELECT
 			<include refid="timeSeriesColumns"/>
@@ -96,22 +102,28 @@
 		values (#{siteId,jdbcType=NUMERIC},#{groupId,jdbcType=NUMERIC},<include refid="isoToDateCast"/>,#{finalValue,jdbcType=NUMERIC}, #{mainQualifierId,jdbcType=NUMERIC}, #{dataApprovalId,jdbcType=NUMERIC},#{sourceId,jdbcType=NUMERIC})
 	</insert>
 		
-	<!-- Delete data from Main Table already existing within the DateTime range of the input time series -->
+	<!-- 
+	Delete data from Main Table already existing within the DateTime range of the input time series
+	Note that note all possible WHERE clause params are handled for missing values:
+	siteId, groupId and sourceId are required, otherwise we could unintentionally
+	delete too much data.  As written, it should fail if those params are null.
+	Others: oldSourceId, startTime and endTime are optional.
+	-->
 	<delete id="deleteOverlappingDataInStarTable">
 		DELETE From TIME_SERIES_STAR
 		WHERE
 			SITE_ID=#{siteId} AND
-			GROUP_ID=#{groupId} AND
+			GROUP_ID=#{groupId}
 		<choose>
 			<when test="oldSourceId != null">
-				(SOURCE_ID=#{sourceId} OR SOURCE_ID=#{oldSourceId}) AND
+				AND (SOURCE_ID=#{sourceId} OR SOURCE_ID=#{oldSourceId})
 			</when>
 			<otherwise>
-				SOURCE_ID=#{sourceId} AND
+				AND SOURCE_ID=#{sourceId}
 			</otherwise>
-			
 		</choose>
-			MEASUREMENT_DATE &gt;=#{startTime} AND MEASUREMENT_DATE &lt;=#{endTime}
+		<if test="startTime != null">AND MEASUREMENT_DATE &gt;=#{startTime}</if>
+		<if test="endTime != null">AND MEASUREMENT_DATE &lt;=#{endTime}</if>
 	</delete>
 	
 	<!-- From AutoProc I: 
