@@ -3,7 +3,12 @@ package gov.usgs.wma.gcmrc.util;
 import static org.junit.Assert.*;
 
 import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +20,13 @@ import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 public class TimeSeriesUtilsTest {
 	
 	private LocalDateTime now = LocalDateTime.now();
+	
+	private Temporal ASTDateTime = OffsetDateTime.of(LocalDateTime.of(2014, Month.JANUARY, 14, 11, 30), ZoneOffset.of("-04:00"));
+	private Temporal CSTDateTime = OffsetDateTime.of(LocalDateTime.of(2014, Month.JANUARY, 14, 9, 30), ZoneOffset.of("-06:00"));
+	private Temporal ESTDateTime = OffsetDateTime.of(LocalDateTime.of(2014, Month.JANUARY, 14, 10, 30), ZoneOffset.of("-05:00"));
+	private Temporal MSTDateTime = OffsetDateTime.of(LocalDateTime.of(2014, Month.JANUARY, 14, 8, 30), ZoneOffset.of("-07:00"));
+	private Temporal MDTDateTime = OffsetDateTime.of(LocalDateTime.of(2014, Month.JANUARY, 14, 9, 30), ZoneOffset.of("-06:00"));
+
 	private List<TimeSeriesRecord> testList = Arrays.asList(new TimeSeriesRecord[]{
 			new TimeSeriesRecord(now.minus(7, ChronoUnit.HOURS), 1d, 0, 0, 0),
 			new TimeSeriesRecord(now.minus(6, ChronoUnit.HOURS), 2d, 0, 0, 0),
@@ -79,5 +91,27 @@ public class TimeSeriesUtilsTest {
 		test = TimeSeriesUtils.getInterpolatedDischarge(testList, now.minus(345, ChronoUnit.MINUTES), 0, 0, 0);
 		assertEquals(test.getMeasurementDate(), now.minus(345, ChronoUnit.MINUTES));
 		assertEquals(test.getFinalValue(), Double.valueOf(2.25));
+	}
+	
+	@Test
+	public void getMstDateTimeTest() {
+		LocalDateTime testDateTime = TimeSeriesUtils.getMstDateTime(ASTDateTime);
+		assertNotEquals(testDateTime, LocalDateTime.from(ASTDateTime));
+		assertEquals(testDateTime, LocalDateTime.from(MSTDateTime));
+		
+		testDateTime = TimeSeriesUtils.getMstDateTime(CSTDateTime);
+		assertNotEquals(testDateTime, LocalDateTime.from(CSTDateTime));
+		assertEquals(testDateTime, LocalDateTime.from(MSTDateTime));
+		
+		testDateTime = TimeSeriesUtils.getMstDateTime(ESTDateTime);
+		assertNotEquals(testDateTime, LocalDateTime.from(ESTDateTime));
+		assertEquals(testDateTime, LocalDateTime.from(MSTDateTime));
+		
+		testDateTime = TimeSeriesUtils.getMstDateTime(MDTDateTime);
+		assertNotEquals(testDateTime, LocalDateTime.from(MDTDateTime));
+		assertEquals(testDateTime, LocalDateTime.from(MSTDateTime));
+		
+		testDateTime = TimeSeriesUtils.getMstDateTime(MSTDateTime);
+		assertEquals(testDateTime, LocalDateTime.from(MSTDateTime));
 	}
 }

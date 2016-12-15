@@ -23,9 +23,9 @@ import gov.usgs.wma.gcmrc.dao.TimeSeriesTranslationLoader;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
+import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 
@@ -41,7 +41,6 @@ public class AqToGdaws {
 	private List<SiteConfiguration> sitesToLoad;
 	private Map<Integer, Integer> aqGdawsApprovalMap;
 	private Map<String, Integer> aqGdawsQualifierMap;
-	private Map<Integer, Integer> networkHoursOffsetMap;
 	private Integer daysToFetchForNewTimeseries;
 	private Integer sourceId;
 	
@@ -200,18 +199,9 @@ public class AqToGdaws {
 		newPoint.setSiteId(site.getLocalSiteId());
 		newPoint.setGroupId(site.getLocalParamId());
 		
-		ZonedDateTime newZonedDateTime;
-		ZoneOffset newTimeZone;
-		
 		//Fix for points with no time
 		if(source.getTime().isSupported(ChronoUnit.HOURS)){
-			if (ZonedDateTime.from(source.getTime()).getZone() != ZoneOffset.of("-07:00")){
-				newTimeZone = ZoneOffset.of("-07:00");
-				newZonedDateTime = ZonedDateTime.from(source.getTime()).withZoneSameInstant(newTimeZone);
-				newPoint.setMeasurementDate(LocalDateTime.from(newZonedDateTime));
-			} else {
-			newPoint.setMeasurementDate(LocalDateTime.from(source.getTime()));
-			}
+			newPoint.setMeasurementDate(TimeSeriesUtils.getMstDateTime(source.getTime()));
 		} else {
 			LOG.debug("Found point without associated time: " + source.getTime());
 			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay());
