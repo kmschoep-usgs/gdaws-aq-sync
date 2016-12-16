@@ -1,6 +1,9 @@
 package gov.usgs.wma.gcmrc.util;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,5 +83,21 @@ public class TimeSeriesUtils {
 		}
 		
 		return newMap;
+	}
+	
+	public static LocalDateTime getMstDateTime(Temporal aqDateTime) {
+		LocalDateTime mstDateTime;
+		ZonedDateTime newZonedDateTime;
+		ZoneOffset newZoneOffset;
+		ZoneOffset oldZoneOffset = ZonedDateTime.from(aqDateTime).getOffset();
+		
+		if (!oldZoneOffset.equals(ZoneOffset.of("-07:00"))){
+			newZoneOffset = ZoneOffset.of("-07:00");
+			newZonedDateTime = ZonedDateTime.from(aqDateTime).withZoneSameInstant(newZoneOffset);
+			mstDateTime = LocalDateTime.from(newZonedDateTime);
+		} else {
+			mstDateTime = LocalDateTime.from(aqDateTime);
+		}
+		return mstDateTime;
 	}
 }

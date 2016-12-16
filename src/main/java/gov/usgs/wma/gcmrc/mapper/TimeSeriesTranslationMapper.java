@@ -10,4 +10,5 @@ import java.util.List;
 public interface TimeSeriesTranslationMapper {
 	List<Map<Integer, Integer>> getAqGdawsApprovalMap(Map<String, Object> parms);
 	List<Map<String, Integer>> getAqGdawsQualifierMap(Map<String, Object> parms);
+	List<Map<Integer, Integer>> getNetworkHoursOffsetMap(Map<String, Object> parms);
 }

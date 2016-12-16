@@ -23,8 +23,10 @@ import gov.usgs.wma.gcmrc.dao.TimeSeriesTranslationLoader;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
+import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 public class AqToGdaws {
@@ -106,7 +108,7 @@ public class AqToGdaws {
 					}
 				}
 								
-				//Further constain the pull times by the 'never before' and 'never after' bounds
+				//Further constrain the pull times by the 'never before' and 'never after' bounds
 				if (site.getNeverPullBefore() != null && startTime.isBefore(site.getNeverPullBefore())) {
 					startTime = site.getNeverPullBefore();
 				}
@@ -199,7 +201,7 @@ public class AqToGdaws {
 		
 		//Fix for points with no time
 		if(source.getTime().isSupported(ChronoUnit.HOURS)){
-			newPoint.setMeasurementDate(LocalDateTime.from(source.getTime()));
+			newPoint.setMeasurementDate(TimeSeriesUtils.getMstDateTime(source.getTime()));
 		} else {
 			LOG.debug("Found point without associated time: " + source.getTime());
 			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay());
