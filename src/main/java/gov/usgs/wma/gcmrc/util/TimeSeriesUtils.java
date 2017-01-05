@@ -18,6 +18,9 @@ import gov.usgs.wma.gcmrc.service.Interpolation;
 public class TimeSeriesUtils {
 	private static final Logger LOG = LoggerFactory.getLogger(AutoProcConfigurationLoader.class);
 	
+	/** The TimeZone all data in the project is assumed to be in (Mountain Standard Time, offset of -7 hours.) */
+	public static final ZoneOffset MST_ZONE_OFFSET = ZoneOffset.of("-07:00");
+	
 	public static TimeSeriesRecord getInterpolatedDischarge(List<TimeSeriesRecord> discharge, LocalDateTime targetDateTime, Integer sourceId, Integer groupId, Integer siteId) {
 		Integer[] leftRightIndex = getBracketingPoints(discharge, targetDateTime, new Integer[] { 0, discharge.size()-1}); //start recursive function at the far left and right
 		
@@ -91,13 +94,32 @@ public class TimeSeriesUtils {
 		ZoneOffset newZoneOffset;
 		ZoneOffset oldZoneOffset = ZonedDateTime.from(aqDateTime).getOffset();
 		
-		if (!oldZoneOffset.equals(ZoneOffset.of("-07:00"))){
-			newZoneOffset = ZoneOffset.of("-07:00");
+		if (!oldZoneOffset.equals(MST_ZONE_OFFSET)){
+			newZoneOffset = MST_ZONE_OFFSET;
 			newZonedDateTime = ZonedDateTime.from(aqDateTime).withZoneSameInstant(newZoneOffset);
 			mstDateTime = LocalDateTime.from(newZonedDateTime);
 		} else {
 			mstDateTime = LocalDateTime.from(aqDateTime);
 		}
 		return mstDateTime;
+	}
+	
+	/**
+	 * Tacks on the MST Timezone to a LocalDateTime.
+	 * 
+	 * This method doesn't do much, but it is tricky to understand if adding the
+	 * zone adjusts the time - here it codifies how to do it for the project.
+	 * 
+	 * Returns null for null.
+	 * 
+	 * @param localDateTime
+	 * @return 
+	 */
+	public static ZonedDateTime getAsMstDateTime(LocalDateTime localDateTime) {
+		if (localDateTime != null) {
+			return localDateTime.atZone(MST_ZONE_OFFSET);
+		} else {
+			return null;
+		}
 	}
 }

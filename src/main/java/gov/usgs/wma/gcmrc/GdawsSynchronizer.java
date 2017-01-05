@@ -1,5 +1,7 @@
 package gov.usgs.wma.gcmrc;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +46,7 @@ public class GdawsSynchronizer {
 	private static final String SYNC_START_DATE_PROP_NAME = "sync.start.time";
 	private static final String SYNC_END_DATE_PROP_NAME = "sync.end.time";
 	private static final String SYNC_TIMESERIES_ID_LIST_PROP_NAME = "sync.timeseries.id.list";
+	private static final String SYNC_LOG_LEVEL = "sync.loglevel";
 	
 	
 	//prop names and descriptions
@@ -70,9 +73,11 @@ public class GdawsSynchronizer {
 	private static final String[] OPTIONAL_PROPS = new String[] {
 			ConfigLoader.CONFIG_FILE_PROP_NAME, "File used to set all required props",
 			DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES, "If a site has not been fetched before, this is the number of days to fetch.",
-			SYNC_START_DATE_PROP_NAME, "Optional date & time to force synchronizing to start from.",
-			SYNC_END_DATE_PROP_NAME, "Optional date & time to force synchronizing to end at.",
-			SYNC_TIMESERIES_ID_LIST_PROP_NAME, "Optional list of TS GUIDS to limit synchronizing to."
+			SYNC_START_DATE_PROP_NAME, "Optional date & time to force synchronizing to start from.  Assumed to be in MST.",
+			SYNC_END_DATE_PROP_NAME, "Optional date & time to force synchronizing to end at.  Assumed to be in MST.",
+			SYNC_TIMESERIES_ID_LIST_PROP_NAME, "Optional list of TS GUIDS to limit synchronizing to.",
+			SYNC_LOG_LEVEL, "One of the Logback log levels: DEBUG, ERROR, INFO, TRACE, WARN, ALL, OFF. "
+			+ "Debug starts to show the number of records retrieved and insterted, Trace even more detail."
 	};
 	
 	private static final int HELP_COLUMN_SIZE = 30;
@@ -85,6 +90,19 @@ public class GdawsSynchronizer {
 			LOG.info("Arguments valid, proceeding with processing");
 			
 			GdawsDaoFactory gdawsDaoFactory = new GdawsDaoFactory(runState.getProperties());
+			
+			
+			//
+			//This sets the logging level of AqToGdaws and relies on the logging API
+			//being implemented as Logback.  No way to do it w/o knowing the implementation.
+			if (runState.getProperty(SYNC_LOG_LEVEL, null) != null) {
+				String strLvl = runState.getProperty(SYNC_LOG_LEVEL, null);
+				Level level = Level.toLevel(strLvl);
+				LOG.info("Sync log level {} interpreted as {}", strLvl, level.toString());
+				LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+				lc.getLogger(AqToGdaws.class).setLevel(level);
+			}
+			
 			
 			if(!isSkip(args, AQUARIUS_SYNC_OPT)) {
 				LOG.info("Starting AQ to GDAWS Sync");

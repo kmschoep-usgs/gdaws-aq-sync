@@ -6,7 +6,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,6 @@ import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 public class AqToGdaws {
@@ -80,8 +78,8 @@ public class AqToGdaws {
 		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
 		this.sourceId = sourceId;
 		this.oldSourceId = oldSourceId;
-		this.startTime = startTime != null ? startTime.atZone(ZonedDateTime.now().getZone()) : null;
-		this.endTime = endTime != null ? endTime.atZone(ZonedDateTime.now().getZone()) : null;
+		this.startTime = TimeSeriesUtils.getAsMstDateTime(startTime);
+		this.endTime = TimeSeriesUtils.getAsMstDateTime(endTime);
 		this.tsToPullList = tsToPullList;
 		
 		//If the user is providing any part of a date range to pull then we should NOT update the last pull dates
