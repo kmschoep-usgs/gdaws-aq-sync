@@ -114,4 +114,19 @@ public class TimeSeriesUtilsTest {
 		testDateTime = TimeSeriesUtils.getMstDateTime(MSTDateTime);
 		assertEquals(testDateTime, LocalDateTime.from(MSTDateTime));
 	}
+	
+	@Test
+	public void getAsMstDateTimeTest() {
+		LocalDateTime dt = LocalDateTime.of(2000, 2, 2, 6, 35); //Feb 2, 2000 at 5:34 AM
+		ZonedDateTime zdt = TimeSeriesUtils.getAsMstDateTime(dt);
+		
+		assertEquals(2000, zdt.getYear());
+		assertEquals(2, zdt.getMonthValue());
+		assertEquals(2, zdt.getDayOfMonth());
+		assertEquals(6, zdt.getHour());
+		assertEquals(35, zdt.getMinute());
+		assertEquals(ZoneOffset.of("-07:00"), zdt.getOffset());
+		
+		assertNull(TimeSeriesUtils.getAsMstDateTime(null));
+	}
 }
