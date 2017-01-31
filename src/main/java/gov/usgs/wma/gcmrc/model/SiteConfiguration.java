@@ -20,6 +20,8 @@ public class SiteConfiguration {
 	private ZonedDateTime neverPullAfter;
 	private ZonedDateTime lastNewPullStart;
 	private ZonedDateTime lastNewPullEnd;
+	private Integer proxySiteId;		//site id of the proxy site that we're getting data from
+	private Integer timeshiftMinutes;
 	
 	public SiteConfiguration() {
 		//empty for MyBatis
@@ -33,9 +35,10 @@ public class SiteConfiguration {
 	 * @param pCode
 	 * @param lastNewPullStart
 	 * @param lastNewPullEnd
+	 * @param timeshiftMinutes
 	 * @param aqParam 
 	 */
-	public SiteConfiguration(Integer localSiteId, Integer localParamId, String remoteSiteId, String remoteParamId, String pCode, ZonedDateTime neverPullBefore, ZonedDateTime neverPullAfter, ZonedDateTime lastNewPullStart, ZonedDateTime lastNewPullEnd) {
+	public SiteConfiguration(Integer localSiteId, Integer localParamId, String remoteSiteId, String remoteParamId, String pCode, ZonedDateTime neverPullBefore, ZonedDateTime neverPullAfter, ZonedDateTime lastNewPullStart, ZonedDateTime lastNewPullEnd, Integer proxySiteId, Integer timeshiftMinutes) {
 		this.pCode = pCode;
 		this.remoteSiteId = remoteSiteId;
 		this.localSiteId = localSiteId;
@@ -45,6 +48,8 @@ public class SiteConfiguration {
 		this.neverPullAfter = neverPullAfter;
 		this.lastNewPullStart = lastNewPullStart;
 		this.lastNewPullEnd = lastNewPullEnd;
+		this.proxySiteId = proxySiteId;
+		this.timeshiftMinutes = timeshiftMinutes;
 	}
 	
 	public Integer getLocalSiteId() {
@@ -122,5 +127,17 @@ public class SiteConfiguration {
 		this.lastNewPullEnd = lastNewPullEnd;
 	}
 	
+	public Integer getProxySiteId() {
+		return proxySiteId;
+	}
+	public void setgetProxySiteId(Integer proxySiteId) {
+		this.proxySiteId = proxySiteId;
+	}
 	
+	public Integer getTimeshiftMinutes() {
+		return timeshiftMinutes;
+	}
+	public void setTimeshiftMinutes(Integer timeshiftMinutes) {
+		this.timeshiftMinutes = timeshiftMinutes;
+	}
 }
