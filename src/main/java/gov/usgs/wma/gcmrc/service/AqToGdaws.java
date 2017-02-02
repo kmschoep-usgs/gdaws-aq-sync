@@ -64,7 +64,7 @@ public class AqToGdaws {
 	 * @param oldSourceId Source ID for legacy records that may be overwritten
 	 * @param startTime Optional time to start data pull at
 	 * @param endTime Optional time to end data pull at
-	 * @param tsToPullList Optional list of timeseries GUIDs to limit the pull to
+	 * @param tsToPullList Optional list of timeseries GUIDs to limit the pull to 
 	 */
 	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, 
 			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId, LocalDateTime startTime, LocalDateTime endTime, ArrayList<String> tsToPullList) {
@@ -87,11 +87,14 @@ public class AqToGdaws {
 	}
 	
 	public void migrateAqData() {
-		
+		ZonedDateTime siteStartTime;
+		ZonedDateTime siteEndTime;
 		for(SiteConfiguration site : sitesToLoad) {
+			siteStartTime = null;
+			siteEndTime = null;
 			if (site.getRemoteParamId() != null && (tsToPullList.isEmpty() || tsToPullList.contains(site.getRemoteParamId()))) {	
 				if(endTime == null){
-					endTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+					siteEndTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 				}
 				
 				if(startTime == null){
@@ -100,33 +103,33 @@ public class AqToGdaws {
 					if (site.getLastNewPullStart() != null && site.getLastNewPullEnd() != null) {
 						//Pull data from since the last pull until now.
 						//Move the start time back a second, since we round to the nearest second.
-						startTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
+						siteStartTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
 					} else {
-						startTime = endTime.minusDays(daysToFetchForNewTimeseries);
+						siteStartTime = siteEndTime.minusDays(daysToFetchForNewTimeseries);
 					}
 				}
 								
 				//Further constrain the pull times by the 'never before' and 'never after' bounds
-				if (site.getNeverPullBefore() != null && startTime.isBefore(site.getNeverPullBefore())) {
-					startTime = site.getNeverPullBefore();
+				if (site.getNeverPullBefore() != null && siteStartTime.isBefore(site.getNeverPullBefore())) {
+					siteStartTime = site.getNeverPullBefore();
 				}
 				
-				if (site.getNeverPullAfter() != null && endTime.isAfter(site.getNeverPullAfter())) {
-					endTime = site.getNeverPullAfter();
+				if (site.getNeverPullAfter() != null && siteEndTime.isAfter(site.getNeverPullAfter())) {
+					siteEndTime = site.getNeverPullAfter();
 				}
 				
-				if (startTime.isBefore(endTime)) {
+				if (siteStartTime.isBefore(siteEndTime)) {
 				
 
-					LOG.debug("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
-							site.getLocalSiteId(), site.getPCode(), 
-							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime), 
-							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime));
+					LOG.debug("Pulling data for site {} (proxy site: {}), parameter {} for the date range starting {} to {}", 
+							site.getLocalSiteId(), site.getProxySiteId(), site.getPCode(), 
+							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(siteStartTime), 
+							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(siteEndTime));
 
 
 					TimeSeries retrieved = dataService.getTimeSeriesData(
-							site.getRemoteSiteId(), site.getRemoteParamId(), DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(startTime),
-							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(endTime), false, false);
+							site.getRemoteSiteId(), site.getRemoteParamId(), DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(siteStartTime),
+							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(siteEndTime), false, false);
 
 					Integer numOfPoints = retrieved.getPoints().size();
 					LOG.trace("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
@@ -146,8 +149,8 @@ public class AqToGdaws {
 
 					//Update the site w/ a new timestamp of the last pull
 					if(doUpdateLastPullTime){
-						site.setLastNewPullStart(startTime);
-						site.setLastNewPullEnd(endTime);
+						site.setLastNewPullStart(siteStartTime);
+						site.setLastNewPullEnd(siteEndTime);
 						siteConfiguationLoader.updateNewDataPullTimestamps(site);
 					}
 				} else {
@@ -199,10 +202,10 @@ public class AqToGdaws {
 		
 		//Fix for points with no time
 		if(source.getTime().isSupported(ChronoUnit.HOURS)){
-			newPoint.setMeasurementDate(TimeSeriesUtils.getMstDateTime(source.getTime()));
+			newPoint.setMeasurementDate(TimeSeriesUtils.getMstDateTime(source.getTime()).plusMinutes(site.getTimeshiftMinutes()));
 		} else {
 			LOG.debug("Found point without associated time: " + source.getTime());
-			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay());
+			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay().plusMinutes(site.getTimeshiftMinutes()));
 		}
 		newPoint.setFinalValue(source.getValue().doubleValue());
 		newPoint.setSourceId(this.sourceId);
