@@ -1,6 +1,6 @@
 package gov.usgs.wma.gcmrc.dao;
 
-import gov.usgs.wma.gcmrc.mapper.CumulativeSandLoadMapper;
+import gov.usgs.wma.gcmrc.mapper.MergeCumulativeLoadCalcsMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,27 +13,27 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.wma.gcmrc.mapper.TimeSeriesMapper;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 
-public class CumulativeSandLoadDAO {
-	private static final Logger LOG = LoggerFactory.getLogger(CumulativeSandLoadDAO.class);
+public class MergeCumulativeLoadCalcsDAO {
+	private static final Logger LOG = LoggerFactory.getLogger(MergeCumulativeLoadCalcsDAO.class);
 	
 	private SqlSessionFactory sessionFactory;
 
-	public CumulativeSandLoadDAO(GdawsDaoFactory gdawsDaoFactory) {
+	public MergeCumulativeLoadCalcsDAO(GdawsDaoFactory gdawsDaoFactory) {
 		this.sessionFactory = gdawsDaoFactory.getSqlSessionFactory();
 	}
 	
 
 	/**
 	 * 
-	 * @param siteId The old Dinosaur-Dinosaur site that will be unioned with cumulative sand load calcs from new site
-	 * @param newSiteId The new Dinosaur-Dinosaur site that will be unioned with cumulative sand load calcs from old site
+	 * @param siteId The old Dinosaur-Dinosaur site that will be unioned with cumulative calcs from new site
+	 * @param newSiteId The new Dinosaur-Dinosaur site that will be unioned with cumulative calcs from old site
 	 * @param sourceId The source id, which identifies this calculation process as
 	 *		the originator of the calculated data.
 	 * @param groupId The group_id, which should be the cumulative sand load data series
-	 * @param lastTimeStamp the last timestamp of the old site that has the final cumulative sand load value when the data are switched to new site
-	 * @param firstTimeStamp the first timestamp of the new site that cumulative sand loads are calculated
+	 * @param lastTimeStamp the last timestamp of the old site that has the final cumulative load value when the data are switched to new site
+	 * @param firstTimeStamp the first timestamp of the new site that cumulative loads are calculated
 	 */
-	public void calcCumulativeSandLoadToStageTable(Integer siteId, Integer newSiteId,
+	public void calcMergeCumulativeLoadCalcsToStageTable(Integer siteId, Integer newSiteId,
 			Integer sourceId, Integer groupId, String lastTimestamp, String firstTimestamp) {
 		List<TimeSeriesRecord> timeSeries = null;
 
@@ -47,7 +47,7 @@ public class CumulativeSandLoadDAO {
 		
 		
 		
-		LOG.debug("Merging cumulative sand load for sites {} (old site) and {} (new site)", siteId, newSiteId);
+		LOG.debug("Merging cumulative loads for groupId {} for sites {} (old site) and {} (new site)", groupId, siteId, newSiteId);
 		
 		//This does not need to happen in the same transaction
 		try (SqlSession session = sessionFactory.openSession()) {
@@ -56,13 +56,13 @@ public class CumulativeSandLoadDAO {
 		}
 
 		try (SqlSession session = sessionFactory.openSession()) {
-			CumulativeSandLoadMapper cbmMapper = session.getMapper(CumulativeSandLoadMapper.class);
+			MergeCumulativeLoadCalcsMapper cbmMapper = session.getMapper(MergeCumulativeLoadCalcsMapper.class);
 			TimeSeriesMapper timeSeriesMapper = session.getMapper(TimeSeriesMapper.class);	
 				
-			LOG.trace("Will merge cumulative sand load");
+			LOG.trace("Will merge cumulative load");
 			
 			long time = System.currentTimeMillis();
-			cbmMapper.calcCumulativeSandLoadToStageTable(params);
+			cbmMapper.calcCumulativeLoadCalcsToStageTable(params);
 			session.flushStatements();
 			LOG.trace("Merging Calcs took {} seconds",
 					(System.currentTimeMillis() - time) / 1000);
@@ -71,7 +71,7 @@ public class CumulativeSandLoadDAO {
 			
 			if (LOG.isTraceEnabled()) {
 				int count = timeSeriesMapper.getStageCount();
-				LOG.trace("{} newly-merged cumulative sand load records inserted into stage.  Will delete matching from Star.", count);
+				LOG.trace("{} newly-merged cumulative load records inserted into stage.  Will delete matching from Star.", count);
 			}
 			
 			timeSeriesMapper.deleteOverlappingDataInStarTable(params);

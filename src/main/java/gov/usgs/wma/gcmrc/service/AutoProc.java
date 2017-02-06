@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.dao.AutoProcConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.CumulativeBedloadDAO;
-import gov.usgs.wma.gcmrc.dao.CumulativeSandLoadDAO;
+import gov.usgs.wma.gcmrc.dao.MergeCumulativeLoadCalcsDAO;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
@@ -23,7 +23,7 @@ public class AutoProc {
 	private AutoProcConfigurationLoader autoProcConfLoader;
 	private TimeSeriesDAO timeSeriesDAO;
 	private CumulativeBedloadDAO cumulativeBedloadDAO;
-	private CumulativeSandLoadDAO cumulativeSandLoadDAO;
+	private MergeCumulativeLoadCalcsDAO mergeCumulativeLoadCalcsDAO;
 	private Integer sourceId;
 	
 	public static final String DISCHARGE_PARAMETER_NAME = "Discharge"; //TODO give user way to override this;
@@ -33,7 +33,7 @@ public class AutoProc {
 		this.autoProcConfLoader = new AutoProcConfigurationLoader(gdawsDaoFactory);
 		this.timeSeriesDAO = new TimeSeriesDAO(gdawsDaoFactory);
 		this.cumulativeBedloadDAO = new CumulativeBedloadDAO(gdawsDaoFactory);
-		this.cumulativeSandLoadDAO = new CumulativeSandLoadDAO(gdawsDaoFactory);
+		this.mergeCumulativeLoadCalcsDAO = new MergeCumulativeLoadCalcsDAO(gdawsDaoFactory);
 		this.sourceId = sourceId;
 		
 	}
@@ -101,14 +101,17 @@ public class AutoProc {
 		}
 	}
 	
-	public void processSandLoadCalculations(Integer siteId, Integer newSiteId, Integer cumulativeSandLoadGroupId) {
-		Map<Integer, Map<String, String>> sandLoadParams = 
-				autoProcConfLoader.asParamMap(autoProcConfLoader.loadSandLoadCalculationConfiguration());
+	public void processMergeCumulativeLoadCalculations(Integer cumulativeLoadGroupId) {
+		Map<Integer, Map<String, String>> mergeCumulativeLoadParams = 
+				autoProcConfLoader.asParamMap(autoProcConfLoader.loadMergeCumulCalculationConfiguration());
 
-			String lastTimestamp = sandLoadParams.get(siteId).get("lastTimestamp");
-			String firstTimestamp = sandLoadParams.get(newSiteId).get("firstTimestamp");
+		for(Integer siteId : mergeCumulativeLoadParams.keySet()) {	
+			String lastTimestamp = mergeCumulativeLoadParams.get(siteId).get("lastTimestamp");
+			String firstTimestamp = mergeCumulativeLoadParams.get(siteId).get("firstTimestamp");
+			Integer newSiteId = Integer.parseInt(mergeCumulativeLoadParams.get(siteId).get("newSiteId"));
 
-			cumulativeSandLoadDAO.calcCumulativeSandLoadToStageTable(siteId, newSiteId, sourceId, cumulativeSandLoadGroupId, lastTimestamp, firstTimestamp);
+			mergeCumulativeLoadCalcsDAO.calcMergeCumulativeLoadCalcsToStageTable(siteId, newSiteId, sourceId, cumulativeLoadGroupId, lastTimestamp, firstTimestamp);
+		}
 	}
 	
 	private GdawsTimeSeries toGdawsTimeSeries(List<TimeSeriesRecord> points, Integer siteId, Integer paramId){

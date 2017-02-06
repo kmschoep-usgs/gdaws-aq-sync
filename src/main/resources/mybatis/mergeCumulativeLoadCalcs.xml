@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
 
-<mapper namespace="gov.usgs.wma.gcmrc.mapper.CumulativeSandLoadMapper">
+<mapper namespace="gov.usgs.wma.gcmrc.mapper.MergeCumulativeLoadCalcsMapper">
 
 	
-	<insert id="calcCumulativeSandLoadToStageTable" parameterType="map" timeout="180">
+	<insert id="calcCumulativeLoadCalcsToStageTable" parameterType="map" timeout="180">
 INSERT INTO TIME_SERIES_AP_STAGE (
 	SITE_ID, 
 	GROUP_ID,
