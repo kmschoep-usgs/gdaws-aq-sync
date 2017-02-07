@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.dao.AutoProcConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.CumulativeBedloadDAO;
-import gov.usgs.wma.gcmrc.dao.MergeCumulativeLoadCalcsDAO;
+import gov.usgs.wma.gcmrc.dao.MergeCumulativeLoadCalcDAO;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
@@ -23,7 +23,7 @@ public class AutoProc {
 	private AutoProcConfigurationLoader autoProcConfLoader;
 	private TimeSeriesDAO timeSeriesDAO;
 	private CumulativeBedloadDAO cumulativeBedloadDAO;
-	private MergeCumulativeLoadCalcsDAO mergeCumulativeLoadCalcsDAO;
+	private MergeCumulativeLoadCalcDAO mergeCumulativeLoadCalcDAO;
 	private Integer sourceId;
 	
 	public static final String DISCHARGE_PARAMETER_NAME = "Discharge"; //TODO give user way to override this;
@@ -33,7 +33,7 @@ public class AutoProc {
 		this.autoProcConfLoader = new AutoProcConfigurationLoader(gdawsDaoFactory);
 		this.timeSeriesDAO = new TimeSeriesDAO(gdawsDaoFactory);
 		this.cumulativeBedloadDAO = new CumulativeBedloadDAO(gdawsDaoFactory);
-		this.mergeCumulativeLoadCalcsDAO = new MergeCumulativeLoadCalcsDAO(gdawsDaoFactory);
+		this.mergeCumulativeLoadCalcDAO = new MergeCumulativeLoadCalcDAO(gdawsDaoFactory);
 		this.sourceId = sourceId;
 		
 	}
@@ -118,7 +118,16 @@ public class AutoProc {
 		}
 	}
 	
-	public void processMergeCumulativeLoadCalculations(Integer cumulativeLoadGroupId) {
+	public void processMergeCumulativeLoadCalculations(List<Integer> cumulativeLoadGroupIds) {
+		
+		for(Integer group: cumulativeLoadGroupIds){
+			LOG.info("Starting Merge Cumulative Load Calculation for group ID {}", group);
+			processMergeCumulativeLoadCalculation(group);
+			LOG.info("Finished Merge Cumulative Load Calculation for group ID {}", group);
+		}
+	
+	}
+	private void processMergeCumulativeLoadCalculation(Integer cumulativeLoadGroupId) {
 		Map<Integer, Map<String, String>> mergeCumulativeLoadParams = 
 				autoProcConfLoader.asParamMap(autoProcConfLoader.loadMergeCumulCalculationConfiguration());
 
@@ -127,7 +136,7 @@ public class AutoProc {
 			String firstTimestamp = mergeCumulativeLoadParams.get(siteId).get("firstTimestamp");
 			Integer newSiteId = Integer.parseInt(mergeCumulativeLoadParams.get(siteId).get("newSiteId"));
 
-			mergeCumulativeLoadCalcsDAO.calcMergeCumulativeLoadCalcsToStageTable(siteId, newSiteId, sourceId, cumulativeLoadGroupId, lastTimestamp, firstTimestamp);
+			mergeCumulativeLoadCalcDAO.calcMergeCumulativeLoadCalcToStageTable(siteId, newSiteId, sourceId, cumulativeLoadGroupId, lastTimestamp, firstTimestamp);
 		}
 	}
 	

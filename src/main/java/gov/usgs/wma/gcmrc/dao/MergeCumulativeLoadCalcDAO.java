@@ -1,6 +1,6 @@
 package gov.usgs.wma.gcmrc.dao;
 
-import gov.usgs.wma.gcmrc.mapper.MergeCumulativeLoadCalcsMapper;
+import gov.usgs.wma.gcmrc.mapper.MergeCumulativeLoadCalcMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,12 +13,12 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.wma.gcmrc.mapper.TimeSeriesMapper;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 
-public class MergeCumulativeLoadCalcsDAO {
-	private static final Logger LOG = LoggerFactory.getLogger(MergeCumulativeLoadCalcsDAO.class);
+public class MergeCumulativeLoadCalcDAO {
+	private static final Logger LOG = LoggerFactory.getLogger(MergeCumulativeLoadCalcDAO.class);
 	
 	private SqlSessionFactory sessionFactory;
 
-	public MergeCumulativeLoadCalcsDAO(GdawsDaoFactory gdawsDaoFactory) {
+	public MergeCumulativeLoadCalcDAO(GdawsDaoFactory gdawsDaoFactory) {
 		this.sessionFactory = gdawsDaoFactory.getSqlSessionFactory();
 	}
 	
@@ -33,7 +33,7 @@ public class MergeCumulativeLoadCalcsDAO {
 	 * @param lastTimeStamp the last timestamp of the old site that has the final cumulative load value when the data are switched to new site
 	 * @param firstTimeStamp the first timestamp of the new site that cumulative loads are calculated
 	 */
-	public void calcMergeCumulativeLoadCalcsToStageTable(Integer siteId, Integer newSiteId,
+	public void calcMergeCumulativeLoadCalcToStageTable(Integer siteId, Integer newSiteId,
 			Integer sourceId, Integer groupId, String lastTimestamp, String firstTimestamp) {
 		List<TimeSeriesRecord> timeSeries = null;
 
@@ -56,13 +56,13 @@ public class MergeCumulativeLoadCalcsDAO {
 		}
 
 		try (SqlSession session = sessionFactory.openSession()) {
-			MergeCumulativeLoadCalcsMapper cbmMapper = session.getMapper(MergeCumulativeLoadCalcsMapper.class);
+			MergeCumulativeLoadCalcMapper cbmMapper = session.getMapper(MergeCumulativeLoadCalcMapper.class);
 			TimeSeriesMapper timeSeriesMapper = session.getMapper(TimeSeriesMapper.class);	
 				
 			LOG.trace("Will merge cumulative load");
 			
 			long time = System.currentTimeMillis();
-			cbmMapper.calcCumulativeLoadCalcsToStageTable(params);
+			cbmMapper.calcCumulativeLoadCalcToStageTable(params);
 			session.flushStatements();
 			LOG.trace("Merging Calcs took {} seconds",
 					(System.currentTimeMillis() - time) / 1000);

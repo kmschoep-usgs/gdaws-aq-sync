@@ -2,6 +2,9 @@ package gov.usgs.wma.gcmrc;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -140,17 +143,13 @@ public class GdawsSynchronizer {
 			}
 
 			if(!isSkip(args, MERGE_CUMULATIVE_LOADS_OPT)) {
-				LOG.info("Starting Merge Cumulative Load Calculations for group ID {}", runState.getIntProperty(SAND_LOAD_GROUP_ID_PROP_NAME, null));
-				autoProc.processMergeCumulativeLoadCalculations(
-						runState.getIntProperty(SAND_LOAD_GROUP_ID_PROP_NAME, null));
-				LOG.info("Finished Merge Cumulative Load Calculations");
-				LOG.info("Starting Merge Cumulative Load Calculations for group ID {}", runState.getIntProperty(CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, null));
-				autoProc.processMergeCumulativeLoadCalculations(
-						runState.getIntProperty(CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, null));
-				LOG.info("Finished Merge Cumulative Load Calculations");
-				LOG.info("Starting Merge Cumulative Load Calculations for group ID {}", runState.getIntProperty(FINES_LOAD_GROUP_ID_PROP_NAME, null));
-				autoProc.processMergeCumulativeLoadCalculations(
-						runState.getIntProperty(FINES_LOAD_GROUP_ID_PROP_NAME, null));
+				List<Integer> cumulativeGroupIds = new LinkedList<>();
+				cumulativeGroupIds.add(runState.getIntProperty(SAND_LOAD_GROUP_ID_PROP_NAME, null));
+				cumulativeGroupIds.add(runState.getIntProperty(CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, null));
+				cumulativeGroupIds.add(runState.getIntProperty(FINES_LOAD_GROUP_ID_PROP_NAME, null));
+				
+				LOG.info("Starting Merge Cumulative Load Calculations");
+				autoProc.processMergeCumulativeLoadCalculations(cumulativeGroupIds);
 				LOG.info("Finished Merge Cumulative Load Calculations");
 			} else {
 				LOG.info("Skipping Merge Cumulative Load Calculations");
