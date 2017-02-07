@@ -45,7 +45,26 @@ public class AutoProc {
 				autoProcConfLoader.asParamMap(autoProcConfLoader.loadBedLoadCalculationConfiguration());
 		
 		for(Integer siteId : bedLoadParams.keySet()) {
-			List<TimeSeriesRecord> discharge = timeSeriesDAO.getTimeSeries(siteId, DISCHARGE_PARAMETER_NAME); 
+			
+			Double c1 = Double.parseDouble(bedLoadParams.get(siteId).get("c1"));
+			Double c2 = Double.parseDouble(bedLoadParams.get(siteId).get("c2"));
+			String proxySiteId = bedLoadParams.get(siteId).get("proxySiteId");
+			String timeShiftStr = bedLoadParams.get(siteId).get("timeShift");
+			Integer timeShiftMinutes = 0;
+			Integer dischargeSiteId;
+			
+			if (timeShiftStr != null) {
+				timeShiftMinutes = Integer.parseInt(timeShiftStr);
+			}
+			
+			if (proxySiteId != null) {
+				dischargeSiteId = Integer.parseInt(proxySiteId);
+			} else
+			{
+				dischargeSiteId = siteId;
+			}
+			
+			List<TimeSeriesRecord> discharge = timeSeriesDAO.getTimeSeries(dischargeSiteId, DISCHARGE_PARAMETER_NAME); 
 			
 			//we can't do anything if we don't have discharge
 			if(discharge.size() == 0) {
@@ -56,19 +75,15 @@ public class AutoProc {
 			Map<LocalDateTime, Integer> dischargeMillisIndex = TimeSeriesUtils.asMillisIndexMap(discharge);
 			List<TimeSeriesRecord> suspendedSand = timeSeriesDAO.getTimeSeries(siteId, INST_SUSP_SAND_PARAMETER_NAME);
 			
-			Double c1 = Double.parseDouble(bedLoadParams.get(siteId).get("c1"));
-			Double c2 = Double.parseDouble(bedLoadParams.get(siteId).get("c2"));
-			Integer proxySiteId = Integer.parseInt(bedLoadParams.get(siteId).get("proxySiteId"));
-			Integer timeShiftMinutes = Integer.parseInt(bedLoadParams.get(siteId).get("timeShift"));
 			
-			LOG.info("Running instantaneous bedload calculations for site {} with C1 {} C2 {}, {} discharge points, {} suspended sand load points", siteId, c1, c2,
-					discharge.size(), suspendedSand.size()
+			LOG.info("Running instantaneous bedload calculations for site {} with C1 {} C2 {}, using discharge from site {}, {} discharge points, {} suspended sand load points", siteId, c1, c2,
+					dischargeSiteId, discharge.size(), suspendedSand.size()
 					);
 			
 			List<TimeSeriesRecord> results = new LinkedList<>();
 			
 			for(TimeSeriesRecord susp : suspendedSand) {
-				LocalDateTime time = susp.getMeasurementDate();
+				LocalDateTime time = susp.getMeasurementDate().plusMinutes(timeShiftMinutes);
 				
 				Double instBedload;
 
