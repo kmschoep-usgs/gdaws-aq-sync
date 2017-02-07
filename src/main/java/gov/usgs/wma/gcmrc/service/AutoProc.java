@@ -48,8 +48,8 @@ public class AutoProc {
 			
 			Double c1 = Double.parseDouble(bedLoadParams.get(siteId).get("c1"));
 			Double c2 = Double.parseDouble(bedLoadParams.get(siteId).get("c2"));
-			String proxySiteId = bedLoadParams.get(siteId).get("proxySiteId");
-			String timeShiftStr = bedLoadParams.get(siteId).get("timeShift");
+			String proxySiteId = bedLoadParams.get(siteId).get("dischargeProxySiteId");
+			String timeShiftStr = bedLoadParams.get(siteId).get("timeShiftMinutes");
 			Integer timeShiftMinutes = 0;
 			Integer dischargeSiteId;
 			
