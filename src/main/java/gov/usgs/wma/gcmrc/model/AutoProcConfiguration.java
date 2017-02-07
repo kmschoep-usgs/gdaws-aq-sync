@@ -9,7 +9,7 @@ public class AutoProcConfiguration {
 	private Integer siteId;
 	private String loadCalculationName;
 	private String configParamaterName;
-	private Double configParamaterValue;
+	private String configParamaterValue;
 	
 	public AutoProcConfiguration() {
 		//empty for MyBatis
@@ -39,11 +39,11 @@ public class AutoProcConfiguration {
 		this.configParamaterName = configParamaterName;
 	}
 
-	public Double getConfigParamaterValue() {
+	public String getConfigParamaterValue() {
 		return configParamaterValue;
 	}
 
-	public void setConfigParamaterValue(Double configParamaterValue) {
+	public void setConfigParamaterValue(String configParamaterValue) {
 		this.configParamaterValue = configParamaterValue;
 	}
 	

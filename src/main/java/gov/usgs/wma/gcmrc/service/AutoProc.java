@@ -37,7 +37,7 @@ public class AutoProc {
 	//TODO refactor bedload stuff out into it's own class and leave AutoProc as the top level service class for all future calculation
 	
 	public void processBedloadCalculations(Integer instantaneousBedloadGroupId, Integer cumulativeBedloadGroupId) {
-		Map<Integer, Map<String, Double>> bedLoadParams = 
+		Map<Integer, Map<String, String>> bedLoadParams = 
 				autoProcConfLoader.asParamMap(autoProcConfLoader.loadBedLoadCalculationConfiguration());
 		
 		for(Integer siteId : bedLoadParams.keySet()) {
@@ -52,8 +52,8 @@ public class AutoProc {
 			Map<LocalDateTime, Integer> dischargeMillisIndex = TimeSeriesUtils.asMillisIndexMap(discharge);
 			List<TimeSeriesRecord> suspendedSand = timeSeriesDAO.getTimeSeries(siteId, INST_SUSP_SAND_PARAMETER_NAME);
 			
-			Double c1 = bedLoadParams.get(siteId).get("c1");
-			Double c2 = bedLoadParams.get(siteId).get("c2");
+			Double c1 = Double.parseDouble(bedLoadParams.get(siteId).get("c1"));
+			Double c2 = Double.parseDouble(bedLoadParams.get(siteId).get("c2"));
 			
 			LOG.info("Running instantaneous bedload calculations for site {} with C1 {} C2 {}, {} discharge points, {} suspended sand load points", siteId, c1, c2,
 					discharge.size(), suspendedSand.size()
