@@ -58,6 +58,8 @@ public class AutoProc {
 			
 			Double c1 = Double.parseDouble(bedLoadParams.get(siteId).get("c1"));
 			Double c2 = Double.parseDouble(bedLoadParams.get(siteId).get("c2"));
+			Integer proxySiteId = Integer.parseInt(bedLoadParams.get(siteId).get("proxySiteId"));
+			Integer timeShiftMinutes = Integer.parseInt(bedLoadParams.get(siteId).get("timeShift"));
 			
 			LOG.info("Running instantaneous bedload calculations for site {} with C1 {} C2 {}, {} discharge points, {} suspended sand load points", siteId, c1, c2,
 					discharge.size(), suspendedSand.size()
