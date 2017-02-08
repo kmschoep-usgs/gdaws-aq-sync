@@ -118,7 +118,7 @@ public class AutoProc {
 		}
 	}
 	
-	public void processMergeCumulativeLoadCalculations(List<Integer> cumulativeLoadGroupIds) {
+	public void processMergeCumulativeLoadCalculations(Integer ... cumulativeLoadGroupIds) {
 		
 		for(Integer group: cumulativeLoadGroupIds){
 			LOG.info("Starting Merge Cumulative Load Calculation for group ID {}", group);

@@ -143,13 +143,9 @@ public class GdawsSynchronizer {
 			}
 
 			if(!isSkip(args, MERGE_CUMULATIVE_LOADS_OPT)) {
-				List<Integer> cumulativeGroupIds = new LinkedList<>();
-				cumulativeGroupIds.add(runState.getIntProperty(SAND_LOAD_GROUP_ID_PROP_NAME, null));
-				cumulativeGroupIds.add(runState.getIntProperty(CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, null));
-				cumulativeGroupIds.add(runState.getIntProperty(FINES_LOAD_GROUP_ID_PROP_NAME, null));
 				
 				LOG.info("Starting Merge Cumulative Load Calculations");
-				autoProc.processMergeCumulativeLoadCalculations(cumulativeGroupIds);
+				autoProc.processMergeCumulativeLoadCalculations(runState.getIntProperty(SAND_LOAD_GROUP_ID_PROP_NAME, null),runState.getIntProperty(CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, null),runState.getIntProperty(FINES_LOAD_GROUP_ID_PROP_NAME, null));
 				LOG.info("Finished Merge Cumulative Load Calculations");
 			} else {
 				LOG.info("Skipping Merge Cumulative Load Calculations");

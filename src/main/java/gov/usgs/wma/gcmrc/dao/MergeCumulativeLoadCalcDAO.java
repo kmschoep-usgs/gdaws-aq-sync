@@ -25,8 +25,8 @@ public class MergeCumulativeLoadCalcDAO {
 
 	/**
 	 * 
-	 * @param siteId The old Dinosaur-Dinosaur site that will be unioned with cumulative calcs from new site
-	 * @param newSiteId The new Dinosaur-Dinosaur site that will be unioned with cumulative calcs from old site
+	 * @param siteId The old site that will be unioned with cumulative calcs from new site
+	 * @param newSiteId The new site that will be unioned with cumulative calcs from old site
 	 * @param sourceId The source id, which identifies this calculation process as
 	 *		the originator of the calculated data.
 	 * @param groupId The group_id, which should be the cumulative sand load data series

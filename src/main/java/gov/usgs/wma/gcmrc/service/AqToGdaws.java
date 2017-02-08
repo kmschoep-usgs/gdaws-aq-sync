@@ -121,8 +121,8 @@ public class AqToGdaws {
 				if (siteStartTime.isBefore(siteEndTime)) {
 				
 
-					LOG.debug("Pulling data for site {} (proxy site: {}), parameter {} for the date range starting {} to {}", 
-							site.getLocalSiteId(), site.getProxySiteId(), site.getPCode(), 
+					LOG.debug("Pulling data for site {}, parameter {} for the date range starting {} to {}", 
+							site.getLocalSiteId(), site.getPCode(), 
 							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(siteStartTime), 
 							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(siteEndTime));
 
@@ -202,10 +202,10 @@ public class AqToGdaws {
 		
 		//Fix for points with no time
 		if(source.getTime().isSupported(ChronoUnit.HOURS)){
-			newPoint.setMeasurementDate(TimeSeriesUtils.getMstDateTime(source.getTime()).plusMinutes(site.getTimeshiftMinutes()));
+			newPoint.setMeasurementDate(TimeSeriesUtils.getMstDateTime(source.getTime()));
 		} else {
 			LOG.debug("Found point without associated time: " + source.getTime());
-			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay().plusMinutes(site.getTimeshiftMinutes()));
+			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay());
 		}
 		newPoint.setFinalValue(source.getValue().doubleValue());
 		newPoint.setSourceId(this.sourceId);
