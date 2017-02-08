@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<mapper namespace="gov.usgs.wma.gcmrc.mapper.MergeCumulativeLoadCalcMapper">
+
+	
+	<insert id="calcCumulativeLoadCalcToStageTable" parameterType="map" timeout="180">
+INSERT INTO TIME_SERIES_AP_STAGE (
+	SITE_ID, 
+	GROUP_ID,
+	MEASUREMENT_DATE,
+	FINAL_VALUE,
+	MAIN_QUALIFIER_ID,
+	DATA_APPROVAL_ID,
+	SOURCE_ID
+) 
+	SELECT
+		SITE_ID, 
+		GROUP_ID,
+		MEASUREMENT_DATE,
+		FINAL_VALUE,
+		NULL AS MAIN_QUALIFIER_ID,
+		NULL AS DATA_APPROVAL_ID,
+		SOURCE_ID
+	FROM (<include refid="source_data"/>)
+	</insert>
+	
+	<sql id="source_data">
+with old_site_last (old_site_final) as
+(select final_value old_site_final from TIME_SERIES_STAR ts
+where ts.site_id = #{siteId,jdbcType=NUMERIC} and ts.group_id = #{groupId,jdbcType=NUMERIC}
+    and ts.measurement_date = to_timestamp(#{lastTimestamp,jdbcType=CHAR},'mm/dd/yyyy hh:mi:ss.ff AM')
+)
+select ts.site_id, ts.group_id, ts.measurement_date, ts.final_value, #{sourceId,jdbcType=NUMERIC} as source_id from TIME_SERIES_STAR ts
+where ts.site_id = #{siteId,jdbcType=NUMERIC} and ts.group_id = #{groupId,jdbcType=NUMERIC}
+    and ts.measurement_date &lt;= to_timestamp(#{lastTimestamp,jdbcType=CHAR},'mm/dd/yyyy hh:mi:ss.ff AM')
+union
+select #{siteId,jdbcType=NUMERIC} site_id, ts.group_id, ts.measurement_date, ts.final_value + os.old_site_final final_value, 
+	#{sourceId,jdbcType=NUMERIC} as source_id 
+	from TIME_SERIES_STAR ts, old_site_last os
+where ts.group_id = #{groupId,jdbcType=NUMERIC} and ts.site_id = #{newSiteId,jdbcType=NUMERIC}
+    and ts.measurement_date &gt;= to_timestamp(#{firstTimestamp,jdbcType=CHAR},'mm/dd/yyyy hh:mi:ss.ff AM')
+order by measurement_date
+	</sql>
+	
+
+</mapper>

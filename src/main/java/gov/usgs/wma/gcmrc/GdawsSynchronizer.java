@@ -2,6 +2,9 @@ package gov.usgs.wma.gcmrc;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,10 +23,12 @@ public class GdawsSynchronizer {
 	
 	private static final String  AQUARIUS_SYNC_OPT = "AquariusSync";
 	private static final String  BEDLOAD_OPT = "BedloadCalculations";
+	private static final String  MERGE_CUMULATIVE_LOADS_OPT = "MergeCumulativeLoads";
 	
 	private static final String[] PROCESS_OPTIONS = new String[] {
 			AQUARIUS_SYNC_OPT,
-			BEDLOAD_OPT
+			BEDLOAD_OPT,
+			MERGE_CUMULATIVE_LOADS_OPT
 	};
 
 	private static final String AQ_URL_PROP_NAME = "aquarius.service.endpoint";
@@ -42,6 +47,8 @@ public class GdawsSynchronizer {
 	private static final String AUTO_PROC_SOURCE_PROP_NAME = "autoproc.source.id";
 	private static final String BEDLOAD_GROUP_ID_PROP_NAME = "bedload.group.id";
 	private static final String CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME = "cumulative.bedload.group.id";
+	private static final String SAND_LOAD_GROUP_ID_PROP_NAME = "cumulative.sand.load.group.id";
+	private static final String FINES_LOAD_GROUP_ID_PROP_NAME = "cumulative.fines.load.group.id";
 	private static final String DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES = "default.days.to.fetch.for.new.timeseries";
 	private static final String SYNC_START_DATE_PROP_NAME = "sync.start.time";
 	private static final String SYNC_END_DATE_PROP_NAME = "sync.end.time";
@@ -66,7 +73,8 @@ public class GdawsSynchronizer {
 			OLD_GADSYNC_SOURCE_PROP_NAME, "The source id of the old GADSYNC records, which can be safely overwritten by the new AQ source",
 			AUTO_PROC_SOURCE_PROP_NAME, "The source id to mark calculated values with",
 			BEDLOAD_GROUP_ID_PROP_NAME, "The group id to mark instantaneous calculated bed load values with",
-			CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, "The group id for mark cumulative bedload calculations with"
+			CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, "The group id for mark cumulative bedload calculations with",
+			SAND_LOAD_GROUP_ID_PROP_NAME, "The group id to mark cumulative sand load values with",
 	};
 	
 	//prop names and descriptions
@@ -123,7 +131,7 @@ public class GdawsSynchronizer {
 			}
 			
 			AutoProc autoProc = new AutoProc(gdawsDaoFactory, runState.getIntProperty(AUTO_PROC_SOURCE_PROP_NAME, null));
-
+			
 			if(!isSkip(args, BEDLOAD_OPT)) {
 				LOG.info("Starting Bedload Calculations");
 				autoProc.processBedloadCalculations(
@@ -132,6 +140,15 @@ public class GdawsSynchronizer {
 				LOG.info("Finished Bedload Calculations");
 			} else {
 				LOG.info("Skipping Bedload Calculations");
+			}
+
+			if(!isSkip(args, MERGE_CUMULATIVE_LOADS_OPT)) {
+				
+				LOG.info("Starting Merge Cumulative Load Calculations");
+				autoProc.processMergeCumulativeLoadCalculations(runState.getIntProperty(SAND_LOAD_GROUP_ID_PROP_NAME, null),runState.getIntProperty(CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, null),runState.getIntProperty(FINES_LOAD_GROUP_ID_PROP_NAME, null));
+				LOG.info("Finished Merge Cumulative Load Calculations");
+			} else {
+				LOG.info("Skipping Merge Cumulative Load Calculations");
 			}
 		}
 	}

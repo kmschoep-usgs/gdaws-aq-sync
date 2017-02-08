@@ -20,8 +20,6 @@ public class SiteConfiguration {
 	private ZonedDateTime neverPullAfter;
 	private ZonedDateTime lastNewPullStart;
 	private ZonedDateTime lastNewPullEnd;
-	private Integer proxySiteId;		//site id of the proxy site that we're getting data from
-	private Integer timeshiftMinutes;
 	
 	public SiteConfiguration() {
 		//empty for MyBatis
@@ -48,8 +46,6 @@ public class SiteConfiguration {
 		this.neverPullAfter = neverPullAfter;
 		this.lastNewPullStart = lastNewPullStart;
 		this.lastNewPullEnd = lastNewPullEnd;
-		this.proxySiteId = proxySiteId;
-		this.timeshiftMinutes = timeshiftMinutes;
 	}
 	
 	public Integer getLocalSiteId() {
@@ -125,19 +121,5 @@ public class SiteConfiguration {
 
 	public void setLastNewPullEnd(ZonedDateTime lastNewPullEnd) {
 		this.lastNewPullEnd = lastNewPullEnd;
-	}
-	
-	public Integer getProxySiteId() {
-		return proxySiteId;
-	}
-	public void setgetProxySiteId(Integer proxySiteId) {
-		this.proxySiteId = proxySiteId;
-	}
-	
-	public Integer getTimeshiftMinutes() {
-		return timeshiftMinutes;
-	}
-	public void setTimeshiftMinutes(Integer timeshiftMinutes) {
-		this.timeshiftMinutes = timeshiftMinutes;
 	}
 }

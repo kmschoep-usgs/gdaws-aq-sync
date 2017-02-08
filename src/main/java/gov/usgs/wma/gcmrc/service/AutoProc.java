@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.dao.AutoProcConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.CumulativeBedloadDAO;
+import gov.usgs.wma.gcmrc.dao.MergeCumulativeLoadCalcDAO;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
@@ -22,6 +23,7 @@ public class AutoProc {
 	private AutoProcConfigurationLoader autoProcConfLoader;
 	private TimeSeriesDAO timeSeriesDAO;
 	private CumulativeBedloadDAO cumulativeBedloadDAO;
+	private MergeCumulativeLoadCalcDAO mergeCumulativeLoadCalcDAO;
 	private Integer sourceId;
 	
 	public static final String DISCHARGE_PARAMETER_NAME = "Discharge"; //TODO give user way to override this;
@@ -31,17 +33,38 @@ public class AutoProc {
 		this.autoProcConfLoader = new AutoProcConfigurationLoader(gdawsDaoFactory);
 		this.timeSeriesDAO = new TimeSeriesDAO(gdawsDaoFactory);
 		this.cumulativeBedloadDAO = new CumulativeBedloadDAO(gdawsDaoFactory);
+		this.mergeCumulativeLoadCalcDAO = new MergeCumulativeLoadCalcDAO(gdawsDaoFactory);
 		this.sourceId = sourceId;
+		
 	}
 	
 	//TODO refactor bedload stuff out into it's own class and leave AutoProc as the top level service class for all future calculation
 	
 	public void processBedloadCalculations(Integer instantaneousBedloadGroupId, Integer cumulativeBedloadGroupId) {
-		Map<Integer, Map<String, Double>> bedLoadParams = 
+		Map<Integer, Map<String, String>> bedLoadParams = 
 				autoProcConfLoader.asParamMap(autoProcConfLoader.loadBedLoadCalculationConfiguration());
 		
 		for(Integer siteId : bedLoadParams.keySet()) {
-			List<TimeSeriesRecord> discharge = timeSeriesDAO.getTimeSeries(siteId, DISCHARGE_PARAMETER_NAME); 
+			
+			Double c1 = Double.parseDouble(bedLoadParams.get(siteId).get("c1"));
+			Double c2 = Double.parseDouble(bedLoadParams.get(siteId).get("c2"));
+			String proxySiteId = bedLoadParams.get(siteId).get("dischargeProxySiteId");
+			String timeShiftStr = bedLoadParams.get(siteId).get("timeShiftMinutes");
+			Integer timeShiftMinutes = 0;
+			Integer dischargeSiteId;
+			
+			if (timeShiftStr != null) {
+				timeShiftMinutes = Integer.parseInt(timeShiftStr);
+			}
+			
+			if (proxySiteId != null) {
+				dischargeSiteId = Integer.parseInt(proxySiteId);
+			} else
+			{
+				dischargeSiteId = siteId;
+			}
+			
+			List<TimeSeriesRecord> discharge = timeSeriesDAO.getTimeSeries(dischargeSiteId, DISCHARGE_PARAMETER_NAME); 
 			
 			//we can't do anything if we don't have discharge
 			if(discharge.size() == 0) {
@@ -52,17 +75,15 @@ public class AutoProc {
 			Map<LocalDateTime, Integer> dischargeMillisIndex = TimeSeriesUtils.asMillisIndexMap(discharge);
 			List<TimeSeriesRecord> suspendedSand = timeSeriesDAO.getTimeSeries(siteId, INST_SUSP_SAND_PARAMETER_NAME);
 			
-			Double c1 = bedLoadParams.get(siteId).get("c1");
-			Double c2 = bedLoadParams.get(siteId).get("c2");
 			
-			LOG.info("Running instantaneous bedload calculations for site {} with C1 {} C2 {}, {} discharge points, {} suspended sand load points", siteId, c1, c2,
-					discharge.size(), suspendedSand.size()
+			LOG.info("Running instantaneous bedload calculations for site {} with C1 {} C2 {}, using discharge from site {}, {} discharge points, {} suspended sand load points", siteId, c1, c2,
+					dischargeSiteId, discharge.size(), suspendedSand.size()
 					);
 			
 			List<TimeSeriesRecord> results = new LinkedList<>();
 			
 			for(TimeSeriesRecord susp : suspendedSand) {
-				LocalDateTime time = susp.getMeasurementDate();
+				LocalDateTime time = susp.getMeasurementDate().plusMinutes(timeShiftMinutes);
 				
 				Double instBedload;
 
@@ -97,6 +118,28 @@ public class AutoProc {
 		}
 	}
 	
+	public void processMergeCumulativeLoadCalculations(Integer ... cumulativeLoadGroupIds) {
+		
+		for(Integer group: cumulativeLoadGroupIds){
+			LOG.info("Starting Merge Cumulative Load Calculation for group ID {}", group);
+			processMergeCumulativeLoadCalculation(group);
+			LOG.info("Finished Merge Cumulative Load Calculation for group ID {}", group);
+		}
+	
+	}
+	private void processMergeCumulativeLoadCalculation(Integer cumulativeLoadGroupId) {
+		Map<Integer, Map<String, String>> mergeCumulativeLoadParams = 
+				autoProcConfLoader.asParamMap(autoProcConfLoader.loadMergeCumulCalculationConfiguration());
+
+		for(Integer siteId : mergeCumulativeLoadParams.keySet()) {	
+			String lastTimestamp = mergeCumulativeLoadParams.get(siteId).get("lastTimestamp");
+			String firstTimestamp = mergeCumulativeLoadParams.get(siteId).get("firstTimestamp");
+			Integer newSiteId = Integer.parseInt(mergeCumulativeLoadParams.get(siteId).get("newSiteId"));
+
+			mergeCumulativeLoadCalcDAO.calcMergeCumulativeLoadCalcToStageTable(siteId, newSiteId, sourceId, cumulativeLoadGroupId, lastTimestamp, firstTimestamp);
+		}
+	}
+	
 	private GdawsTimeSeries toGdawsTimeSeries(List<TimeSeriesRecord> points, Integer siteId, Integer paramId){
 		GdawsTimeSeries newSeries = new GdawsTimeSeries();
 		
@@ -122,4 +165,5 @@ public class AutoProc {
 		
 		return newSeries;
 	}
+
 }
