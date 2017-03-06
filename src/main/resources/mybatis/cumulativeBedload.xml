@@ -49,7 +49,7 @@ SELECT
 SELECT
 	site_id, group_id,
 	this_time as measurement_date,
-	SUM(incremental_load) OVER (ORDER BY this_time ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS final_value,
+	(SUM(incremental_load) OVER (ORDER BY this_time ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW))/1000 AS final_value,
 	#{sourceId,jdbcType=NUMERIC} as source_id,
 	prev_value, this_value, this_time, prev_time, duration_seconds, incremental_load
 FROM INCREMENTAL_DATA
