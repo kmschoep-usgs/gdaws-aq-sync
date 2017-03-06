@@ -35,9 +35,9 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/USGS-CIDA/AQCU</url>
-		<connection>scm:git:ssh://git@github.com/USGS-CIDA/AQCU.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/USGS-CIDA/AQCU.git</developerConnection>
+		<url>https://github.com/USGS-CIDA/gdaws-aq-sync</url>
+		<connection>scm:git:ssh://git@github.com:USGS-CIDA/gdaws-aq-sync.git</connection>
+		<developerConnection>scm:git:git@github.com:USGS-CIDA/gdaws-aq-sync.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
