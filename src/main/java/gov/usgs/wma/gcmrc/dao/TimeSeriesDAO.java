@@ -58,7 +58,7 @@ public class TimeSeriesDAO {
 	 *		legacy data for this series.
 	 */
 	public void insertTimeseriesData(GdawsTimeSeries series, Integer oldSourceId){
-		LOG.debug("Starting insert of timeseries data from AQ");
+		LOG.trace("Starting insert of timeseries data from AQ");
 		
 		Map<String, Object> parms = new HashMap<String, Object>();
 			parms.put("records", series.getRecords());
@@ -72,19 +72,30 @@ public class TimeSeriesDAO {
 		if(series.getRecords().size() > 0){
 			try (SqlSession session = sessionFactory.openSession()) {
 				TimeSeriesMapper mapper = session.getMapper(TimeSeriesMapper.class);	
+				
+				LOG.trace("Emptying the staging table...");
 				mapper.emptyStageTable();	
+				
+				LOG.trace("Inserting timeseries points...");
 				for(TimeSeriesRecord r : series.getRecords()) {
 					mapper.insertTimeseriesDataToStageTable(r);
 				}
 				session.flushStatements();
-				mapper.deleteOverlappingDataInStarTable(parms);
 				
+				LOG.trace("Deleting overlapping data...");
+				mapper.deleteOverlappingDataInStarTable(parms);
 				session.flushStatements();
+				
 				//Is this still necessary?
+				LOG.trace("Copying data from staging table to star table...");
 				mapper.analyzeStageTable();
 				mapper.copyStageTableToStarTable(parms);
 				mapper.emptyStageTable();
+				
+				LOG.trace("Commiting timeseries...");
 				session.commit();
+			} catch (Exception e) {
+				LOG.error("Error during insert process", e);
 			}
 		}
 	}
