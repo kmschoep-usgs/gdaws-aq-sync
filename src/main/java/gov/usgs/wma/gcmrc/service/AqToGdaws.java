@@ -100,6 +100,10 @@ public class AqToGdaws {
 					siteStartTime = site.getNeverPullBefore();
 				}
 				
+				if (site.getNeverPullAfter() != null && siteEndTime.isAfter(site.getNeverPullAfter())) {
+					siteEndTime = site.getNeverPullAfter();
+				}
+				
 				if (siteStartTime.isBefore(siteEndTime)) {
 				
 
