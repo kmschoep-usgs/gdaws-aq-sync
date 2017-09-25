@@ -39,7 +39,6 @@ public class AqToGdaws {
 	private List<SiteConfiguration> sitesToLoad;
 	private Map<Integer, Integer> aqGdawsApprovalMap;
 	private Map<String, Integer> aqGdawsQualifierMap;
-	private Integer daysToFetchForNewTimeseries;
 	private Integer sourceId;
 	
 	private DataService dataService;
@@ -75,7 +74,6 @@ public class AqToGdaws {
 		this.aqGdawsQualifierMap = this.timeSeriesTranslationLoader.getAqGdawsQualifierMap();
 		this.dataService = dataService;
 		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
-		this.daysToFetchForNewTimeseries = daysToFetchForNewTimeseries != null ? daysToFetchForNewTimeseries : DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES;
 		this.sourceId = sourceId;
 		this.oldSourceId = oldSourceId;
 		this.startTime = TimeSeriesUtils.getAsMstDateTime(startTime);
@@ -96,26 +94,10 @@ public class AqToGdaws {
 				if(endTime == null){
 					siteEndTime = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 				}
-				
-				if(startTime == null){
-					//Adjust start and end pull times based on the last data pull run
-					//and constrain by the max number of days we are willing to go back.
-					if (site.getLastNewPullStart() != null && site.getLastNewPullEnd() != null) {
-						//Pull data from since the last pull until now.
-						//Move the start time back a second, since we round to the nearest second.
-						siteStartTime = site.getLastNewPullEnd().truncatedTo(ChronoUnit.SECONDS).minusSeconds(1);
-					} else {
-						siteStartTime = siteEndTime.minusDays(daysToFetchForNewTimeseries);
-					}
-				}
 								
 				//Further constrain the pull times by the 'never before' and 'never after' bounds
-				if (site.getNeverPullBefore() != null && siteStartTime.isBefore(site.getNeverPullBefore())) {
+				if (site.getNeverPullBefore() != null) {
 					siteStartTime = site.getNeverPullBefore();
-				}
-				
-				if (site.getNeverPullAfter() != null && siteEndTime.isAfter(site.getNeverPullAfter())) {
-					siteEndTime = site.getNeverPullAfter();
 				}
 				
 				if (siteStartTime.isBefore(siteEndTime)) {
