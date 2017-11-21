@@ -48,6 +48,10 @@ public class AutoProc {
 			
 			Double c1 = Double.parseDouble(bedLoadParams.get(siteId).get("c1"));
 			Double c2 = Double.parseDouble(bedLoadParams.get(siteId).get("c2"));
+			Double uc1 = Double.parseDouble(bedLoadParams.get(siteId).get("uc1"));
+			Double uc2 = Double.parseDouble(bedLoadParams.get(siteId).get("uc2"));
+			Double lc1 = Double.parseDouble(bedLoadParams.get(siteId).get("lc1"));
+			Double lc2 = Double.parseDouble(bedLoadParams.get(siteId).get("lc2"));
 			String proxySiteId = bedLoadParams.get(siteId).get("dischargeProxySiteId");
 			String timeShiftStr = bedLoadParams.get(siteId).get("timeShiftMinutes");
 			Integer timeShiftMinutes = 0;
@@ -76,8 +80,8 @@ public class AutoProc {
 			List<TimeSeriesRecord> suspendedSand = timeSeriesDAO.getTimeSeries(siteId, INST_SUSP_SAND_PARAMETER_NAME);
 			
 			
-			LOG.info("Running instantaneous bedload calculations for site {} with C1 {} C2 {}, using discharge from site {}, {} discharge points, {} suspended sand load points", siteId, c1, c2,
-					dischargeSiteId, discharge.size(), suspendedSand.size()
+			LOG.info("Running instantaneous bedload calculations for site {} with C1 {} C2 {} UC1 {} UC2 {} LC1 {} LC2 {}, using discharge from site {}, {} discharge points, {} suspended sand load points", siteId, c1, c2,
+					uc1, uc2, lc1, lc2, dischargeSiteId, discharge.size(), suspendedSand.size()
 					);
 			
 			List<TimeSeriesRecord> results = new LinkedList<>();
@@ -85,7 +89,10 @@ public class AutoProc {
 			for(TimeSeriesRecord susp : suspendedSand) {
 				LocalDateTime time = susp.getMeasurementDate().plusMinutes(timeShiftMinutes);
 				
-				Double instBedload;
+				Double instBedload = null;
+				Double upperBound = null;
+				Double lowerBound = null;
+				Double retBedload = null;
 
 				TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(time) != null ? discharge.get(dischargeMillisIndex.get(time)) : null;
 				if(correspondingDischarge == null) {
@@ -94,20 +101,35 @@ public class AutoProc {
 				} 
 				
 				if(susp.getFinalValue() == 0d || correspondingDischarge.getFinalValue() == 0d) {
-					instBedload = 0d;
+					retBedload = 0d;
 				} else {
 					//Bedload calc Y=X(10.^(c1+c2logQ))
 					instBedload = susp.getFinalValue() * (Math.pow(10, (c1 + c2 * Math.log10(correspondingDischarge.getFinalValue()))));
+					
+					//upper bounding calc Y=(10.^(uc1+uc2logQ))
+					upperBound = (Math.pow(10, (uc1 + uc2 * Math.log10(correspondingDischarge.getFinalValue()))));
+					
+					//lower bounding calc Y=(10.^(lc1+lc2logQ))
+					lowerBound = (Math.pow(10, (lc1 + lc2 * Math.log10(correspondingDischarge.getFinalValue()))));
+					
+					if (instBedload > upperBound){
+						retBedload = upperBound;
+					} else if (instBedload < lowerBound) {
+						retBedload = lowerBound;
+					} else {
+						retBedload = instBedload;
+					}
 				}
 
-				LOG.trace("Calculated instantaneous bed load {} {} {}", siteId, time, instBedload);
+				LOG.trace("Calculated instantaneous bed load {} {} {}, upper bound {}, lower bound {}, using {} for bedload", 
+						siteId, time, instBedload, upperBound, lowerBound, retBedload);
 				
-				if(instBedload.isNaN()) {
+				if(retBedload.isNaN()) {
 					LOG.warn("Calculated instantaneous bed load isNaN");
 				}
 				
 				//add result
-				results.add(new TimeSeriesRecord(time, instBedload, sourceId, instantaneousBedloadGroupId, siteId));
+				results.add(new TimeSeriesRecord(time, retBedload, sourceId, instantaneousBedloadGroupId, siteId));
 			}
 
 			if(results.size() > 0) {
