@@ -28,7 +28,7 @@ INSERT INTO TIME_SERIES_AP_STAGE (
 	<sql id="source_data">
 WITH INSTANTANIOUS_DATA (site_id, group_id, this_value, prev_value, this_time, prev_time, duration_seconds) AS (
   SELECT
-    site_id,
+    #{siteId,jdbcType=NUMERIC} site_id,
     #{groupId,jdbcType=NUMERIC} group_id,
     final_value this_value, 
     LAG(final_value) OVER (ORDER BY measurement_date) prev_value, 
@@ -36,7 +36,7 @@ WITH INSTANTANIOUS_DATA (site_id, group_id, this_value, prev_value, this_time, p
     LAG(measurement_date) OVER (ORDER BY measurement_date) prev_time,
     EXTRACT(DAY FROM (measurement_date - LAG(measurement_date) OVER (ORDER BY measurement_date)) * 24*60*60) duration_seconds
   FROM TIME_SERIES_STAR
-  WHERE site_id = #{siteId,jdbcType=NUMERIC} AND group_id =  #{sourceGroupId,jdbcType=NUMERIC}
+  WHERE site_id = #{sourceSiteId,jdbcType=NUMERIC} AND group_id =  #{sourceGroupId,jdbcType=NUMERIC}
   ORDER BY measurement_date
 ), INCREMENTAL_DATA (site_id, group_id, this_value, prev_value, this_time, prev_time, duration_seconds, incremental_load) AS (
 SELECT
@@ -55,5 +55,4 @@ SELECT
 FROM INCREMENTAL_DATA
 	</sql>
 	
-
 </mapper>

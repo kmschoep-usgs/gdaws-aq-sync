@@ -31,24 +31,26 @@ public class CumulativeBedloadDAO {
 	 * @param sourceGroupId The source data group_id, which should be the instantaneous load data series
 	 * @param destinationGroupId The destination group_id, which is the data series we are calculating
 	 */
-	public void calcCumulativeBedloadToStageTable(Integer siteId, 
+	public void calcCumulativeBedloadToStageTable(Integer targetSiteId, Integer sourceSiteId,
 			Integer sourceId, Integer sourceGroupId, Integer destinationGroupId) {
 		List<TimeSeriesRecord> timeSeries = null;
 
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("siteId", siteId);
+		params.put("siteId", targetSiteId);
+		params.put("sourceSiteId", sourceSiteId);
 		params.put("sourceId", sourceId);
 		params.put("sourceGroupId", sourceGroupId);
 		params.put("groupId", destinationGroupId);	//for consistency, use 'groupId' as SQL param
 		
 		
 		
-		LOG.debug("Calculating cumulative bedload for site {}", siteId);
+		LOG.debug("Calculating cumulative bedload for site {} using instaneous bedload from site {}", targetSiteId, sourceSiteId);
 		
 		//This does not need to happen in the same transaction
 		try (SqlSession session = sessionFactory.openSession()) {
 			TimeSeriesMapper timeSeriesMapper = session.getMapper(TimeSeriesMapper.class);	
 			timeSeriesMapper.emptyStageTable();	
+			session.commit();
 		}
 
 		try (SqlSession session = sessionFactory.openSession()) {
@@ -61,7 +63,7 @@ public class CumulativeBedloadDAO {
 			cbmMapper.calcCumulativeBedloadToStageTable(params);
 			session.flushStatements();
 			LOG.trace("Cumulative Calcs took {} seconds for site id {}",
-					(System.currentTimeMillis() - time) / 1000, siteId);
+					(System.currentTimeMillis() - time) / 1000, targetSiteId);
 			
 			
 			

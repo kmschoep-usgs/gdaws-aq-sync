@@ -44,6 +44,9 @@ public class AutoProc {
 		Map<Integer, Map<String, String>> bedLoadParams = 
 				autoProcConfLoader.asParamMap(autoProcConfLoader.loadBedLoadCalculationConfiguration());
 		
+		Map<Integer, Map<String, String>> cumulativeBedLoadParams = 
+				autoProcConfLoader.asParamMap(autoProcConfLoader.loadCumulativeBedLoadCalculationConfiguration());
+		
 		for(Integer siteId : bedLoadParams.keySet()) {
 			
 			Double c1 = Double.parseDouble(bedLoadParams.get(siteId).get("c1"));
@@ -135,8 +138,20 @@ public class AutoProc {
 			if(results.size() > 0) {
 				timeSeriesDAO.insertTimeseriesData(toGdawsTimeSeries(results, siteId, instantaneousBedloadGroupId), null);
 			}
+		}
+		
+		for(Integer siteId : cumulativeBedLoadParams.keySet()) {
 			
-			cumulativeBedloadDAO.calcCumulativeBedloadToStageTable(siteId, sourceId, instantaneousBedloadGroupId, cumulativeBedloadGroupId);
+			String proxyBedloadSiteId = cumulativeBedLoadParams.get(siteId).get("bedloadProxySiteId");
+			Integer sourceSiteId;
+			
+			if (proxyBedloadSiteId != null) {
+				sourceSiteId = Integer.parseInt(proxyBedloadSiteId);
+			} else
+			{
+				sourceSiteId = siteId;
+			}
+			cumulativeBedloadDAO.calcCumulativeBedloadToStageTable(siteId, sourceSiteId, sourceId, instantaneousBedloadGroupId, cumulativeBedloadGroupId);
 		}
 	}
 	
