@@ -50,6 +50,7 @@ public class CumulativeBedloadDAO {
 		try (SqlSession session = sessionFactory.openSession()) {
 			TimeSeriesMapper timeSeriesMapper = session.getMapper(TimeSeriesMapper.class);	
 			timeSeriesMapper.emptyStageTable();	
+			session.commit();
 		}
 
 		try (SqlSession session = sessionFactory.openSession()) {
