@@ -18,6 +18,7 @@ public class AutoProcConfigurationLoader {
 	private SqlSessionFactory sessionFactory;
 
 	private static final String BEDLOAD_CALC_NAME = "bedLoadCalc";
+	private static final String CUMULATIVE_BEDLOAD_CALC_NAME = "cumulativeBedLoadCalc";
 	private static final String MERGE_CUMULATIVE_CALC_NAME = "mergeCumulativeLoads";
 	
 	public AutoProcConfigurationLoader(GdawsDaoFactory gdawsDaoFactory) {
@@ -34,6 +35,22 @@ public class AutoProcConfigurationLoader {
 		try (SqlSession session = sessionFactory.openSession()) {
 			AutoProcConfigurationMapper mapper = session.getMapper(AutoProcConfigurationMapper.class);
 			sitesToLoad = mapper.getByLoadCalculationName(parms);
+		}
+		
+		return sitesToLoad;
+	}
+	
+	public List<AutoProcConfiguration> loadCumulativeBedLoadCalculationConfiguration() {
+		List<AutoProcConfiguration> sitesToLoad = null;
+		sitesToLoad = loadBedLoadCalculationConfiguration();
+		
+		Map<String, Object> parms = new HashMap<String, Object>();
+		parms.put("loadCalculationName", CUMULATIVE_BEDLOAD_CALC_NAME);
+		
+		LOG.debug("Loading calculation configuration for {}", CUMULATIVE_BEDLOAD_CALC_NAME);
+		try (SqlSession session = sessionFactory.openSession()) {
+			AutoProcConfigurationMapper mapper = session.getMapper(AutoProcConfigurationMapper.class);
+			sitesToLoad.addAll(mapper.getByLoadCalculationName(parms));
 		}
 		
 		return sitesToLoad;
