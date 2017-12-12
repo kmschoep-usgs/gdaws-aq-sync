@@ -90,17 +90,20 @@ public class AutoProc {
 			List<TimeSeriesRecord> results = new LinkedList<>();
 			
 			for(TimeSeriesRecord susp : suspendedSand) {
-				LocalDateTime time = susp.getMeasurementDate().plusMinutes(timeShiftMinutes);
+				LocalDateTime suspSandTime = susp.getMeasurementDate();
+				
+				// Get the corresponding discharge, applying any time shift if necessary.
+				LocalDateTime dischargeTime = suspSandTime.plusMinutes(timeShiftMinutes);
 				
 				Double instBedload = null;
 				Double upperBound = null;
 				Double lowerBound = null;
 				Double retBedload = null;
 
-				TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(time) != null ? discharge.get(dischargeMillisIndex.get(time)) : null;
+				TimeSeriesRecord correspondingDischarge = dischargeMillisIndex.get(dischargeTime) != null ? discharge.get(dischargeMillisIndex.get(dischargeTime)) : null;
 				if(correspondingDischarge == null) {
 					LOG.trace("Discharge interpolation needed for {}", susp.getMeasurementDate());
-					correspondingDischarge = TimeSeriesUtils.getInterpolatedDischarge(discharge, time, sourceId, instantaneousBedloadGroupId, siteId);
+					correspondingDischarge = TimeSeriesUtils.getInterpolatedDischarge(discharge, dischargeTime, sourceId, instantaneousBedloadGroupId, siteId);
 				} 
 				
 				if(susp.getFinalValue() == 0d || correspondingDischarge.getFinalValue() == 0d) {
@@ -125,14 +128,14 @@ public class AutoProc {
 				}
 
 				LOG.trace("Calculated instantaneous bed load {} {} {}, upper bound {}, lower bound {}, using {} for bedload", 
-						siteId, time, instBedload, upperBound, lowerBound, retBedload);
+						siteId, suspSandTime, instBedload, upperBound, lowerBound, retBedload);
 				
 				if(retBedload.isNaN()) {
 					LOG.warn("Calculated instantaneous bed load isNaN");
 				}
 				
 				//add result
-				results.add(new TimeSeriesRecord(time, retBedload, sourceId, instantaneousBedloadGroupId, siteId));
+				results.add(new TimeSeriesRecord(suspSandTime, retBedload, sourceId, instantaneousBedloadGroupId, siteId));
 			}
 
 			if(results.size() > 0) {
