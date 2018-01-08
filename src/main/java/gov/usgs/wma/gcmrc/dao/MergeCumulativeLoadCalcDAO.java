@@ -32,9 +32,10 @@ public class MergeCumulativeLoadCalcDAO {
 	 * @param groupId The group_id, which should be the cumulative sand load data series
 	 * @param lastTimeStamp the last timestamp of the old site that has the final cumulative load value when the data are switched to new site
 	 * @param firstTimeStamp the first timestamp of the new site that cumulative loads are calculated
+	 * @param timeShiftMinutes the number of minutes to add to the measurement date of the new site
 	 */
 	public void calcMergeCumulativeLoadCalcToStageTable(Integer siteId, Integer newSiteId,
-			Integer sourceId, Integer groupId, String lastTimestamp, String firstTimestamp) {
+			Integer sourceId, Integer groupId, String lastTimestamp, String firstTimestamp, String timeShiftMinutes) {
 		List<TimeSeriesRecord> timeSeries = null;
 
 		Map<String, Object> params = new HashMap<String, Object>();
@@ -44,8 +45,7 @@ public class MergeCumulativeLoadCalcDAO {
 		params.put("groupId", groupId);	//for consistency, use 'groupId' as SQL param
 		params.put("lastTimestamp", lastTimestamp);
 		params.put("firstTimestamp", firstTimestamp);
-		
-		
+		params.put("timeShiftMinutes", timeShiftMinutes);
 		
 		LOG.debug("Merging cumulative loads for groupId {} for sites {} (old site) and {} (new site)", groupId, siteId, newSiteId);
 		

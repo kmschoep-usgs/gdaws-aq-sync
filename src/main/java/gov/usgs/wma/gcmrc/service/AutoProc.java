@@ -175,8 +175,14 @@ public class AutoProc {
 			String lastTimestamp = mergeCumulativeLoadParams.get(siteId).get("lastTimestamp");
 			String firstTimestamp = mergeCumulativeLoadParams.get(siteId).get("firstTimestamp");
 			Integer newSiteId = Integer.parseInt(mergeCumulativeLoadParams.get(siteId).get("newSiteId"));
+			String timeShiftStr = mergeCumulativeLoadParams.get(siteId).get("timeShiftMinutes");
+			String timeShiftMinutes = "0";
+			
+			if (timeShiftStr != null) {
+				timeShiftMinutes = timeShiftStr;
+			}
 
-			mergeCumulativeLoadCalcDAO.calcMergeCumulativeLoadCalcToStageTable(siteId, newSiteId, sourceId, cumulativeLoadGroupId, lastTimestamp, firstTimestamp);
+			mergeCumulativeLoadCalcDAO.calcMergeCumulativeLoadCalcToStageTable(siteId, newSiteId, sourceId, cumulativeLoadGroupId, lastTimestamp, firstTimestamp, timeShiftMinutes);
 		}
 	}
 	
