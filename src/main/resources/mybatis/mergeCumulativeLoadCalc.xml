@@ -35,7 +35,8 @@ select ts.site_id, ts.group_id, ts.measurement_date, ts.final_value, #{sourceId,
 where ts.site_id = #{siteId,jdbcType=NUMERIC} and ts.group_id = #{groupId,jdbcType=NUMERIC}
     and ts.measurement_date &lt;= to_timestamp(#{lastTimestamp,jdbcType=CHAR},'mm/dd/yyyy hh:mi:ss.ff AM')
 union
-select #{siteId,jdbcType=NUMERIC} site_id, ts.group_id, ts.measurement_date, ts.final_value + os.old_site_final final_value, 
+select #{siteId,jdbcType=NUMERIC} site_id, ts.group_id, ts.measurement_date + numtodsinterval(#{timeShiftMinutes,jdbcType=CHAR}, 'MINUTE') measurement_date,
+ ts.final_value + os.old_site_final final_value, 
 	#{sourceId,jdbcType=NUMERIC} as source_id 
 	from TIME_SERIES_STAR ts, old_site_last os
 where ts.group_id = #{groupId,jdbcType=NUMERIC} and ts.site_id = #{newSiteId,jdbcType=NUMERIC}
