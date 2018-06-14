@@ -6,6 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.cida.config.DynamicReadOnlyProperties;
+import gov.usgs.wma.gcmrc.service.AquariusRetrievalService;
+import gov.usgs.wma.gcmrc.service.TimeSeriesDataCorrectedService;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
 import gov.usgs.wma.gcmrc.util.UnmodifiableProperties;
 import java.time.LocalDateTime;
@@ -13,7 +15,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.naming.NamingException;
 
 /**
  *
@@ -28,6 +29,7 @@ public class RunConfiguration {
 	
 	private Properties props = null;
 	private DataService aquariusDataService;
+	private TimeSeriesDataCorrectedService timeSeriesDataService; 
 	
 	private RunConfiguration() {
 		//Singleton pattern
@@ -46,22 +48,41 @@ public class RunConfiguration {
 		}
 	}
 	
-	public DataService getAquariusDataService() {
-		if (aquariusDataService != null) {
-			return aquariusDataService;
+//	public DataService getAquariusDataService() {
+//		if (aquariusDataService != null) {
+//			return aquariusDataService;
+//		} else {
+//			return buildAquariusDataService();
+//		}
+//	}
+//	
+	public TimeSeriesDataCorrectedService getTimeSeriesDataService(){
+		if (timeSeriesDataService != null) {
+			return timeSeriesDataService;
 		} else {
-			return buildAquariusDataService();
+			return buildTimeSeriesDataService();
 		}
 	}
 	
-	private DataService buildAquariusDataService() {
+	private TimeSeriesDataCorrectedService buildTimeSeriesDataService() {
 		synchronized (syncLock) {
-			if (aquariusDataService == null) {
-				aquariusDataService = new DataService();
-			}
-			return aquariusDataService;
+			timeSeriesDataService = new TimeSeriesDataCorrectedService(
+				new AquariusRetrievalService(getProperty("aquarius.service.endpoint",""),
+					getProperty("aquarius.service.user", ""),
+					getProperty("aquarius.service.password", ""),
+					3));
+			return timeSeriesDataService;
 		}
 	}
+	
+//	private DataService buildAquariusDataService() {
+//		synchronized (syncLock) {
+//			if (aquariusDataService == null) {
+//				aquariusDataService = new DataService();
+//			}
+//			return aquariusDataService;
+//		}
+//	}
 	
 	public Properties getProperties() {
 		if (props != null) {

@@ -1,5 +1,9 @@
 package gov.usgs.wma.gcmrc.service;
 
+import com.aquaticinformatics.aquarius.sdk.timeseries.servicemodels.Publish.Approval;
+import com.aquaticinformatics.aquarius.sdk.timeseries.servicemodels.Publish.Qualifier;
+import com.aquaticinformatics.aquarius.sdk.timeseries.servicemodels.Publish.TimeSeriesDataServiceResponse;
+import com.aquaticinformatics.aquarius.sdk.timeseries.servicemodels.Publish.TimeSeriesPoint;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -9,12 +13,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
-import gov.usgs.aqcu.model.Approval;
-import gov.usgs.aqcu.model.Qualifier;
-import gov.usgs.aqcu.model.TimeSeries;
-import gov.usgs.aqcu.model.TimeSeriesPoint;
+
+import gov.usgs.wma.gcmrc.model.TimeSeries;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
@@ -23,6 +24,7 @@ import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,7 +43,7 @@ public class AqToGdaws {
 	private Map<String, Integer> aqGdawsQualifierMap;
 	private Integer sourceId;
 	
-	private DataService dataService;
+	private TimeSeriesDataCorrectedService timeSeriesDataCorrectedService;
 	private SiteConfigurationLoader siteConfiguationLoader;
 	private ZonedDateTime startTime;
 	private ZonedDateTime endTime;
@@ -65,14 +67,15 @@ public class AqToGdaws {
 	 * @param endTime Optional time to end data pull at
 	 * @param tsToPullList Optional list of timeseries GUIDs to limit the pull to 
 	 */
-	public AqToGdaws(DataService dataService, GdawsDaoFactory gdawsDaoFactory, 
-			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId, LocalDateTime startTime, LocalDateTime endTime, ArrayList<String> tsToPullList) {
+	public AqToGdaws(GdawsDaoFactory gdawsDaoFactory, 
+			Integer daysToFetchForNewTimeseries, Integer sourceId, Integer oldSourceId, 
+			LocalDateTime startTime, LocalDateTime endTime, ArrayList<String> tsToPullList, TimeSeriesDataCorrectedService timeSeriesDataCorrectedService) {
 		siteConfiguationLoader = new SiteConfigurationLoader(gdawsDaoFactory);
 		this.sitesToLoad = siteConfiguationLoader.getAllSites();
 		this.timeSeriesTranslationLoader = new TimeSeriesTranslationLoader(gdawsDaoFactory);
 		this.aqGdawsApprovalMap = this.timeSeriesTranslationLoader.getAqGdawsApprovalMap();
 		this.aqGdawsQualifierMap = this.timeSeriesTranslationLoader.getAqGdawsQualifierMap();
-		this.dataService = dataService;
+		this.timeSeriesDataCorrectedService = timeSeriesDataCorrectedService;
 		this.timeSeriesDao = new TimeSeriesDAO(gdawsDaoFactory);
 		this.sourceId = sourceId;
 		this.oldSourceId = oldSourceId;
@@ -111,21 +114,30 @@ public class AqToGdaws {
 							site.getLocalSiteId(), site.getPCode(), 
 							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(siteStartTime), 
 							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(siteEndTime));
-
-
-					TimeSeries retrieved = dataService.getTimeSeriesData(
-							site.getRemoteSiteId(), site.getRemoteParamId(), DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(siteStartTime),
-							DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(siteEndTime), false, false);
-
-					Integer numOfPoints = retrieved.getPoints().size();
-					LOG.trace("Retrieved " + retrieved.getName() + " " + retrieved.getDescription() + 
+					
+					TimeSeriesDataServiceResponse response = null;
+					try {
+					response = timeSeriesDataCorrectedService.getRawResponse(
+									site.getRemoteSiteId(), 
+									siteStartTime.toInstant(), 
+									siteEndTime.toInstant());
+					} catch(Exception e){
+						LOG.error("Error parsing data from Aquarius: " + e);
+						LOG.error("Local Site ID: " + site.getLocalSiteId());
+						LOG.error("Remote Site ID: " + site.getRemoteSiteId());
+					}
+					
+					Integer numOfPoints = Integer.valueOf(response.getNumPoints().toString());
+					LOG.trace("Retrieved " + response.getLocationIdentifier() + " " + response.getLabel() + 
 							", which contains " + numOfPoints + " points");
+					
 					if(numOfPoints > 0) {
 						LOG.trace("First point: " + 
-								ISO8601TemporalSerializer.print(retrieved.getPoints().get(0).getTime()) + 
-								" " + retrieved.getPoints().get(0).getValue());
+								ISO8601TemporalSerializer.print(response.getPoints().get(0).getTimestamp().getDateTimeOffset()) + 
+								" " + response.getPoints().get(0).getValue());
+						
 
-						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(retrieved, site);
+						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(response, site);
 	
 						LOG.debug("Created Time Series: (Site)" + toInsert.getSiteId() + " (Group)" + toInsert.getGroupId() + " (Source)" + toInsert.getSourceId() + " with " + numOfPoints + " records.");
 
@@ -149,7 +161,7 @@ public class AqToGdaws {
 		}
 	}
 	
-	public GdawsTimeSeries aqToGdawsTimeSeries(TimeSeries source, SiteConfiguration site){
+	public GdawsTimeSeries aqToGdawsTimeSeries(TimeSeriesDataServiceResponse source, SiteConfiguration site){
 		GdawsTimeSeries newSeries = new GdawsTimeSeries();
 		
 		newSeries.setSiteId(site.getLocalSiteId());
@@ -180,20 +192,22 @@ public class AqToGdaws {
 		return newSeries;
 	}
 	
-	public TimeSeriesRecord aqToGdawsTimeSeriesPoint(TimeSeriesPoint source, SiteConfiguration site, TimeSeries sourceSeries){
+	public TimeSeriesRecord aqToGdawsTimeSeriesPoint(TimeSeriesPoint source, SiteConfiguration site, TimeSeriesDataServiceResponse sourceSeries){
 		TimeSeriesRecord newPoint = new TimeSeriesRecord();
 		
 		newPoint.setSiteId(site.getLocalSiteId());
 		newPoint.setGroupId(site.getLocalParamId());
 		
 		//Fix for points with no time
-		if(source.getTime().isSupported(ChronoUnit.HOURS)){
-			newPoint.setMeasurementDate(TimeSeriesUtils.getMstDateTime(source.getTime()));
+		if(source.getTimestamp().getDateTimeOffset().isSupported(ChronoUnit.HOURS)){
+			newPoint.setMeasurementDate(TimeSeriesUtils.getMstDateTime(source.getTimestamp().getDateTimeOffset()));
 		} else {
-			LOG.debug("Found point without associated time: " + source.getTime());
-			newPoint.setMeasurementDate(((LocalDate)source.getTime()).atStartOfDay());
+			LOG.debug("Found point without associated time: " + source.getTimestamp().getDateTimeOffset());
+			
+			//TODO BEFORE MERGING: Make this be at START OF DAY.
+			newPoint.setMeasurementDate((LocalDateTime.ofInstant(source.getTimestamp().getDateTimeOffset(), site.getNeverPullBefore().getOffset())));
 		}
-		newPoint.setFinalValue(source.getValue().doubleValue());
+		newPoint.setFinalValue(source.getValue().getNumeric());
 		newPoint.setSourceId(this.sourceId);
 		
 		//Apply Qualifiers
@@ -208,8 +222,8 @@ public class AqToGdaws {
 			//If we have a valid mapping for this qualifier
 			else if(gdawsQualifier != null){
 				//If the qualifier time period includes the current point apply the qualifier
-				if((LocalDateTime.from(aqQualifier.getStartDate()).isBefore(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getStartDate()).isEqual(newPoint.getMeasurementDate()))
-						&& (LocalDateTime.from(aqQualifier.getEndDate()).isAfter(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getEndDate()).isEqual(newPoint.getMeasurementDate()))){
+				if((LocalDateTime.from(aqQualifier.getStartTime()).isBefore(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getStartTime()).isEqual(newPoint.getMeasurementDate()))
+						&& (LocalDateTime.from(aqQualifier.getEndTime()).isAfter(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getEndTime()).isEqual(newPoint.getMeasurementDate()))){
 					newPoint.setMainQualifierId(gdawsQualifier);
 					break;
 				}
@@ -218,7 +232,7 @@ public class AqToGdaws {
 		
 		//Apply Approvals
 		for(Approval aqApproval : sourceSeries.getApprovals()){
-			Integer gdawsApproval = this.aqGdawsApprovalMap.get(aqApproval.getLevel());
+			Integer gdawsApproval = this.aqGdawsApprovalMap.get(aqApproval.getApprovalLevel());
 			
 			//If we have a valid mapping for this qualifier
 			if(gdawsApproval != null){

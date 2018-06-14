@@ -114,15 +114,15 @@ public class GdawsSynchronizer {
 			
 			if(!isSkip(args, AQUARIUS_SYNC_OPT)) {
 				LOG.info("Starting AQ to GDAWS Sync");
-				AqToGdaws aqToGdaws = new AqToGdaws(
-						runState.getAquariusDataService(), 
+				AqToGdaws aqToGdaws = new AqToGdaws( 
 						gdawsDaoFactory, 
 						runState.getIntProperty(DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES, null),
 						runState.getIntProperty(AQ_SOURCE_PROP_NAME, null),
 						runState.getIntProperty(OLD_GADSYNC_SOURCE_PROP_NAME, null),
 						runState.getDateTimeProperty(SYNC_START_DATE_PROP_NAME, null),
 						runState.getDateTimeProperty(SYNC_END_DATE_PROP_NAME, null),
-						runState.getArrayProperty(SYNC_TIMESERIES_ID_LIST_PROP_NAME, String.class)
+						runState.getArrayProperty(SYNC_TIMESERIES_ID_LIST_PROP_NAME, String.class),
+						runState.getTimeSeriesDataService()
 				);
 				aqToGdaws.migrateAqData();
 				LOG.info("Finished AQ to GDAWS Sync");
