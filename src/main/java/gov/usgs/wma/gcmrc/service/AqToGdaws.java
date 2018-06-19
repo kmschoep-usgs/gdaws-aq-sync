@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 
-import gov.usgs.wma.gcmrc.model.TimeSeries;
-import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
@@ -25,8 +23,6 @@ import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
