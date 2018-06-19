@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
 
 import gov.usgs.wma.gcmrc.model.TimeSeries;
+import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
@@ -27,6 +28,7 @@ import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 public class AqToGdaws {
@@ -118,23 +120,21 @@ public class AqToGdaws {
 					TimeSeriesDataServiceResponse response = null;
 					try {
 					response = timeSeriesDataCorrectedService.getRawResponse(
-									site.getRemoteSiteId(), 
+									site.getRemoteParamId(), 
 									siteStartTime.toInstant(), 
 									siteEndTime.toInstant());
 					} catch(Exception e){
 						LOG.error("Error parsing data from Aquarius: " + e);
-						LOG.error("Local Site ID: " + site.getLocalSiteId());
-						LOG.error("Remote Site ID: " + site.getRemoteSiteId());
 					}
 					
 					Integer numOfPoints = Integer.valueOf(response.getNumPoints().toString());
-					LOG.trace("Retrieved " + response.getLocationIdentifier() + " " + response.getLabel() + 
+					LOG.trace("Retrieved " + site.getRemoteParamId() + " From Aquarius" + 
 							", which contains " + numOfPoints + " points");
 					
 					if(numOfPoints > 0) {
-						LOG.trace("First point: " + 
-								ISO8601TemporalSerializer.print(response.getPoints().get(0).getTimestamp().getDateTimeOffset()) + 
-								" " + response.getPoints().get(0).getValue());
+						LOG.trace("First point: " +
+								ISO8601TemporalSerializer.print(response.getPoints().get(0).getTimestamp().getDateTimeOffset().atOffset(siteStartTime.getOffset())) + 
+								" " + response.getPoints().get(0).getValue().getDisplay());
 						
 
 						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(response, site);
@@ -200,7 +200,7 @@ public class AqToGdaws {
 		
 		//Fix for points with no time
 		if(source.getTimestamp().getDateTimeOffset().isSupported(ChronoUnit.HOURS)){
-			newPoint.setMeasurementDate(TimeSeriesUtils.getMstDateTime(source.getTimestamp().getDateTimeOffset()));
+			newPoint.setMeasurementDate(TimeSeriesUtils.getMstDateTime(source.getTimestamp().getDateTimeOffset().atOffset(ZoneOffset.UTC)));
 		} else {
 			LOG.debug("Found point without associated time: " + source.getTimestamp().getDateTimeOffset());
 			
@@ -222,8 +222,8 @@ public class AqToGdaws {
 			//If we have a valid mapping for this qualifier
 			else if(gdawsQualifier != null){
 				//If the qualifier time period includes the current point apply the qualifier
-				if((LocalDateTime.from(aqQualifier.getStartTime()).isBefore(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getStartTime()).isEqual(newPoint.getMeasurementDate()))
-						&& (LocalDateTime.from(aqQualifier.getEndTime()).isAfter(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getEndTime()).isEqual(newPoint.getMeasurementDate()))){
+				if((LocalDateTime.from(aqQualifier.getStartTime().atOffset(ZoneOffset.UTC)).isBefore(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getStartTime().atOffset(ZoneOffset.UTC)).isEqual(newPoint.getMeasurementDate()))
+						&& (LocalDateTime.from(aqQualifier.getEndTime().atOffset(ZoneOffset.UTC)).isAfter(newPoint.getMeasurementDate()) || LocalDateTime.from(aqQualifier.getEndTime().atOffset(ZoneOffset.UTC)).isEqual(newPoint.getMeasurementDate()))){
 					newPoint.setMainQualifierId(gdawsQualifier);
 					break;
 				}
@@ -237,8 +237,8 @@ public class AqToGdaws {
 			//If we have a valid mapping for this qualifier
 			if(gdawsApproval != null){
 				//If the approval time period includes the current point apply the approval
-				if((LocalDateTime.from(aqApproval.getStartTime()).isBefore(newPoint.getMeasurementDate()) || LocalDateTime.from(aqApproval.getStartTime()).isEqual(newPoint.getMeasurementDate()))
-						&& (LocalDateTime.from(aqApproval.getEndTime()).isAfter(newPoint.getMeasurementDate()) || LocalDateTime.from(aqApproval.getEndTime()).isEqual(newPoint.getMeasurementDate()))){
+				if((LocalDateTime.from(aqApproval.getStartTime().atOffset(ZoneOffset.UTC)).isBefore(newPoint.getMeasurementDate()) || LocalDateTime.from(aqApproval.getStartTime().atOffset(ZoneOffset.UTC)).isEqual(newPoint.getMeasurementDate()))
+						&& (LocalDateTime.from(aqApproval.getEndTime().atOffset(ZoneOffset.UTC)).isAfter(newPoint.getMeasurementDate()) || LocalDateTime.from(aqApproval.getEndTime().atOffset(ZoneOffset.UTC)).isEqual(newPoint.getMeasurementDate()))){
 					newPoint.setDataApprovalId(gdawsApproval);
 					break;
 				}
