@@ -130,7 +130,7 @@ public class AqToGdaws {
 					if(numOfPoints > 0) {
 						LOG.trace("First point: " +
 								ISO8601TemporalSerializer.print(response.getPoints().get(0).getTimestamp().getDateTimeOffset().atOffset(siteStartTime.getOffset())) + 
-								" " + response.getPoints().get(0).getValue().getDisplay());
+								" " + response.getPoints().get(0).getValue().getNumeric());
 						
 
 						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(response, site);
