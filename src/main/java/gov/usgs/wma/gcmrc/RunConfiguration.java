@@ -48,14 +48,6 @@ public class RunConfiguration {
 		}
 	}
 	
-//	public DataService getAquariusDataService() {
-//		if (aquariusDataService != null) {
-//			return aquariusDataService;
-//		} else {
-//			return buildAquariusDataService();
-//		}
-//	}
-//	
 	public TimeSeriesDataCorrectedService getTimeSeriesDataService(){
 		if (timeSeriesDataService != null) {
 			return timeSeriesDataService;
@@ -74,15 +66,6 @@ public class RunConfiguration {
 			return timeSeriesDataService;
 		}
 	}
-	
-//	private DataService buildAquariusDataService() {
-//		synchronized (syncLock) {
-//			if (aquariusDataService == null) {
-//				aquariusDataService = new DataService();
-//			}
-//			return aquariusDataService;
-//		}
-//	}
 	
 	public Properties getProperties() {
 		if (props != null) {
