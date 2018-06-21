@@ -23,7 +23,7 @@ public class TimeSeriesDataCorrectedService {
 		TimeSeriesDataCorrectedServiceRequest request = new TimeSeriesDataCorrectedServiceRequest()
 				.setTimeSeriesUniqueId(primaryTimeseriesIdentifier)
 				.setQueryFrom(startDate)
-				.setIncludeGapMarkers(true)
+				.setIncludeGapMarkers(false)
 				.setQueryTo(endDate)
 				.setApplyRounding(true);
 		TimeSeriesDataServiceResponse timeSeriesResponse = aquariusRetrievalService.executePublishApiRequest(request);
