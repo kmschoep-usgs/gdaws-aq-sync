@@ -130,7 +130,7 @@ public class AqToGdaws {
 					if(numOfPoints > 0) {
 						LOG.trace("First point: " +
 								ISO8601TemporalSerializer.print(response.getPoints().get(0).getTimestamp().getDateTimeOffset().atOffset(siteStartTime.getOffset())) + 
-								" " + response.getPoints().get(0).getValue().getNumeric());
+								" " + response.getPoints().get(0).getValue().getDisplay());
 						
 
 						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(response, site);
@@ -203,7 +203,7 @@ public class AqToGdaws {
 			//TODO BEFORE MERGING: Make this be at START OF DAY.
 			newPoint.setMeasurementDate((LocalDateTime.ofInstant(source.getTimestamp().getDateTimeOffset(), site.getNeverPullBefore().getOffset())));
 		}
-		newPoint.setFinalValue(source.getValue().getNumeric());
+		newPoint.setFinalValue(Double.parseDouble(source.getValue().getDisplay()));
 		newPoint.setSourceId(this.sourceId);
 		
 		//Apply Qualifiers
