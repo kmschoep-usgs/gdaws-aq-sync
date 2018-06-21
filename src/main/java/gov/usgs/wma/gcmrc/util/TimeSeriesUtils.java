@@ -89,19 +89,8 @@ public class TimeSeriesUtils {
 	}
 	
 	public static LocalDateTime getMstDateTime(Temporal aqDateTime) {
-		LocalDateTime mstDateTime;
-		ZonedDateTime newZonedDateTime;
-		ZoneOffset newZoneOffset;
-		ZoneOffset oldZoneOffset = ZonedDateTime.from(aqDateTime).getOffset();
 		
-		if (!oldZoneOffset.equals(MST_ZONE_OFFSET)){
-			newZoneOffset = MST_ZONE_OFFSET;
-			newZonedDateTime = ZonedDateTime.from(aqDateTime).withZoneSameInstant(newZoneOffset);
-			mstDateTime = LocalDateTime.from(newZonedDateTime);
-		} else {
-			mstDateTime = LocalDateTime.from(aqDateTime);
-		}
-		return mstDateTime;
+		return LocalDateTime.from(ZonedDateTime.from(aqDateTime).withZoneSameInstant(MST_ZONE_OFFSET));
 	}
 	
 	/**

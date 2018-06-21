@@ -118,6 +118,24 @@
 			<artifactId>ojdbc6_g</artifactId>
 			<version>11.2.0.4-1</version>
 		</dependency>
+	 <dependency>
+	  <groupId>net.servicestack</groupId>
+	  <artifactId>client</artifactId>
+	  <version>1.0.33</version>
+	  <type>jar</type>
+	 </dependency>
+	 <dependency>
+	  <groupId>com.aquaticinformatics</groupId>
+	  <artifactId>aquarius.sdk</artifactId>
+	  <version>17.4.3</version>
+	  <type>jar</type>
+	 </dependency>
+	 <dependency>
+	  <groupId>org.apache.httpcomponents</groupId>
+	  <artifactId>httpcore</artifactId>
+	  <version>4.4.9</version>
+	  <type>jar</type>
+	 </dependency>
 	</dependencies>
 
 	<build>
