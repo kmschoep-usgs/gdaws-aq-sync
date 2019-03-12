@@ -96,10 +96,12 @@ public class TimeSeriesDAO {
 				LOG.trace("Commiting timeseries...");
 				session.commit();
 			} catch (Exception e) {
-				LOG.error("Error during insert process for (Site)" + series.getSiteId() + " (Group)" + series.getGroupId() + " (Source)" + series.getSourceId() + ": ", e);
+				long durationMs = (System.nanoTime() - startTime)/1000000;
+				LOG.error("Error during insert process for (Site)" + series.getSiteId() + " (Group)" + series.getGroupId() + " (Source)" + series.getSourceId() + " after " + durationMs + "ms: ", e);
+			} finally {
+				long durationMs = (System.nanoTime() - startTime)/1000000;
+				LOG.trace("Finished GDAWS insert for (Site)" + series.getSiteId() + " (Group)" + series.getGroupId() + " (Source)" + series.getSourceId() + " in " + durationMs + "ms");	
 			}
-			long durationMs = (System.nanoTime() - startTime)/1000000;
-			LOG.trace("Finished GDAWS insert of " + series.getRecords().size() + " points for (Site)" + series.getSiteId() + " (Group)" + series.getGroupId() + " (Source)" + series.getSourceId() + " in " + durationMs + "ms");
 		} else {
 			LOG.trace("Retrieved no points for (Site)" + series.getSiteId() + " (Group)" + series.getGroupId() + " (Source)" + series.getSourceId() + " so skipping insert to GDAWS.");
 		}
