@@ -3,8 +3,6 @@ package gov.usgs.wma.gcmrc;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -12,8 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
+import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
 import gov.usgs.wma.gcmrc.service.AqToGdaws;
 import gov.usgs.wma.gcmrc.service.AutoProc;
+import gov.usgs.wma.gcmrc.service.TimeSeriesDataCorrectedService;
 import gov.usgs.wma.gcmrc.util.ConfigLoader;
 
 public class GdawsSynchronizer {
@@ -109,6 +109,8 @@ public class GdawsSynchronizer {
 				LOG.info("Sync log level {} interpreted as {}", strLvl, level.toString());
 				LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 				lc.getLogger(AqToGdaws.class).setLevel(level);
+				lc.getLogger(TimeSeriesDataCorrectedService.class).setLevel(level);
+				lc.getLogger(TimeSeriesDAO.class).setLevel(level);
 			}
 			
 			

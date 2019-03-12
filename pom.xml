@@ -93,9 +93,25 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>gov.usgs.aqcu</groupId>
-			<artifactId>aqcu-data-core</artifactId>
-			<version>1.2.1</version>
+			<groupId>gov.usgs.cida</groupId>
+			<artifactId>dynamicProperties</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.7</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.8.1</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mybatis</groupId>
@@ -118,24 +134,12 @@
 			<artifactId>ojdbc6_g</artifactId>
 			<version>11.2.0.4-1</version>
 		</dependency>
-	 <dependency>
-	  <groupId>net.servicestack</groupId>
-	  <artifactId>client</artifactId>
-	  <version>1.0.33</version>
-	  <type>jar</type>
-	 </dependency>
-	 <dependency>
-	  <groupId>com.aquaticinformatics</groupId>
-	  <artifactId>aquarius.sdk</artifactId>
-	  <version>17.4.3</version>
-	  <type>jar</type>
-	 </dependency>
-	 <dependency>
-	  <groupId>org.apache.httpcomponents</groupId>
-	  <artifactId>httpcore</artifactId>
-	  <version>4.4.9</version>
-	  <type>jar</type>
-	 </dependency>
+			<dependency>
+			<groupId>com.aquaticinformatics</groupId>
+			<artifactId>aquarius.sdk</artifactId>
+			<version>17.4.3</version>
+			<type>jar</type>
+		</dependency>
 	</dependencies>
 
 	<build>

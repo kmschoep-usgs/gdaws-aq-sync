@@ -57,19 +57,20 @@ public class TimeSeriesDAO {
 	 *		for if it overlaps the new data.  OK to leave as null if there is no
 	 *		legacy data for this series.
 	 */
-	public void insertTimeseriesData(GdawsTimeSeries series, Integer oldSourceId){
-		LOG.trace("Starting insert of timeseries data from AQ");
-		
-		Map<String, Object> parms = new HashMap<String, Object>();
-			parms.put("records", series.getRecords());
-			parms.put("sourceId", series.getSourceId());
-			parms.put("oldSourceId", oldSourceId);
-			parms.put("groupId", series.getGroupId());
-			parms.put("siteId", series.getSiteId());
-			parms.put("startTime", series.getStartTime());
-			parms.put("endTime", series.getEndTime());
-		
-		if(series.getRecords().size() > 0){
+	public void insertTimeseriesData(GdawsTimeSeries series, Integer oldSourceId) {
+		if(series.getRecords().size() > 0) {
+			Map<String, Object> parms = new HashMap<String, Object>();
+				parms.put("records", series.getRecords());
+				parms.put("sourceId", series.getSourceId());
+				parms.put("oldSourceId", oldSourceId);
+				parms.put("groupId", series.getGroupId());
+				parms.put("siteId", series.getSiteId());
+				parms.put("startTime", series.getStartTime());
+				parms.put("endTime", series.getEndTime());
+
+			LOG.trace("Starting GDAWS insert of " + series.getRecords().size() + " points from AQ for (Site)" + series.getSiteId() + " (Group)" + series.getGroupId() + " (Source)" + series.getSourceId());
+			long startTime = System.nanoTime();
+
 			try (SqlSession session = sessionFactory.openSession()) {
 				TimeSeriesMapper mapper = session.getMapper(TimeSeriesMapper.class);	
 				
@@ -95,8 +96,12 @@ public class TimeSeriesDAO {
 				LOG.trace("Commiting timeseries...");
 				session.commit();
 			} catch (Exception e) {
-				LOG.error("Error during insert process", e);
+				LOG.error("Error during insert process for (Site)" + series.getSiteId() + " (Group)" + series.getGroupId() + " (Source)" + series.getSourceId() + ": ", e);
 			}
+			long durationMs = (System.nanoTime() - startTime)/1000000;
+			LOG.trace("Finished GDAWS insert of " + series.getRecords().size() + " points for (Site)" + series.getSiteId() + " (Group)" + series.getGroupId() + " (Source)" + series.getSourceId() + " in " + durationMs + "ms");
+		} else {
+			LOG.trace("Retrieved no points for (Site)" + series.getSiteId() + " (Group)" + series.getGroupId() + " (Source)" + series.getSourceId() + " so skipping insert to GDAWS.");
 		}
 	}
 }

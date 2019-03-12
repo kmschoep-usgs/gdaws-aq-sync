@@ -13,8 +13,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
-
 import gov.usgs.wma.gcmrc.dao.GdawsDaoFactory;
 import gov.usgs.wma.gcmrc.dao.SiteConfigurationLoader;
 import gov.usgs.wma.gcmrc.dao.TimeSeriesDAO;
@@ -22,6 +20,7 @@ import gov.usgs.wma.gcmrc.dao.TimeSeriesTranslationLoader;
 import gov.usgs.wma.gcmrc.model.GdawsTimeSeries;
 import gov.usgs.wma.gcmrc.model.SiteConfiguration;
 import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
+import gov.usgs.wma.gcmrc.util.ISO8601TemporalSerializer;
 import gov.usgs.wma.gcmrc.util.TimeSeriesUtils;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
 	
-	private static final Integer DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES = 30;
 	//From ICE_AFFECTED_STAR: 1 - TRUE, 2 - FALSE
 	private static final Integer ICE_AFFECTED_ID = 1;
 	private final TimeSeriesDAO timeSeriesDao;
@@ -130,8 +128,10 @@ public class AqToGdaws {
 					if(numOfPoints > 0) {
 						LOG.trace("First point: " +
 								ISO8601TemporalSerializer.print(response.getPoints().get(0).getTimestamp().getDateTimeOffset().atOffset(siteStartTime.getOffset())) + 
-								" " + response.getPoints().get(0).getValue().getDisplay());
-						
+						" " + response.getPoints().get(0).getValue().getDisplay());
+						LOG.trace("Last point: " +
+								ISO8601TemporalSerializer.print(response.getPoints().get(response.getPoints().size()-1).getTimestamp().getDateTimeOffset().atOffset(siteStartTime.getOffset())) + 
+								" " + response.getPoints().get(response.getPoints().size()-1).getValue().getDisplay());
 
 						GdawsTimeSeries toInsert = aqToGdawsTimeSeries(response, site);
 	

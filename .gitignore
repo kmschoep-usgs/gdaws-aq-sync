@@ -2,6 +2,7 @@
 /.settings/
 /.classpath
 /.project
+/.vscode
 /dependency-reduced-pom.xml
 gcmrc-data-processor.log
 /gcmrcsync.props
