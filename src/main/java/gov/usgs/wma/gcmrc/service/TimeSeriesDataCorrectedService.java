@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 
 public class TimeSeriesDataCorrectedService {
 	private static final Logger LOG = LoggerFactory.getLogger(TimeSeriesDataCorrectedService.class);
-	
+
 	private AquariusRetrievalService aquariusRetrievalService;
 
 	public TimeSeriesDataCorrectedService(
