@@ -2,7 +2,7 @@ package gov.usgs.wma.gcmrc.model;
 
 import java.time.LocalDateTime;
 
-import gov.usgs.aqcu.gson.ISO8601TemporalSerializer;
+import gov.usgs.wma.gcmrc.util.ISO8601TemporalSerializer;
 
 public class TimeSeriesRecord {
 	private Integer siteId;

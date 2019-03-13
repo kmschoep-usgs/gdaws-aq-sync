@@ -4,7 +4,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 
-import gov.usgs.aqcu.data.service.DataService;
 import gov.usgs.cida.config.DynamicReadOnlyProperties;
 import gov.usgs.wma.gcmrc.service.AquariusRetrievalService;
 import gov.usgs.wma.gcmrc.service.TimeSeriesDataCorrectedService;
@@ -13,22 +12,16 @@ import gov.usgs.wma.gcmrc.util.UnmodifiableProperties;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author eeverman
  */
-public class RunConfiguration {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(RunConfiguration.class);
-	
+public class RunConfiguration {	
 	private static RunConfiguration singleton;
 	private static final Object syncLock = new Object();
 	
 	private Properties props = null;
-	private DataService aquariusDataService;
 	private TimeSeriesDataCorrectedService timeSeriesDataService; 
 	
 	private RunConfiguration() {
@@ -62,7 +55,8 @@ public class RunConfiguration {
 				new AquariusRetrievalService(getProperty("aquarius.service.endpoint",""),
 					getProperty("aquarius.service.user", ""),
 					getProperty("aquarius.service.password", ""),
-					3));
+					3,
+					getIntProperty("aquarius.service.timeoutms", 120000)));
 			return timeSeriesDataService;
 		}
 	}
