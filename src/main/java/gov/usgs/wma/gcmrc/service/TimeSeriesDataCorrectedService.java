@@ -26,11 +26,11 @@ public class TimeSeriesDataCorrectedService {
 				.setIncludeGapMarkers(false)
 				.setQueryTo(endDate)
 				.setApplyRounding(true);
-		LOG.trace("Staring data pull for TS ID: " + primaryTimeseriesIdentifier);
+		LOG.trace("Starting data pull for TS ID: " + primaryTimeseriesIdentifier);
 		long startTime = System.nanoTime();
 		TimeSeriesDataServiceResponse timeSeriesResponse = aquariusRetrievalService.executePublishApiRequest(request);
 		long durationMs = (System.nanoTime() - startTime)/1000000;
-		LOG.trace("Finished data full for TS ID: " + primaryTimeseriesIdentifier + " in " + durationMs + "ms");
+		LOG.trace("Finished data pull for TS ID: " + primaryTimeseriesIdentifier + " in " + durationMs + "ms");
 		return timeSeriesResponse;
 	}
 }
