@@ -86,7 +86,7 @@
 	TO_CHAR(MEASUREMENT_DATE, 'YYYY-MM-DD') || 'T' || TO_CHAR(MEASUREMENT_DATE,'HH24:MI:SS') 
 	</sql>
 	<sql id="isoToDateCast">
-	TO_DATE(#{measurementDateIso,jdbcType=CHAR}, 'YYYY-MM-DD"T"HH24:MI:SS') 
+	TO_TIMESTAMP(#{measurementDateIso,jdbcType=CHAR}, 'YYYY-MM-DD"T"HH24:MI:SS.FF') 
 	</sql>
 	
 	<!-- Note: AQ -> GDAWS SQL and Strategy primarily taken from AutoProc I
