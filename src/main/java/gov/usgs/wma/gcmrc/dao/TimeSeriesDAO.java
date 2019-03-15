@@ -93,7 +93,7 @@ public class TimeSeriesDAO {
 				mapper.copyStageTableToStarTable(parms);
 				mapper.emptyStageTable();
 				
-				LOG.trace("Commiting timeseries...");
+				LOG.trace("Committing timeseries...");
 				session.commit();
 
 				long durationMs = (System.nanoTime() - startTime)/1000000;
