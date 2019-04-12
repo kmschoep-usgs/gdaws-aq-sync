@@ -12,11 +12,19 @@
 
 	<developers>
 		<developer>
-			<name>Phethala Thongsavanh</name>
-			<email>thongsav@usgs.gov</email>
-			<id>thongsav</id>
-			<organization>Center for Integrated Data Analytics</organization>
-			<organizationUrl>http://cida.usgs.gov</organizationUrl>
+			<name>Kathy Schoephoester</name>
+			<email>kmschoep@usgs.gov</email>
+			<id>kmschoep</id>
+			<organization>USGS Water Mission Area</organization>
+			<organizationUrl>https://www.usgs.gov/mission-areas/water-resources</organizationUrl>
+			<timezone>-6</timezone>
+		</developer>
+		<developer>
+			<name>Zack Moore</name>
+			<email>zmoore@usgs.gov</email>
+			<id>zmoore</id>
+			<organization>USGS Water Mission Area</organization>
+			<organizationUrl>https://www.usgs.gov/mission-areas/water-resources</organizationUrl>
 			<timezone>-6</timezone>
 		</developer>
 	</developers>
@@ -137,7 +145,7 @@
 			<dependency>
 			<groupId>com.aquaticinformatics</groupId>
 			<artifactId>aquarius.sdk</artifactId>
-			<version>17.4.3</version>
+			<version>18.6.2</version>
 			<type>jar</type>
 		</dependency>
 	</dependencies>
