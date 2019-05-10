@@ -15,32 +15,32 @@ INSERT INTO TIME_SERIES_AP_STAGE (
 	SOURCE_ID
 ) 
 	SELECT
-		SITE_ID, 
-		GROUP_ID,
-		MEASUREMENT_DATE,
-		FINAL_VALUE,
+		merge_result.SITE_ID, 
+		merge_result.GROUP_ID,
+		merge_result.MEASUREMENT_DATE,
+		merge_result.FINAL_VALUE,
 		NULL AS MAIN_QUALIFIER_ID,
 		NULL AS DATA_APPROVAL_ID,
-		SOURCE_ID
-	FROM (<include refid="source_data"/>)
+		merge_result.SOURCE_ID
+	FROM (<include refid="source_data"/>) AS merge_result
 	</insert>
 	
 	<sql id="source_data">
 with old_site_last (old_site_final) as
 (select final_value old_site_final from TIME_SERIES_STAR ts
 where ts.site_id = #{siteId,jdbcType=NUMERIC} and ts.group_id = #{groupId,jdbcType=NUMERIC}
-    and ts.measurement_date = to_timestamp(#{lastTimestamp,jdbcType=CHAR},'mm/dd/yyyy hh:mi:ss.ff AM')
+    and ts.measurement_date = #{lastTimestamp,jdbcType=CHAR}::timestamp
 )
 select ts.site_id, ts.group_id, ts.measurement_date, ts.final_value, #{sourceId,jdbcType=NUMERIC} as source_id from TIME_SERIES_STAR ts
 where ts.site_id = #{siteId,jdbcType=NUMERIC} and ts.group_id = #{groupId,jdbcType=NUMERIC}
-    and ts.measurement_date &lt;= to_timestamp(#{lastTimestamp,jdbcType=CHAR},'mm/dd/yyyy hh:mi:ss.ff AM')
+    and ts.measurement_date &lt;= #{lastTimestamp,jdbcType=CHAR}::timestamp
 union
-select #{siteId,jdbcType=NUMERIC} site_id, ts.group_id, ts.measurement_date + numtodsinterval(#{timeShiftMinutes,jdbcType=CHAR}, 'MINUTE') measurement_date,
+select #{siteId,jdbcType=NUMERIC} site_id, ts.group_id, ts.measurement_date + #{timeShift,jdbcType=CHAR}::interval measurement_date,
  ts.final_value + os.old_site_final final_value, 
 	#{sourceId,jdbcType=NUMERIC} as source_id 
 	from TIME_SERIES_STAR ts, old_site_last os
 where ts.group_id = #{groupId,jdbcType=NUMERIC} and ts.site_id = #{newSiteId,jdbcType=NUMERIC}
-    and ts.measurement_date &gt;= to_timestamp(#{firstTimestamp,jdbcType=CHAR},'mm/dd/yyyy hh:mi:ss.ff AM')
+    and ts.measurement_date &gt;= #{firstTimestamp,jdbcType=CHAR}::timestamp
 order by measurement_date
 	</sql>
 	

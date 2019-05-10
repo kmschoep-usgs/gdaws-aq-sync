@@ -2,7 +2,6 @@ package gov.usgs.wma.gcmrc.dao;
 
 import gov.usgs.wma.gcmrc.mapper.CumulativeBedloadMapper;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
@@ -11,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.mapper.TimeSeriesMapper;
-import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 
 public class CumulativeBedloadDAO {
 	private static final Logger LOG = LoggerFactory.getLogger(CumulativeBedloadDAO.class);
@@ -33,8 +31,6 @@ public class CumulativeBedloadDAO {
 	 */
 	public void calcCumulativeBedloadToStageTable(Integer targetSiteId, Integer sourceSiteId,
 			Integer sourceId, Integer sourceGroupId, Integer destinationGroupId) {
-		List<TimeSeriesRecord> timeSeries = null;
-
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("siteId", targetSiteId);
 		params.put("sourceSiteId", sourceSiteId);

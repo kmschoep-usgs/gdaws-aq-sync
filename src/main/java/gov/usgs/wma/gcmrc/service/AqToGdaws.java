@@ -29,8 +29,9 @@ import java.util.ArrayList;
 public class AqToGdaws {
 	private static final Logger LOG = LoggerFactory.getLogger(AqToGdaws.class);
 	
+	//NOTE: Temporarily disabled until we confirm that this is desired behavior.
 	//From ICE_AFFECTED_STAR: 1 - TRUE, 2 - FALSE
-	private static final Integer ICE_AFFECTED_ID = 1;
+	//private static final Integer ICE_AFFECTED_ID = 1;
 	private final TimeSeriesDAO timeSeriesDao;
 	private final TimeSeriesTranslationLoader timeSeriesTranslationLoader;
 		
