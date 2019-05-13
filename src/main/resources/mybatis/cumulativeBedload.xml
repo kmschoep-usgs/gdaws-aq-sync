@@ -15,14 +15,14 @@ INSERT INTO TIME_SERIES_AP_STAGE (
 	SOURCE_ID
 ) 
 	SELECT
-		SITE_ID, 
-		GROUP_ID,
-		MEASUREMENT_DATE,
-		FINAL_VALUE,
+		bed_result.SITE_ID, 
+		bed_result.GROUP_ID,
+		bed_result.MEASUREMENT_DATE,
+		bed_result.FINAL_VALUE,
 		NULL AS MAIN_QUALIFIER_ID,
 		NULL AS DATA_APPROVAL_ID,
-		SOURCE_ID
-	FROM (<include refid="source_data"/>)
+		bed_result.SOURCE_ID
+	FROM (<include refid="source_data"/>) AS bed_result
 	</insert>
 	
 	<sql id="source_data">

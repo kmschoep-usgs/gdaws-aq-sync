@@ -22,7 +22,7 @@ public class TimeSeriesTranslationLoader {
 	
 	public Map<Integer, Integer> getAqGdawsApprovalMap(){
 		LOG.debug("Loading AQ -> GDAWS Approval Mapping");
-		List<Map<Integer, Integer>> approvalMap = null;
+		List<Map<String, Integer>> approvalMap = null;
 		Map<Integer, Integer> returnMap = null;
 		
 		try (SqlSession session = sessionFactory.openSession()) {
@@ -30,8 +30,8 @@ public class TimeSeriesTranslationLoader {
 			approvalMap = mapper.getAqGdawsApprovalMap(new HashMap<>());
 			returnMap = new HashMap<>();
 					
-			for(Map<Integer, Integer> entry : approvalMap){
-				returnMap.put(((Number)entry.values().toArray()[0]).intValue(), ((Number)entry.values().toArray()[1]).intValue());
+			for(Map<String, Integer> entry : approvalMap) {
+				returnMap.put(entry.get("aq_approval_level"), entry.get("data_approval_id"));
 			}
 			
 			LOG.trace("Loaded " + returnMap.entrySet().size() + " approval mappings.");
@@ -42,18 +42,17 @@ public class TimeSeriesTranslationLoader {
 	
 	public Map<String, Integer> getAqGdawsQualifierMap(){
 		LOG.debug("Loading AQ -> GDAWS Qualifier Mapping");
-		List<Map<String, Integer>> qualifierMap = null;
+		List<Map<String, Object>> qualifierMapList = null;
 		Map<String, Integer> returnMap;
 		
 		try (SqlSession session = sessionFactory.openSession()) {
 			TimeSeriesTranslationMapper mapper = session.getMapper(TimeSeriesTranslationMapper.class);
-			qualifierMap = mapper.getAqGdawsQualifierMap(new HashMap<>());
+			qualifierMapList = mapper.getAqGdawsQualifierMap(new HashMap<>());
 			returnMap = new HashMap<>();
 			
-			for(Map<String, Integer> entry : qualifierMap){
-				returnMap.put((String)entry.values().toArray()[0], ((Number)entry.values().toArray()[1]).intValue());
+			for(Map<String, Object> entry : qualifierMapList) {
+				returnMap.put((String)entry.get("aq_qualifier_identifier"), ((Number)entry.get("measurement_qualifier_id")).intValue());
 			}
-			
 			
 			LOG.trace("Loaded " + returnMap.entrySet().size() + " qualifier mappings.");
 		}

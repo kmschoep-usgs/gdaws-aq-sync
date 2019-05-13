@@ -2,7 +2,6 @@ package gov.usgs.wma.gcmrc.dao;
 
 import gov.usgs.wma.gcmrc.mapper.MergeCumulativeLoadCalcMapper;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
@@ -11,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.mapper.TimeSeriesMapper;
-import gov.usgs.wma.gcmrc.model.TimeSeriesRecord;
 
 public class MergeCumulativeLoadCalcDAO {
 	private static final Logger LOG = LoggerFactory.getLogger(MergeCumulativeLoadCalcDAO.class);
@@ -36,8 +34,6 @@ public class MergeCumulativeLoadCalcDAO {
 	 */
 	public void calcMergeCumulativeLoadCalcToStageTable(Integer siteId, Integer newSiteId,
 			Integer sourceId, Integer groupId, String lastTimestamp, String firstTimestamp, String timeShiftMinutes) {
-		List<TimeSeriesRecord> timeSeries = null;
-
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("siteId", siteId);
 		params.put("newSiteId", newSiteId);
@@ -45,7 +41,7 @@ public class MergeCumulativeLoadCalcDAO {
 		params.put("groupId", groupId);	//for consistency, use 'groupId' as SQL param
 		params.put("lastTimestamp", lastTimestamp);
 		params.put("firstTimestamp", firstTimestamp);
-		params.put("timeShiftMinutes", timeShiftMinutes);
+		params.put("timeShift", timeShiftMinutes + " minutes");
 		
 		LOG.debug("Merging cumulative loads for groupId {} for sites {} (old site) and {} (new site)", groupId, siteId, newSiteId);
 		

@@ -12,7 +12,7 @@
 
 	<select id="getByLoadCalculationName" resultMap="AutoProcConfigurationMap">
 		<include refid="getAllSql"/>
-		WHERE LOAD_CALCULATION_NAME = '${loadCalculationName}'
+		WHERE LOAD_CALCULATION_NAME = #{loadCalculationName,jdbcType=CHAR}
 		ORDER BY SITE_ID, LOAD_CALCULATION_NAME, CONFIG_PARAMETER_NAME
 	</select>
 	

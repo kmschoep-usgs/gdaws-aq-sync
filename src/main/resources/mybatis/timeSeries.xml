@@ -49,8 +49,8 @@
 	
 	<sql id="whereAndOrder">
 		<where>
-			<if test="siteId != null">AND SITE_ID = '${siteId}'</if> 
-			<if test="groupName != null">AND GROUP_ID = (SELECT DISTINCT(GROUP_ID) FROM GROUP_NAME WHERE NAME = '${groupName}')</if> 
+			<if test="siteId != null">AND SITE_ID = #{siteId,jdbcType=CHAR}</if> 
+			<if test="groupName != null">AND GROUP_ID = (SELECT DISTINCT(GROUP_ID) FROM GROUP_NAME WHERE NAME = #{groupName,jdbcType=CHAR})</if> 
 			<if test="excludeDummyValues != null and excludeDummyValues == true">AND FINAL_VALUE != -999</if> 
 		</where>
 		ORDER BY SITE_ID, MEASUREMENT_DATE
@@ -80,13 +80,13 @@
 		ER_VALUE 
 	</sql>
 	
-	<!-- ***This set of casts is used to deal with a DST bug with the Oracle driver and
-	Timestamp columns. 2am times on DST days will show up shifted to 3am -->
+	<!-- ***This set of casts is used to deal with DST and Timestamp columns. 
+			2am times on DST days will show up shifted to 3am without these.***-->
 	<sql id="dateToIsoCast">
 	TO_CHAR(MEASUREMENT_DATE, 'YYYY-MM-DD') || 'T' || TO_CHAR(MEASUREMENT_DATE,'HH24:MI:SS') 
 	</sql>
 	<sql id="isoToDateCast">
-	TO_TIMESTAMP(#{measurementDateIso,jdbcType=CHAR}, 'YYYY-MM-DD"T"HH24:MI:SS.FF') 
+	#{measurementDateIso,jdbcType=CHAR}::timestamp
 	</sql>
 	
 	<!-- Note: AQ -> GDAWS SQL and Strategy primarily taken from AutoProc I
@@ -129,7 +129,7 @@
 	<!-- From AutoProc I: 
 		Note: This binds this class to the schema name (GDAWS_PROD) of the database. -->
 	<select id="analyzeStageTable">
-		begin dbms_stats.gather_table_stats('GDAWS', 'TIME_SERIES_AP_STAGE' , null, 100, false, 'FOR ALL COLUMNS SIZE AUTO', 1, 'ALL', true); end;
+		ANALYZE VERBOSE time_series_ap_stage
 	</select>
 	
 	<!-- Insert Staging Table into Main Table -->
@@ -138,7 +138,6 @@
 			Select SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID
 			From TIME_SERIES_AP_STAGE
 			Where SOURCE_ID=#{sourceId}
-			log errors into time_series_star_errlog('GdawsAutoProc') reject limit unlimited
 	</insert>
 	
 	<!-- Delete Staging Table records -->
