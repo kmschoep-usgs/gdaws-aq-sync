@@ -138,8 +138,6 @@
 			Select SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID
 			From TIME_SERIES_AP_STAGE
 			Where SOURCE_ID=#{sourceId}
-			<!-- Done in Oracle, but no equivalent in Postgres -->
-			<!-- log errors into time_series_star_errlog('GdawsAutoProc') reject limit unlimited -->
 	</insert>
 	
 	<!-- Delete Staging Table records -->
