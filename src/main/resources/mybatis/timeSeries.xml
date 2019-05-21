@@ -138,6 +138,7 @@
 			Select SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID
 			From TIME_SERIES_AP_STAGE
 			Where SOURCE_ID=#{sourceId}
+		On Conflict Do Nothing;
 	</insert>
 	
 	<!-- Delete Staging Table records -->
