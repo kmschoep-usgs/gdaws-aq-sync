@@ -122,4 +122,24 @@ public class TimeSeriesUtils {
 			return null;
 		}
 	}
+	
+	/**
+	 * The instantaneous bedload calculation
+	 * 
+	 * @param suspSed
+	 * @param c1
+	 * @param c2
+	 * @param corrDis
+	 * @return
+	 */
+	
+	public static Double getInstBedload(Double suspSed, Double c1, Double c2, Double corrDis) {
+		//Bedload calc Y=X(10.^(c1+c2logQ))
+		return suspSed * getBoundingValue(c1, c2, corrDis);
+	}
+	
+	public static Double getBoundingValue(Double c1, Double c2, Double corrDis) {
+	//(10.^(c1+c2logQ))
+		return (Math.pow(10, (c1 + c2 * Math.log10(corrDis))));
+	}
 }

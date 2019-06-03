@@ -129,4 +129,29 @@ public class TimeSeriesUtilsTest {
 		
 		assertNull(TimeSeriesUtils.getAsMstDateTime(null));
 	}
+	
+	@Test
+	public void getBoundingValueTest() {
+		Double c1 = -6.434;
+		Double c2 = 1.935;
+		Double corrDis = 4780.0;
+		Double boundingValue = null;
+		
+		boundingValue = TimeSeriesUtils.getBoundingValue(c1, c2, corrDis);
+		
+		assertTrue(boundingValue.equals(4.849455516416029));
+	}
+	
+	@Test
+	public void getInstBedloadTest() {
+		Double suspSed = 5.3204;
+		Double c1 = 4.3139;
+		Double c2 = -1.3821;
+		Double corrDis = 4780.0;
+		Double instBedload = null;
+		
+		instBedload = TimeSeriesUtils.getInstBedload(suspSed, c1, c2, corrDis);
+		
+		assertTrue(instBedload.equals(0.9005482546993885));
+	}
 }
