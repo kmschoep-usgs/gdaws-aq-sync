@@ -12,7 +12,7 @@
 		<setting name="logImpl" value="SLF4J"/>
 		<setting name="autoMappingBehavior" value="PARTIAL"/>
 	</settings>
-
+	
 	<typeAliases>
 		<typeAlias alias="SiteConfiguration" type="gov.usgs.wma.gcmrc.model.SiteConfiguration"/>
 		<typeAlias alias="AutoProcConfiguration" type="gov.usgs.wma.gcmrc.model.AutoProcConfiguration"/>
@@ -40,7 +40,12 @@
 			</dataSource>
 		</environment>
 	</environments>
- 	
+	
+	<databaseIdProvider type="DB_VENDOR">
+		<property name="PostgreSQL" value="postgres"/>
+		<property name="Oracle" value="oracle" />
+	</databaseIdProvider>
+	
 	<mappers>
 		<mapper resource="mybatis/siteConfigMapper.xml"/>
 		<mapper resource="mybatis/autoProcConfigMapper.xml"/>

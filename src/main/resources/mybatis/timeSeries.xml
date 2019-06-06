@@ -85,8 +85,11 @@
 	<sql id="dateToIsoCast">
 	TO_CHAR(MEASUREMENT_DATE, 'YYYY-MM-DD') || 'T' || TO_CHAR(MEASUREMENT_DATE,'HH24:MI:SS') 
 	</sql>
-	<sql id="isoToDateCast">
+	<sql databaseId="postgres" id="isoToDateCast">
 	#{measurementDateIso,jdbcType=CHAR}::timestamp
+	</sql>
+	<sql databaseId="oracle" id="isoToDateCast">
+	TO_TIMESTAMP(#{measurementDateIso,jdbcType=CHAR}, 'YYYY-MM-DD"T"HH24:MI:SS.FF') 
 	</sql>
 	
 	<!-- Note: AQ -> GDAWS SQL and Strategy primarily taken from AutoProc I
@@ -97,9 +100,14 @@
 		 *   - Delete staging table records-->
 		
 	<!-- Insert data into Staging Table -->
-	<insert id="insertTimeseriesDataToStageTable" parameterType="TimeSeriesRecord">
+	<insert databaseId="oracle" id="insertTimeseriesDataToStageTable" parameterType="TimeSeriesRecord">
 		INSERT INTO TIME_SERIES_AP_STAGE (SITE_ID, GROUP_ID, MEASUREMENT_DATE, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID, SOURCE_ID) 
 		values (#{siteId,jdbcType=NUMERIC},#{groupId,jdbcType=NUMERIC},<include refid="isoToDateCast"/>,#{finalValue,jdbcType=NUMERIC}, #{mainQualifierId,jdbcType=NUMERIC}, #{dataApprovalId,jdbcType=NUMERIC},#{sourceId,jdbcType=NUMERIC})
+	</insert>
+	
+	<insert databaseId="postgres" id="insertTimeseriesDataToStageTable" parameterType="TimeSeriesRecord">
+		INSERT INTO TIME_SERIES_AP_STAGE (SITE_ID, GROUP_ID, MEASUREMENT_DATE, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID, SOURCE_ID) 
+		values (#{siteId,jdbcType=NUMERIC},#{groupId,jdbcType=NUMERIC},<include refid="isoToDateCast"/>,#{finalValue,jdbcType=NUMERIC}, #{mainQualifierId}, #{dataApprovalId},#{sourceId,jdbcType=NUMERIC})
 	</insert>
 		
 	<!-- 
@@ -128,17 +136,28 @@
 	
 	<!-- From AutoProc I: 
 		Note: This binds this class to the schema name (GDAWS_PROD) of the database. -->
-	<select id="analyzeStageTable">
+	<select databaseId="postgres" id="analyzeStageTable">
 		ANALYZE VERBOSE time_series_ap_stage
+	</select>
+	<select databaseId="oracle" id="analyzeStageTable">
+		begin dbms_stats.gather_table_stats('GDAWS', 'TIME_SERIES_AP_STAGE' , null, 100, false, 'FOR ALL COLUMNS SIZE AUTO', 1, 'ALL', true); end;
 	</select>
 	
 	<!-- Insert Staging Table into Main Table -->
-	<insert id="copyStageTableToStarTable">
+	<insert databaseId="postgres" id="copyStageTableToStarTable">
 		Insert Into TIME_SERIES_STAR(SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID)
 			Select SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID
 			From TIME_SERIES_AP_STAGE
 			Where SOURCE_ID=#{sourceId}
 		On Conflict Do Nothing;
+	</insert>
+	
+	<insert databaseId="oracle" id="copyStageTableToStarTable">
+		Insert Into TIME_SERIES_STAR(SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID)
+			Select SITE_ID, GROUP_ID, MEASUREMENT_DATE, SOURCE_ID, FINAL_VALUE, MAIN_QUALIFIER_ID, DATA_APPROVAL_ID
+			From TIME_SERIES_AP_STAGE
+			Where SOURCE_ID=#{sourceId}
+			log errors into time_series_star_errlog('GdawsAutoProc') reject limit unlimited
 	</insert>
 	
 	<!-- Delete Staging Table records -->

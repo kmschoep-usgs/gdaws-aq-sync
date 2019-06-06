@@ -42,6 +42,7 @@ public class GdawsDaoFactory {
 			InputStream inputStream = Resources.getResourceAsStream(resource);
 
 			SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream, properties.getProperty(GDAWS_ENVIRONMENT), properties);
+
 			return sqlSessionFactory;
 			
 		} catch (Exception e) {

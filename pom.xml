@@ -142,7 +142,12 @@
 			<artifactId>postgresql</artifactId>
 			<version>42.2.5</version>
 		</dependency>
-			<dependency>
+		<dependency>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc6_g</artifactId>
+			<version>11.2.0.4-1</version>
+		</dependency>
+		<dependency>
 			<groupId>com.aquaticinformatics</groupId>
 			<artifactId>aquarius.sdk</artifactId>
 			<version>18.8.1</version>

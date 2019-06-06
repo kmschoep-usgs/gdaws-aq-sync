@@ -35,7 +35,7 @@ public class BedloadCalculation {
 		this.cumulativeBedloadDAO = new CumulativeBedloadDAO(gdawsDaoFactory);
 		this.mergeCumulativeLoadCalcDAO = new MergeCumulativeLoadCalcDAO(gdawsDaoFactory);
 		this.gdawsTimeSeriesService = new GdawsTimeSeriesService();
-		
+		this.sourceId = sourceId;
 	}
 
 	public void processBedloadCalculations(Integer instantaneousBedloadGroupId, Integer cumulativeBedloadGroupId) {

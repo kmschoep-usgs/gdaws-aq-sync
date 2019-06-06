@@ -22,7 +22,7 @@ INSERT INTO TIME_SERIES_AP_STAGE (
 		NULL AS MAIN_QUALIFIER_ID,
 		NULL AS DATA_APPROVAL_ID,
 		bed_result.SOURCE_ID
-	FROM (<include refid="source_data"/>) AS bed_result
+	FROM (<include refid="source_data"/>) bed_result
 	</insert>
 	
 	<sql id="source_data">
