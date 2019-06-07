@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+
+<mapper namespace="gov.usgs.wma.gcmrc.mapper.TotalSuspendedSedimentCalcMapper">
+
+	
+	<insert id="calcTotalSuspendedSedimentToStageTable" parameterType="map" timeout="180">
+	INSERT INTO TIME_SERIES_AP_STAGE (
+		SITE_ID, 
+		GROUP_ID,
+		MEASUREMENT_DATE,
+		FINAL_VALUE,
+		MAIN_QUALIFIER_ID,
+		DATA_APPROVAL_ID,
+		SOURCE_ID
+	) 
+		SELECT
+			tot_susp_sed_result.SITE_ID, 
+			tot_susp_sed_result.GROUP_ID,
+			tot_susp_sed_result.MEASUREMENT_DATE,
+			tot_susp_sed_result.FINAL_VALUE,
+			NULL AS MAIN_QUALIFIER_ID,
+			NULL AS DATA_APPROVAL_ID,
+			tot_susp_sed_result.SOURCE_ID
+		FROM (<include refid="source_data"/>) tot_susp_sed_result
+		</insert>
+		
+		<sql id="source_data">
+		with sand as
+		(select ts.site_id, ts.measurement_date, ts.final_value from 
+			time_series_star ts
+			where ts.final_value is not null 
+			and	ts.final_value != -999 
+			and ts.group_id = #{sandGroupId,jdbcType=NUMERIC}
+			and ts.site_id in <foreach item="list" collection="siteIds" open="(" separator="," close=")">
+				#{list,jdbcType=NUMERIC}
+				</foreach>),
+		fines as 
+		(select ts.site_id, ts.measurement_date, ts.final_value from 
+			time_series_star ts
+			where ts.final_value is not null 
+			and	ts.final_value != -999 
+			and ts.group_id = #{finesGroupId,jdbcType=NUMERIC}
+			and ts.site_id in <foreach item="list" collection="siteIds" open="(" separator="," close=")">
+				#{list,jdbcType=NUMERIC}
+				</foreach>
+			)
+		select 
+		sand.site_id, 
+		#{groupId,jdbcType=NUMERIC} group_id,
+		sand.measurement_date,
+		sand.final_value + fines.final_value final_value,
+		null main_qualifier_id,
+		null data_approval_id,
+		#{sourceId,jdbcType=NUMERIC} source_id
+		from 
+			sand
+		join
+			fines
+			on sand.measurement_date = fines.measurement_date
+			and sand.site_id = fines.site_id
+	</sql>
+	
+</mapper>

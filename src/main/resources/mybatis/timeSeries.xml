@@ -117,10 +117,26 @@
 	delete too much data.  As written, it should fail if those params are null.
 	Others: oldSourceId, startTime and endTime are optional.
 	-->
+	<sql id="singleSite">
+		SITE_ID=#{siteId} AND
+	</sql>
+	<sql id="multipleSites">
+		site_id in <foreach item="list" collection="siteIds" open="(" separator="," close=")">
+				#{list,jdbcType=NUMERIC} 
+				</foreach> and
+	</sql>
+	
 	<delete id="deleteOverlappingDataInStarTable">
 		DELETE From TIME_SERIES_STAR
 		WHERE
-			SITE_ID=#{siteId} AND
+		<choose>
+			<when test="siteIds != null">
+				<include refid="multipleSites"/>
+			</when>
+			<otherwise>
+				<include refid="singleSite"/>
+			</otherwise>
+		</choose>
 			GROUP_ID=#{groupId}
 		<choose>
 			<when test="oldSourceId != null">

@@ -10,7 +10,7 @@ To run locally:
 NOTE: --skipAquariusSync only included if you don’t want to load data from AQ. See java “-jar the_jar_file\_you\_downloaded.jar --help” for all options.
 
 These options skip the calculations
---skipBedloadCalculations --skipMergeCumulativeLoads
+--skipBedloadCalculations --skipMergeCumulativeLoads --skipTotalSuspendedSedimentCalc
 
 So to test  JUST the sync we want to do something like this so it skips the calculations but does do the syncing with AQ.
 

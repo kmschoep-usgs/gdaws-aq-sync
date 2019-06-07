@@ -53,6 +53,7 @@
 		<mapper resource="mybatis/timeSeriesTranslation.xml"/>
 		<mapper resource="mybatis/cumulativeBedload.xml"/>
 		<mapper resource="mybatis/mergeCumulativeLoadCalc.xml"/>
+		<mapper resource="mybatis/totalSuspendedSediment.xml"/>
 	</mappers>
     
 </configuration>
