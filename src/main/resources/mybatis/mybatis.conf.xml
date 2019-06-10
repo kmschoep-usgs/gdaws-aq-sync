@@ -12,7 +12,7 @@
 		<setting name="logImpl" value="SLF4J"/>
 		<setting name="autoMappingBehavior" value="PARTIAL"/>
 	</settings>
-
+	
 	<typeAliases>
 		<typeAlias alias="SiteConfiguration" type="gov.usgs.wma.gcmrc.model.SiteConfiguration"/>
 		<typeAlias alias="AutoProcConfiguration" type="gov.usgs.wma.gcmrc.model.AutoProcConfiguration"/>
@@ -20,8 +20,8 @@
 		<typeAlias alias="TimeSeriesRecord" type="gov.usgs.wma.gcmrc.model.TimeSeriesRecord"/>
 	</typeAliases>
 	
-	<environments default="development">
-		<environment id="development">
+	<environments default="oracle">
+		<environment id="postgres">
 			<transactionManager type="JDBC"/>
 			<dataSource type="POOLED">
 				<property name="driver" value="org.postgresql.Driver"/>
@@ -30,8 +30,22 @@
 				<property name="password" value="${gdaws.dbPwd}"/>
 			</dataSource>
 		</environment>
+		<environment id="oracle">
+			<transactionManager type="JDBC"/>
+			<dataSource type="POOLED">
+				<property name="driver" value="oracle.jdbc.OracleDriver"/>
+				<property name="url" value="jdbc:oracle:thin:@${gdaws.dbHost}:${gdaws.dbPort}:${gdaws.dbName}"/>
+				<property name="username" value="${gdaws.dbUser}"/>
+				<property name="password" value="${gdaws.dbPwd}"/>
+			</dataSource>
+		</environment>
 	</environments>
- 	
+	
+	<databaseIdProvider type="DB_VENDOR">
+		<property name="PostgreSQL" value="postgres"/>
+		<property name="Oracle" value="oracle" />
+	</databaseIdProvider>
+	
 	<mappers>
 		<mapper resource="mybatis/siteConfigMapper.xml"/>
 		<mapper resource="mybatis/autoProcConfigMapper.xml"/>
@@ -39,6 +53,7 @@
 		<mapper resource="mybatis/timeSeriesTranslation.xml"/>
 		<mapper resource="mybatis/cumulativeBedload.xml"/>
 		<mapper resource="mybatis/mergeCumulativeLoadCalc.xml"/>
+		<mapper resource="mybatis/totalSuspendedSediment.xml"/>
 	</mappers>
     
 </configuration>

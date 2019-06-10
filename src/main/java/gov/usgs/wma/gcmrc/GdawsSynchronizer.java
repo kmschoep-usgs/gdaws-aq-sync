@@ -22,6 +22,7 @@ public class GdawsSynchronizer {
 	private static final String SKIP_OPTION_PREFIX = "--skip";
 	
 	private static final String  AQUARIUS_SYNC_OPT = "AquariusSync";
+	private static final String  TOTAL_SUSPENDED_SEDIMENT_OPT = "TotalSuspendedSedimentCalc";
 	private static final String  BEDLOAD_OPT = "BedloadCalculations";
 	private static final String  MERGE_CUMULATIVE_LOADS_OPT = "MergeCumulativeLoads";
 	
@@ -47,8 +48,11 @@ public class GdawsSynchronizer {
 	private static final String AUTO_PROC_SOURCE_PROP_NAME = "autoproc.source.id";
 	private static final String BEDLOAD_GROUP_ID_PROP_NAME = "bedload.group.id";
 	private static final String CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME = "cumulative.bedload.group.id";
+	private static final String TOT_SUSP_SED_GROUP_ID_PROP_NAME = "total.suspended.sediment.group.id";
 	private static final String SAND_LOAD_GROUP_ID_PROP_NAME = "cumulative.sand.load.group.id";
 	private static final String FINES_LOAD_GROUP_ID_PROP_NAME = "cumulative.fines.load.group.id";
+	private static final String TOT_SUSP_SED_SAND_LOAD_GROUP_ID_PROP_NAME = "total.suspended.sediment.sand.load.group.id";
+	private static final String TOT_SUSP_SED_FINES_LOAD_GROUP_ID_PROP_NAME = "total.suspended.sediment.fines.load.group.id";
 	private static final String DEFAULT_DAYS_TO_FETCH_FOR_NEW_TIMESERIES = "default.days.to.fetch.for.new.timeseries";
 	private static final String SYNC_START_DATE_PROP_NAME = "sync.start.time";
 	private static final String SYNC_END_DATE_PROP_NAME = "sync.end.time";
@@ -75,6 +79,9 @@ public class GdawsSynchronizer {
 			BEDLOAD_GROUP_ID_PROP_NAME, "The group id to mark instantaneous calculated bed load values with",
 			CUMULATIVE_BEDLOAD_GROUP_ID_PROP_NAME, "The group id for mark cumulative bedload calculations with",
 			SAND_LOAD_GROUP_ID_PROP_NAME, "The group id to mark cumulative sand load values with",
+			TOT_SUSP_SED_SAND_LOAD_GROUP_ID_PROP_NAME, "The suspended sand group id to calculate total suspended sediment with",
+			TOT_SUSP_SED_FINES_LOAD_GROUP_ID_PROP_NAME, "The suspended silt and clay group id to calculate total suspended sediment with",
+			TOT_SUSP_SED_GROUP_ID_PROP_NAME, "The group id to mark total suspended sediment calculations with",
 	};
 	
 	//prop names and descriptions
@@ -151,6 +158,15 @@ public class GdawsSynchronizer {
 				LOG.info("Finished Merge Cumulative Load Calculations");
 			} else {
 				LOG.info("Skipping Merge Cumulative Load Calculations");
+			}
+			
+			if(!isSkip(args, TOTAL_SUSPENDED_SEDIMENT_OPT)) {
+				
+				LOG.info("Starting Total Suspended Sediment Calculations");
+				autoProc.processTotalSuspendedSedimentCalculation(runState.getIntProperty(TOT_SUSP_SED_SAND_LOAD_GROUP_ID_PROP_NAME, null),runState.getIntProperty(TOT_SUSP_SED_FINES_LOAD_GROUP_ID_PROP_NAME, null),runState.getIntProperty(TOT_SUSP_SED_GROUP_ID_PROP_NAME, null));
+				LOG.info("Finished Total Suspended Sediment Calculations");
+			} else {
+				LOG.info("Skipping Total Suspended Sediment Calculations");
 			}
 		}
 	}

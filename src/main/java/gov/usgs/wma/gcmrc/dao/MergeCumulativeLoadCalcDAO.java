@@ -41,7 +41,8 @@ public class MergeCumulativeLoadCalcDAO {
 		params.put("groupId", groupId);	//for consistency, use 'groupId' as SQL param
 		params.put("lastTimestamp", lastTimestamp);
 		params.put("firstTimestamp", firstTimestamp);
-		params.put("timeShift", timeShiftMinutes + " minutes");
+		params.put("timeShiftPostgres", timeShiftMinutes + " minutes");
+		params.put("timeShiftOracle", timeShiftMinutes);
 		
 		LOG.debug("Merging cumulative loads for groupId {} for sites {} (old site) and {} (new site)", groupId, siteId, newSiteId);
 		

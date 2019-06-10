@@ -9,6 +9,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 public class GdawsDaoFactory {
 	private static final Object syncLock = new Object();
+	private static final String GDAWS_ENVIRONMENT = "gdaws.db";
 	
 	private SqlSessionFactory sqlSessionFactory;
 	private Properties properties;
@@ -40,7 +41,8 @@ public class GdawsDaoFactory {
 			String resource = "mybatis/mybatis.conf.xml";
 			InputStream inputStream = Resources.getResourceAsStream(resource);
 
-			SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream, properties);
+			SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream, properties.getProperty(GDAWS_ENVIRONMENT), properties);
+
 			return sqlSessionFactory;
 			
 		} catch (Exception e) {

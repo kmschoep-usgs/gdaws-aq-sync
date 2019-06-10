@@ -20,6 +20,7 @@ public class AutoProcConfigurationLoader {
 	private static final String BEDLOAD_CALC_NAME = "bedLoadCalc";
 	private static final String CUMULATIVE_BEDLOAD_CALC_NAME = "cumulativeBedLoadCalc";
 	private static final String MERGE_CUMULATIVE_CALC_NAME = "mergeCumulativeLoads";
+	private static final String TOTAL_SUSPENDED_SEDIMENT_CALC_NAME = "totalSuspSedCalc";
 	
 	public AutoProcConfigurationLoader(GdawsDaoFactory gdawsDaoFactory) {
 		this.sessionFactory = gdawsDaoFactory.getSqlSessionFactory();
@@ -63,6 +64,21 @@ public class AutoProcConfigurationLoader {
 		parms.put("loadCalculationName", MERGE_CUMULATIVE_CALC_NAME);
 		
 		LOG.debug("Loading calculation configuration for {}", MERGE_CUMULATIVE_CALC_NAME);
+		try (SqlSession session = sessionFactory.openSession()) {
+			AutoProcConfigurationMapper mapper = session.getMapper(AutoProcConfigurationMapper.class);
+			sitesToLoad = mapper.getByLoadCalculationName(parms);
+		}
+		
+		return sitesToLoad;
+	}
+	
+	public List<AutoProcConfiguration> loadTotalSuspSedCalculationConfiguration() {
+		List<AutoProcConfiguration> sitesToLoad = null;
+		
+		Map<String, Object> parms = new HashMap<String, Object>();
+		parms.put("loadCalculationName", TOTAL_SUSPENDED_SEDIMENT_CALC_NAME);
+		
+		LOG.debug("Loading calculation configuration for {}", TOTAL_SUSPENDED_SEDIMENT_CALC_NAME);
 		try (SqlSession session = sessionFactory.openSession()) {
 			AutoProcConfigurationMapper mapper = session.getMapper(AutoProcConfigurationMapper.class);
 			sitesToLoad = mapper.getByLoadCalculationName(parms);

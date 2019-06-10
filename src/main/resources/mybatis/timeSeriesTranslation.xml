@@ -2,11 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
 
 <mapper namespace="gov.usgs.wma.gcmrc.mapper.TimeSeriesTranslationMapper">
-	<select id="getAqGdawsQualifierMap" parameterType="map" resultType="map">
+	<resultMap type="map" id="qualifierMap">
+		<result property="aq_qualifier_identifier" column="aq_qualifier_identifier"/>
+		<result property="measurement_qualifier_id" column="measurement_qualifier_id"/>
+	</resultMap>
+	
+	<resultMap type="map" id="approvalMap">
+		<result property="aq_approval_level" column="aq_approval_level"/>
+		<result property="data_approval_id" column="data_approval_id"/>
+	</resultMap>
+
+	<select id="getAqGdawsQualifierMap" parameterType="map" resultType="map" resultMap="qualifierMap">
 		SELECT * FROM GDAWS_AQ_QUALIFIER_MAP
 	</select>
 	
-	<select id="getAqGdawsApprovalMap" parameterType="map" resultType="map">
+	<select id="getAqGdawsApprovalMap" parameterType="map" resultType="map" resultMap="approvalMap">
 		SELECT * FROM GDAWS_AQ_APPROVAL_MAP
 	</select>
 </mapper>

@@ -22,27 +22,42 @@ INSERT INTO TIME_SERIES_AP_STAGE (
 		NULL AS MAIN_QUALIFIER_ID,
 		NULL AS DATA_APPROVAL_ID,
 		merge_result.SOURCE_ID
-	FROM (<include refid="source_data"/>) AS merge_result
+	FROM (<include refid="source_data"/>) merge_result
 	</insert>
+	
+	<sql databaseId="oracle" id="measurement_date">
+	to_timestamp(#{firstTimestamp,jdbcType=CHAR},'mm/dd/yyyy hh:mi:ss.ff AM')
+	</sql>
+	
+	<sql databaseId="postgres" id="measurement_date">
+	#{firstTimestamp,jdbcType=CHAR}::timestamp
+	</sql>
+	
+	<sql databaseId="oracle" id="timeShift_interval">
+	numtodsinterval(#{timeShiftOracle,jdbcType=CHAR}, 'MINUTE')
+	</sql>
+	
+	<sql databaseId="postgres" id="timeShift_interval">
+	#{timeShiftPostgres,jdbcType=CHAR}::interval
+	</sql>
 	
 	<sql id="source_data">
 with old_site_last (old_site_final) as
 (select final_value old_site_final from TIME_SERIES_STAR ts
 where ts.site_id = #{siteId,jdbcType=NUMERIC} and ts.group_id = #{groupId,jdbcType=NUMERIC}
-    and ts.measurement_date = #{lastTimestamp,jdbcType=CHAR}::timestamp
+    and ts.measurement_date = <include refid="measurement_date"/>
 )
 select ts.site_id, ts.group_id, ts.measurement_date, ts.final_value, #{sourceId,jdbcType=NUMERIC} as source_id from TIME_SERIES_STAR ts
 where ts.site_id = #{siteId,jdbcType=NUMERIC} and ts.group_id = #{groupId,jdbcType=NUMERIC}
-    and ts.measurement_date &lt;= #{lastTimestamp,jdbcType=CHAR}::timestamp
+    and ts.measurement_date &lt;= <include refid="measurement_date"/>
 union
-select #{siteId,jdbcType=NUMERIC} site_id, ts.group_id, ts.measurement_date + #{timeShift,jdbcType=CHAR}::interval measurement_date,
+select #{siteId,jdbcType=NUMERIC} site_id, ts.group_id, ts.measurement_date + <include refid="timeShift_interval"/> measurement_date,
  ts.final_value + os.old_site_final final_value, 
 	#{sourceId,jdbcType=NUMERIC} as source_id 
 	from TIME_SERIES_STAR ts, old_site_last os
 where ts.group_id = #{groupId,jdbcType=NUMERIC} and ts.site_id = #{newSiteId,jdbcType=NUMERIC}
-    and ts.measurement_date &gt;= #{firstTimestamp,jdbcType=CHAR}::timestamp
+    and ts.measurement_date &gt;= <include refid="measurement_date"/>
 order by measurement_date
 	</sql>
 	
-
 </mapper>

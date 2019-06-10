@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.wma.gcmrc.mapper.TimeSeriesTranslationMapper;
+
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,9 +31,9 @@ public class TimeSeriesTranslationLoader {
 			TimeSeriesTranslationMapper mapper = session.getMapper(TimeSeriesTranslationMapper.class);
 			approvalMap = mapper.getAqGdawsApprovalMap(new HashMap<>());
 			returnMap = new HashMap<>();
-					
 			for(Map<String, Integer> entry : approvalMap) {
-				returnMap.put(entry.get("aq_approval_level"), entry.get("data_approval_id"));
+				
+				returnMap.put(((Number)entry.get("aq_approval_level")).intValue(), ((Number)entry.get("data_approval_id")).intValue());
 			}
 			
 			LOG.trace("Loaded " + returnMap.entrySet().size() + " approval mappings.");
