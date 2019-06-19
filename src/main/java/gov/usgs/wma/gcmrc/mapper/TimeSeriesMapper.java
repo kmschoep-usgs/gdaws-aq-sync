@@ -20,4 +20,5 @@ public interface TimeSeriesMapper {
 	void copyStageTableToStarTable(Map<String, Object> parms);
 	void emptyStageTable();	
 	void analyzeStageTable();
+	void refreshTimeSeriesPor();
 }
