@@ -106,4 +106,13 @@ public class TimeSeriesDAO {
 			LOG.trace("Retrieved no points for (Site)" + series.getSiteId() + " (Group)" + series.getGroupId() + " (Source)" + series.getSourceId() + " so skipping insert to GDAWS.");
 		}
 	}
+	
+	public void refreshTimeSeriesPor() {	
+		LOG.debug("Refresh time_series_por, postgres database only.");
+		
+		try (SqlSession session = sessionFactory.openSession()) {
+			TimeSeriesMapper mapper = session.getMapper(TimeSeriesMapper.class);
+			mapper.refreshTimeSeriesPor();
+		}
+	}
 }

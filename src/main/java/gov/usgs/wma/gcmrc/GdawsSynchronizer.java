@@ -29,7 +29,8 @@ public class GdawsSynchronizer {
 	private static final String[] PROCESS_OPTIONS = new String[] {
 			AQUARIUS_SYNC_OPT,
 			BEDLOAD_OPT,
-			MERGE_CUMULATIVE_LOADS_OPT
+			MERGE_CUMULATIVE_LOADS_OPT,
+			TOTAL_SUSPENDED_SEDIMENT_OPT
 	};
 
 	private static final String AQ_URL_PROP_NAME = "aquarius.service.endpoint";
@@ -104,9 +105,8 @@ public class GdawsSynchronizer {
 		if(validateArguments(args, runState.getProperties())) {
 			LOG.info("Arguments valid, proceeding with processing");
 			
-			GdawsDaoFactory gdawsDaoFactory = new GdawsDaoFactory(runState.getProperties());
-			
-			
+			GdawsDaoFactory gdawsDaoFactory = new GdawsDaoFactory(runState.getProperties());			
+			TimeSeriesDAO timeSeriesDAO = new TimeSeriesDAO(gdawsDaoFactory);
 			//
 			//This sets the logging level of AqToGdaws and relies on the logging API
 			//being implemented as Logback.  No way to do it w/o knowing the implementation.
@@ -168,6 +168,9 @@ public class GdawsSynchronizer {
 			} else {
 				LOG.info("Skipping Total Suspended Sediment Calculations");
 			}
+			LOG.info("Starting TIME_SERIES_POR refresh, if postgres");
+			timeSeriesDAO.refreshTimeSeriesPor();
+			LOG.info("Finishing TIME_SERIES_POR refresh, if postgres");
 		}
 	}
 	
