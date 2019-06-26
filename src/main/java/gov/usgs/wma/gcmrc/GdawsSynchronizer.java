@@ -75,7 +75,7 @@ public class GdawsSynchronizer {
 			GDAWS_NAME_PROP_NAME, "GDAWS Database name",
 			GDAWS_USER_PROP_NAME, "GDAWS Database user",
 			GDAWS_PASS_PROP_NAME, "GDAWS Database password",
-			GDAWS_DB_PROP_NAME, "GDAWS Database",
+			GDAWS_DB_PROP_NAME, "GDAWS Database (oracle or postgres)",
 			AQ_SOURCE_PROP_NAME, "The source id to mark incoming records from aquarius with",
 			OLD_GADSYNC_SOURCE_PROP_NAME, "The source id of the old GADSYNC records, which can be safely overwritten by the new AQ source",
 			AUTO_PROC_SOURCE_PROP_NAME, "The source id to mark calculated values with",
