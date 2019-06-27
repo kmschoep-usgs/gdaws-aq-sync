@@ -181,9 +181,9 @@
 		delete from TIME_SERIES_AP_STAGE
 	</delete>
 	
-	<insert databaseId="postgres" id="refreshTimeSeriesPor" statementType="CALLABLE">
-		{call gdaws_data.refresh_time_series_por()}
-	</insert>
+	<select databaseId="postgres" id="refreshTimeSeriesPor">
+		refresh materialized view concurrently time_series_por with data
+	</select>
 	<select databaseId="oracle" id="refreshTimeSeriesPor" resultType="int">
 		SELECT 1 from dual
 	</select>

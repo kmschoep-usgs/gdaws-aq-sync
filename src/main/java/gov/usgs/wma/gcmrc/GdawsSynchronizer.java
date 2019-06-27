@@ -44,6 +44,7 @@ public class GdawsSynchronizer {
 	private static final String GDAWS_NAME_PROP_NAME = "gdaws.dbName";
 	private static final String GDAWS_USER_PROP_NAME = "gdaws.dbUser";
 	private static final String GDAWS_PASS_PROP_NAME = "gdaws.dbPwd";
+	private static final String GDAWS_DB_PROP_NAME = "gdaws.db";
 	private static final String AQ_SOURCE_PROP_NAME = "aquarius.source.id";
 	private static final String OLD_GADSYNC_SOURCE_PROP_NAME = "old.gadsync.source.id";
 	private static final String AUTO_PROC_SOURCE_PROP_NAME = "autoproc.source.id";
@@ -74,6 +75,7 @@ public class GdawsSynchronizer {
 			GDAWS_NAME_PROP_NAME, "GDAWS Database name",
 			GDAWS_USER_PROP_NAME, "GDAWS Database user",
 			GDAWS_PASS_PROP_NAME, "GDAWS Database password",
+			GDAWS_DB_PROP_NAME, "GDAWS Database (oracle or postgres)",
 			AQ_SOURCE_PROP_NAME, "The source id to mark incoming records from aquarius with",
 			OLD_GADSYNC_SOURCE_PROP_NAME, "The source id of the old GADSYNC records, which can be safely overwritten by the new AQ source",
 			AUTO_PROC_SOURCE_PROP_NAME, "The source id to mark calculated values with",
@@ -104,6 +106,7 @@ public class GdawsSynchronizer {
 		
 		if(validateArguments(args, runState.getProperties())) {
 			LOG.info("Arguments valid, proceeding with processing");
+			LOG.info("Running against " + runState.getProperty(GDAWS_DB_PROP_NAME,null) + " database");
 			
 			GdawsDaoFactory gdawsDaoFactory = new GdawsDaoFactory(runState.getProperties());			
 			TimeSeriesDAO timeSeriesDAO = new TimeSeriesDAO(gdawsDaoFactory);
@@ -168,9 +171,13 @@ public class GdawsSynchronizer {
 			} else {
 				LOG.info("Skipping Total Suspended Sediment Calculations");
 			}
-			LOG.info("Starting TIME_SERIES_POR refresh, if postgres");
+			String dbprop = runState.getProperty(GDAWS_DB_PROP_NAME,null);
+			
+			if(dbprop.equals("postgres")) {
+			LOG.info("Starting TIME_SERIES_POR refresh");
 			timeSeriesDAO.refreshTimeSeriesPor();
-			LOG.info("Finishing TIME_SERIES_POR refresh, if postgres");
+			LOG.info("Finishing TIME_SERIES_POR refresh");
+			}
 		}
 	}
 	

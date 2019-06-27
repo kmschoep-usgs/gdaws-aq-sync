@@ -113,6 +113,8 @@ public class TimeSeriesDAO {
 		try (SqlSession session = sessionFactory.openSession()) {
 			TimeSeriesMapper mapper = session.getMapper(TimeSeriesMapper.class);
 			mapper.refreshTimeSeriesPor();
+		} catch (Exception e) {
+			LOG.error("Could not refresh time_series_por", e);
 		}
 	}
 }
