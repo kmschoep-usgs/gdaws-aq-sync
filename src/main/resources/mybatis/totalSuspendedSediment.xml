@@ -29,18 +29,14 @@
 		with sand as
 		(select ts.site_id, ts.measurement_date, ts.final_value from 
 			time_series_star ts
-			where ts.final_value is not null 
-			and	ts.final_value != -999 
-			and ts.group_id = #{sandGroupId,jdbcType=NUMERIC}
+			where ts.group_id = #{sandGroupId,jdbcType=NUMERIC}
 			and ts.site_id in <foreach item="list" collection="siteIds" open="(" separator="," close=")">
 				#{list,jdbcType=NUMERIC}
 				</foreach>),
 		fines as 
 		(select ts.site_id, ts.measurement_date, ts.final_value from 
 			time_series_star ts
-			where ts.final_value is not null 
-			and	ts.final_value != -999 
-			and ts.group_id = #{finesGroupId,jdbcType=NUMERIC}
+			where ts.group_id = #{finesGroupId,jdbcType=NUMERIC}
 			and ts.site_id in <foreach item="list" collection="siteIds" open="(" separator="," close=")">
 				#{list,jdbcType=NUMERIC}
 				</foreach>
@@ -49,7 +45,14 @@
 		sand.site_id, 
 		#{groupId,jdbcType=NUMERIC} group_id,
 		sand.measurement_date,
-		sand.final_value + fines.final_value final_value,
+		case 
+			when sand.final_value is not null 
+				and sand.final_value != -999
+				and fines.final_value is not null 
+				and fines.final_value != -999
+			then sand.final_value + fines.final_value 
+			else -999
+		end final_value,
 		null main_qualifier_id,
 		null data_approval_id,
 		#{sourceId,jdbcType=NUMERIC} source_id
